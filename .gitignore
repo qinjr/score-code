@@ -120,3 +120,4 @@ dmypy.json
 logs*/
 *.pdf
 save_model*/
+.DS_Store
