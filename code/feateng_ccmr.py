@@ -60,19 +60,19 @@ def movie_feat_info(in_file):
                 continue
             _, directors, actors, genres, nations, __ = line.split(',')
             director_list = directors.split(';')
-            field_dict['director'][0] += director_list
+            field_dict['director'] += director_list
             if len(director_list) > director_num:
                 director_num = len(director_list)
             
-            field_dict['actor'][0] += actor_list
+            field_dict['actor'] += actor_list
             if len(actor_list) > actor_num:
                 actor_num = len(actor_list)
             
-            field_dict['genre'][0] += genre_list
+            field_dict['genre'] += genre_list
             if len(genre_list) > genre_num:
                 genre_num = len(genre_list)
             
-            field_dict['nation'][0] += nation_list
+            field_dict['nation'] += nation_list
             if len(nation_list) > nation_num:
                 nation_num = len(nation_list)
     
