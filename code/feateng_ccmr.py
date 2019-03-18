@@ -46,12 +46,12 @@ def time_distri(in_file, plt_file):
 
 def movie_feat_info(in_file):
     field_dict = {
-        'director': ([], 0),
-        'actor': ([], 0),
-        'genre': ([], 0),
-        'nation': ([], 0)
+        'director': [],
+        'actor': [],
+        'genre': [],
+        'nation': []
     }
-
+    director_num, actor_num, genre_num, nation_num = 0, 0, 0, 0
     with open(in_file, 'r') as f:
         i = 0
         for line in f:
@@ -61,24 +61,25 @@ def movie_feat_info(in_file):
             _, directors, actors, genres, nations, __ = line.split(',')
             director_list = directors.split(';')
             field_dict['director'][0] += director_list
-            if len(director_list) > field_dict['director'][1]:
-                field_dict['director'][1] = len(director_list)
+            if len(director_list) > director_num:
+                director_num = len(director_list)
             
             field_dict['actor'][0] += actor_list
-            if len(actor_list) > field_dict['actor'][1]:
-                field_dict['actor'][1] = len(actor_list)
+            if len(actor_list) > actor_num:
+                actor_num = len(actor_list)
             
             field_dict['genre'][0] += genre_list
-            if len(genre_list) > field_dict['genre'][1]:
-                field_dict['genre'][1] = len(genre_list)
+            if len(genre_list) > genre_num:
+                genre_num = len(genre_list)
             
             field_dict['nation'][0] += nation_list
-            if len(nation_list) > field_dict['nation'][1]:
-                field_dict['nation'][1] = len(nation_list)
+            if len(nation_list) > nation_num:
+                nation_num = len(nation_list)
     
     for key in field_dict:
-        field_dict[key][0] = set(field_dict[key][0])
+        field_dict[key] = set(field_dict[key])
     print(field_dict)
+    print(director_num, actor_num, genre_num, nation_num)
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
