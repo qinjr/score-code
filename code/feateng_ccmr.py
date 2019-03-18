@@ -34,9 +34,9 @@ def time_distri(in_file, plt_file):
     times = []
     with open(in_file, 'r') as f:
         for line in f:
-            time_str = line[:-1].split(',')[3]
+            time_str = line[:-1].split(',')[-1]
             time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
-            times.append(times)
+            times.append(time_int)
     start_time = min(times)
     t_idx = [(t - start_time) / (24 * 3600 * TIME_DELTA) for t in times]
     print('max time idx: {}'.format(max(t_idx)))
@@ -90,5 +90,5 @@ def movie_feat_info(in_file):
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
-    # time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
-    movie_feat_info(RAW_DIR + 'movie_info.csv')
+    time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
+    # movie_feat_info(RAW_DIR + 'movie_info.csv')
