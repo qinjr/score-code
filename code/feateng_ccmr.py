@@ -38,7 +38,7 @@ def time_distri(in_file, plt_file):
             time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
             times.append(time_int)
     start_time = min(times)
-    t_idx = [(t - start_time) / (24 * 3600 * TIME_DELTA) for t in times]
+    t_idx = [int((t - start_time) / (24 * 3600 * TIME_DELTA)) for t in times]
     print('max time idx: {}'.format(max(t_idx)))
 
     plt.hist(t_idx, bins=range(max(t_idx)+1))
