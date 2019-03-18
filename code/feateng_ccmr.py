@@ -35,6 +35,7 @@ def time_distri(in_file, plt_file):
     with open(in_file, 'r') as f:
         for line in f:
             time_str = line.split(',')[3]
+            print(time_str)
             time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
             times.append(times)
     start_time = min(times)
