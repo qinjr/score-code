@@ -44,7 +44,43 @@ def time_distri(in_file, plt_file):
     plt.hist(t_idx, bins=range(max(t_idx)+1))
     plt.savefig(plt_file)
 
+def movie_feat_info(in_file):
+    field_dict = {
+        'director': ([], 0),
+        'actor': ([], 0),
+        'genre': ([], 0),
+        'nation': ([], 0)
+    }
+
+    with open(in_file, 'r') as f:
+        i = 0
+        for line in f:
+            if i == 0:
+                i += 1
+                continue
+            _, directors, actors, genres, nations, __ = line.split(',')
+            director_list = directors.split(';')
+            field_dict['director'][0] += director_list
+            if len(director_list) > field_dict['director'][1]:
+                field_dict['director'][1] = len(director_list)
+            
+            field_dict['actor'][0] += actor_list
+            if len(actor_list) > field_dict['actor'][1]:
+                field_dict['actor'][1] = len(actor_list)
+            
+            field_dict['genre'][0] += genre_list
+            if len(genre_list) > field_dict['genre'][1]:
+                field_dict['genre'][1] = len(genre_list)
+            
+            field_dict['nation'][0] += nation_list
+            if len(nation_list) > field_dict['nation'][1]:
+                field_dict['nation'][1] = len(nation_list)
+    
+    for key in field_dict:
+        field_dict[key][0] = set(field_dict[key][0])
+    print(field_dict)
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
-    time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
+    # time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
+    movie_feat_info(RAW_DIR + 'movie_info.csv')
