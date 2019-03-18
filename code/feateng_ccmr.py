@@ -81,7 +81,9 @@ def movie_feat_info(in_file):
     
     for key in field_dict:
         field_dict[key] = set(field_dict[key])
-        print(key,  len(field_dict[key]))
+        print(key, len(field_dict[key]))
+        print(key, max(field_dict[key]))
+        print(key, min(field_dict[key]))
     printdirector_width, actor_width, genre_width, nation_width)
 
 if __name__ == "__main__":
