@@ -59,25 +59,26 @@ def movie_feat_info(in_file):
                 i += 1
                 continue
             _, directors, actors, genres, nations, __ = line.split(',')
-            director_list = directors.split(';')
-            field_dict['director'] += director_list
-            if len(director_list) > director_width:
-                director_width = len(director_list)
-            
-            actor_list = actors.split(';')
-            field_dict['actor'] += actor_list
-            if len(actor_list) > actor_width:
-                actor_width = len(actor_list)
-            
-            genre_list = genres.split(';')
-            field_dict['genre'] += genre_list
-            if len(genre_list) > genre_width:
-                genre_width = len(genre_list)
-            
-            nation_list = nations.split(';')
-            field_dict['nation'] += nation_list
-            if len(nation_list) > nation_width:
-                nation_width = len(nation_list)
+            if directors != '':
+                director_list = directors.split(';')
+                field_dict['director'] += director_list
+                if len(director_list) > director_width:
+                    director_width = len(director_list)
+            if actors != '':    
+                actor_list = actors.split(';')
+                field_dict['actor'] += actor_list
+                if len(actor_list) > actor_width:
+                    actor_width = len(actor_list)
+            if genres != '':    
+                genre_list = genres.split(';')
+                field_dict['genre'] += genre_list
+                if len(genre_list) > genre_width:
+                    genre_width = len(genre_list)
+            if nations != '':    
+                nation_list = nations.split(';')
+                field_dict['nation'] += nation_list
+                if len(nation_list) > nation_width:
+                    nation_width = len(nation_list)
     
     for key in field_dict:
         field_dict[key] = set(field_dict[key])
