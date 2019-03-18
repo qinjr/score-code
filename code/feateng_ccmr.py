@@ -51,7 +51,7 @@ def movie_feat_info(in_file):
         'genre': [],
         'nation': []
     }
-    director_num, actor_num, genre_num, nation_num = 0, 0, 0, 0
+    director_width, actor_width, genre_width, nation_width = 0, 0, 0, 0
     with open(in_file, 'r') as f:
         i = 0
         for line in f:
@@ -61,28 +61,28 @@ def movie_feat_info(in_file):
             _, directors, actors, genres, nations, __ = line.split(',')
             director_list = directors.split(';')
             field_dict['director'] += director_list
-            if len(director_list) > director_num:
-                director_num = len(director_list)
+            if len(director_list) > director_width:
+                director_width = len(director_list)
             
             actor_list = actors.split(';')
             field_dict['actor'] += actor_list
-            if len(actor_list) > actor_num:
-                actor_num = len(actor_list)
+            if len(actor_list) > actor_width:
+                actor_width = len(actor_list)
             
             genre_list = genres.split(';')
             field_dict['genre'] += genre_list
-            if len(genre_list) > genre_num:
-                genre_num = len(genre_list)
+            if len(genre_list) > genre_width:
+                genre_width = len(genre_list)
             
             nation_list = nations.split(';')
             field_dict['nation'] += nation_list
-            if len(nation_list) > nation_num:
-                nation_num = len(nation_list)
+            if len(nation_list) > nation_width:
+                nation_width = len(nation_list)
     
     for key in field_dict:
         field_dict[key] = set(field_dict[key])
-    print(field_dict)
-    print(director_num, actor_num, genre_num, nation_num)
+        print(key,  len(field_dict[key]))
+    printdirector_width, actor_width, genre_width, nation_width)
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
