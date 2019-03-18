@@ -84,7 +84,7 @@ def movie_feat_info(in_file):
         print(key, len(field_dict[key]))
         print(key, max(field_dict[key]))
         print(key, min(field_dict[key]))
-    printdirector_width, actor_width, genre_width, nation_width)
+    print(director_width, actor_width, genre_width, nation_width)
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
