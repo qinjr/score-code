@@ -34,11 +34,9 @@ def time_distri(in_file, plt_file):
     times = []
     with open(in_file, 'r') as f:
         for line in f:
-            a = time.time()
             time_str = line[:-1].split(',')[-1]
             time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
             times.append(time_int)
-            print('time: {}'.format(time.time()-a))
     start_time = min(times)
     t_idx = [(t - start_time) / (24 * 3600 * TIME_DELTA) for t in times]
     print('max time idx: {}'.format(max(t_idx)))
