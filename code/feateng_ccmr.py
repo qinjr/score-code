@@ -35,7 +35,8 @@ def time_distri(in_file, plt_file):
     with open(in_file, 'r') as f:
         for line in f:
             time_str = line.split(',')[3]
-            time_int = int(time.mktime(datetime.datetime.strptime(s, "%Y-%m-%d").timetuple()))
+            time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
+            times.append(times)
     start_time = min(times)
     t_idx = [(t - start_time) / (24 * 3600 * TIME_DELTA) for t in times]
     print('max time idx: {}'.format(max(t_idx)))
@@ -45,5 +46,5 @@ def time_distri(in_file, plt_file):
 
 
 if __name__ == "__main__":
-    pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
+    # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
     time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
