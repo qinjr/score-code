@@ -100,15 +100,15 @@ def movie_feat_info(in_file):
 
 def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_info_file = None):
     # remap rating_file
-    new_rating_lines = []
-    with open(rating_file, 'r') as f:
-        for line in f:
-            uid, iid, rating, time = line[:-1].split(',')
-            newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time]) + '\n'
-            new_rating_lines.append(newline)
-    with open(new_rating_file, 'w') as f:
-        f.writelines(new_rating_lines)
-    print('remap rating file completed')
+    # new_rating_lines = []
+    # with open(rating_file, 'r') as f:
+    #     for line in f:
+    #         uid, iid, rating, time = line[:-1].split(',')
+    #         newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time]) + '\n'
+    #         new_rating_lines.append(newline)
+    # with open(new_rating_file, 'w') as f:
+    #     f.writelines(new_rating_lines)
+    # print('remap rating file completed')
 
     # remap 
     if movie_info_file != None:
@@ -132,15 +132,21 @@ def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_in
                     nid = 1 + USER_NUM + ITEM_NUM + DIRECTOR_NUM + ACTOR_NUM + GENRE_NUM + NATION_NUM - 1
                 else:
                     nid = 1 + int(nations.split(';')[0]) + USER_NUM + ITEM_NUM + DIRECTOR_NUM + ACTOR_NUM + GENRE_NUM
-            if iid not in movie_info_dict:
-                movie_info_dict[iid] = [did, aid, gid, nid]
+                
+                if iid not in movie_info_dict:
+                    movie_info_dict[iid] = [did, aid, gid, nid]
         with open(new_movie_info_file, 'wb') as f:
             pkl.dump(movie_info_dict, f)
         print('remap movie info completed')
+
+def gen_user_neg(in_file, out_file):
+    user_neg_dict = {}
+    with open(in_file, 'r') as f:
+
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
     # time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
     # movie_feat_info(RAW_DIR + 'movie_info_colname.csv')
-    remap_ids(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'remap_rating_pos.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
+    # remap_ids(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'remap_rating_pos.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
     # remap_ids(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'remap_rating_neg.csv')
