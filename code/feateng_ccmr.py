@@ -107,22 +107,23 @@ def time2idx(time_str):
 
 def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_info_file = None):
     # remap rating_file
-    new_rating_lines = []
-    with open(rating_file, 'r') as f:
-        for line in f:
-            uid, iid, rating, time = line[:-1].split(',')
-            newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time2idx(time)]) + '\n'
-            new_rating_lines.append(newline)
-    with open(new_rating_file, 'w') as f:
-        f.writelines(new_rating_lines)
-    print('remap rating file completed')
+    # new_rating_lines = []
+    # with open(rating_file, 'r') as f:
+    #     for line in f:
+    #         uid, iid, rating, time = line[:-1].split(',')
+    #         newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time2idx(time)]) + '\n'
+    #         new_rating_lines.append(newline)
+    # with open(new_rating_file, 'w') as f:
+    #     f.writelines(new_rating_lines)
+    # print('remap rating file completed')
 
-    # remap 
+    # remap movie info
     if movie_info_file != None:
         movie_info_dict = {} #iid(str): [did, aid, gid, nid](int)
         with open(movie_info_file, 'r') as f:
             for line in f:
                 iid, directors, actors, genres, nations, _ = line[:-1].split(',')
+                iid = str(int(iid) + 1 + USER_NUM)
                 if directors == '':
                     did = 1 + USER_NUM + ITEM_NUM + DIRECTOR_NUM - 1
                 else:
@@ -165,5 +166,5 @@ if __name__ == "__main__":
     # time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
     # movie_feat_info(RAW_DIR + 'movie_info_colname.csv')
     remap_ids(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'remap_rating_pos.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
-    remap_ids(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'remap_rating_neg.csv')
+    # remap_ids(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'remap_rating_neg.csv')
     # gen_user_neg(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'user_neg_dict.pkl')
