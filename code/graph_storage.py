@@ -66,7 +66,7 @@ class CCMRGraphStore(GraphStore):
             self.item_coll.insert_many(item_doc_list)
             print('item collection completed')
 
-    def write2db():
+    def write2db(self):
         for line in self.rating_file:
             uid, iid, _, t_idx = line[:-1].split(',')
             user_doc = self.user.coll.find_one({'uid': int(uid)})
