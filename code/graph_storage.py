@@ -69,10 +69,13 @@ class CCMRGraphStore(GraphStore):
     def write2db(self):
         for line in self.rating_file:
             uid, iid, _, t_idx = line[:-1].split(',')
-            user_doc = self.user.coll.find_one({'uid': int(uid)})
-            user_doc['hist_%s'%(t_idx)].append(int(iid))
-            item_doc = self.item.coll.find_one({'iid': int(iid)})
-            item_doc['hist_%s'%(t_idx)].append(int(uid))
+            query = {'uid': int(uid)}
+            update = {'$push': {'hist_%s'%(t_idx): int(iid)}}
+            self.user_coll.update_one(query, update)
+            
+            query = {'iid': int(iid)}
+            update = {'$push': {'hist_%s'%(t_idx): int(uid)}}
+            self.item_coll.update_one(query, update)
         print('write to db complete')
 
 
