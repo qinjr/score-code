@@ -68,6 +68,7 @@ class CCMRGraphStore(GraphStore):
 
     def write2db(self):
         for line in self.rating_file:
+            start_t = time.time()
             uid, iid, _, t_idx = line[:-1].split(',')
             query = {'uid': int(uid)}
             update = {'$push': {'hist_%s'%(t_idx): int(iid)}}
@@ -76,6 +77,7 @@ class CCMRGraphStore(GraphStore):
             query = {'iid': int(iid)}
             update = {'$push': {'hist_%s'%(t_idx): int(uid)}}
             self.item_coll.update_one(query, update)
+            print('one record time: {}'.format(time.time()-start_t))
         print('write to db complete')
 
 
