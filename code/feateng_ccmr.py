@@ -103,7 +103,7 @@ def movie_feat_info(in_file):
 def time2idx(time_str):
     start_time = 1116432000
     time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
-    return int((time_int - start_time) / (SECONDS_PER_DAY * TIME_DELTA))
+    return str(int((time_int - start_time) / (SECONDS_PER_DAY * TIME_DELTA)))
 
 def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_info_file = None):
     # remap rating_file
