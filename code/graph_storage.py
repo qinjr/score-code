@@ -46,21 +46,25 @@ class CCMRGraphStore(GraphStore):
         return item_doc
 
     def construct_coll(self):
-        # construct user collection
-        user_doc_list = []
-        for i in range(1, self.user_num + 1):
-            user_doc_list.append(self.gen_user_doc(i))
-        print('user doc list completed')
-        self.user_coll.insert_many(user_doc_list)
-        print('user collection completed')
+        collist = self.db.list_collection_names()
+        if 'user' not in collist:
+            print('begin constructing user collection')
+            # construct user collection
+            user_doc_list = []
+            for i in range(1, self.user_num + 1):
+                user_doc_list.append(self.gen_user_doc(i))
+            print('user doc list completed')
+            self.user_coll.insert_many(user_doc_list)
+            print('user collection completed')
 
-        # construct item collection
-        item_doc_list = []
-        for i in range(self.user_num + 1, self.user_num + self.item_num + 1):
-            item_doc_list.append(self.gen_item_doc(i))
-        print('item doc list completed')
-        self.item_coll.insert_many(item_doc_list)
-        print('item collection completed')
+        if 'item' not in collist:
+            # construct item collection
+            item_doc_list = []
+            for i in range(self.user_num + 1, self.user_num + self.item_num + 1):
+                item_doc_list.append(self.gen_item_doc(i))
+            print('item doc list completed')
+            self.item_coll.insert_many(item_doc_list)
+            print('item collection completed')
 
     def write2db():
         for line in self.rating_file:
