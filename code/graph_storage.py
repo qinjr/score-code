@@ -4,6 +4,7 @@ import datetime
 import time
 
 SECONDS_PER_DAY = 24 * 3600
+DATA_DIR = '../../score-data/CCMR/feateng/'
 
 class GraphStore(object):
     def __init__(self):
@@ -62,5 +63,17 @@ class CCMRGraphStore(GraphStore):
         print('item collection completed')
 
     def write2db():
-        for line in self.in_file:
-            uid, iid, _, time = line[:-1].split(',')
+        for line in self.rating_file:
+            uid, iid, _, t_idx = line[:-1].split(',')
+            user_doc = self.user.coll.find_one({'uid': int(uid)})
+            user_doc['hist_%s'%(t_idx)].append(int(iid))
+            item_doc = self.item.coll.find_one({'iid': int(iid)})
+            item_doc['hist_%s'%(t_idx)].append(int(uid))
+        print('write to db complete')
+
+
+if __name__ == "__main__":
+    # For CCMR
+    gs = CCMRGraphStore(DATA_DIR + 'remap_rating_pos.csv', DATA_DIR + 'remap_movie_info_dict.pkl')
+    gs.construct_coll()
+    gs.write2db()
