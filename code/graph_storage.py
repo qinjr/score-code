@@ -9,7 +9,6 @@ class GraphStore(object):
     def __init__(self):
         self.url = "mongodb://localhost:27017/"
         self.client = pymongo.MongoClient(self.url)
-    
      
 class CCMRGraphStore(GraphStore):
     def __init__(self, rating_file, movie_info_dict):
@@ -17,15 +16,51 @@ class CCMRGraphStore(GraphStore):
         self.db = self.client['ccmr']
         self.user_coll = self.db.user
         self.item_coll = self.db.item
+        
+        self.user_num = 4920695
+        self.item_num = 190129
+
+        # input files
         self.rating_file = open(rating_file, 'r')
         with open(movie_info_dict, 'rb') as f:
             self.movie_info_dict = pkl.load(f)
-        
-    
-    def date2idx(self, time_str):
-        time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
-        return
+        print('load movie info dict completed')
+
+        # about time index
+        self.time_idx_num = 21
+
+    def gen_user_doc(self, uid):
+        user_doc = {}
+        user_doc['uid'] = uid
+        for t in range(self.time_idx_num):
+            user_doc['hist_%d'%t] = []
+        return user_doc
+
+    def gen_item_doc(self, iid):
+        item_doc = {}
+        item_doc['iid'] = iid
+        item_doc['did'], item_doc['aid'], item_doc['gid'], item_doc['nid'] = self.movie_info_dict[str(iid)]
+        for t in range(self.time_idx_num):
+            item_doc['hist_%d'%t] = []
+        return item_doc
+
+    def construct_coll(self):
+        # construct user collection
+        user_doc_list = []
+        for i in range(1, self.user_num + 1):
+            user_doc_list.append(self.gen_user_doc(i))
+        print('user doc list completed')
+        self.user_coll.insert_many(user_doc_list)
+        print('user collection completed')
+
+        # construct item collection
+        item_doc_list = []
+        for i in range(self.user_num + 1, self.user_num + self.item_num + 1):
+            item_doc_list.append(self.gen_item_doc(i))
+        print('item doc list completed')
+        self.item_coll.insert_many(item_doc_list)
+        print('item collection completed')
 
     def write2db():
         for line in self.in_file:
-            uid, iid, _, time = line[:-1].split(,)
+            uid, iid, _, time = line[:-1].split(',')
