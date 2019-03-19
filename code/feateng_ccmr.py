@@ -107,15 +107,15 @@ def time2idx(time_str):
 
 def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_info_file = None):
     # remap rating_file
-    # new_rating_lines = []
-    # with open(rating_file, 'r') as f:
-    #     for line in f:
-    #         uid, iid, rating, time = line[:-1].split(',')
-    #         newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time2idx(time)]) + '\n'
-    #         new_rating_lines.append(newline)
-    # with open(new_rating_file, 'w') as f:
-    #     f.writelines(new_rating_lines)
-    # print('remap rating file completed')
+    new_rating_lines = []
+    with open(rating_file, 'r') as f:
+        for line in f:
+            uid, iid, rating, time = line[:-1].split(',')
+            newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time2idx(time)]) + '\n'
+            new_rating_lines.append(newline)
+    with open(new_rating_file, 'w') as f:
+        f.writelines(new_rating_lines)
+    print('remap rating file completed')
 
     # remap movie info
     if movie_info_file != None:
