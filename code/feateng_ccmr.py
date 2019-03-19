@@ -8,6 +8,10 @@ import matplotlib.pyplot as plt
 RAW_DIR = '../../score-data/CCMR/raw_data/'
 FEATENG_DIR = '../../score-data/CCMR/feateng/'
 
+USER_NUM = 4,920,695
+ITEM_NUM = 190,129
+
+
 TIME_DELTA = 180
 
 def pos_neg_split(in_file, pos_file, neg_file):
