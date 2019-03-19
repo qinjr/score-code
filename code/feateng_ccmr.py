@@ -92,5 +92,5 @@ def movie_feat_info(in_file):
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
-    time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
-    # movie_feat_info(RAW_DIR + 'movie_info.csv')
+    # time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
+    movie_feat_info(RAW_DIR + 'movie_info.csv')
