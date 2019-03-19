@@ -64,11 +64,9 @@ class CCMRGraphStore(GraphStore):
             print('initialize item doc list completed')
         
         for line in self.rating_file:
-            start_t = time.time()
             uid, iid, _, t_idx = line[:-1].split(',')
             user_doc_list[int(uid) - 1]['hist_%s'%(t_idx)].append(int(iid))
             item_doc_list[int(iid) - self.user_num - 1]['hist_%s'%(t_idx)].append(int(uid))
-            print('time: {}'.format(time.time()-start_t))
         print('user and item doc list completed')
 
         self.user_coll.insert_many(user_doc_list)
