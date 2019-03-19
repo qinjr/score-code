@@ -1,9 +1,9 @@
+import matplotlib
+matplotlib.use('Agg')
 import pickle as pkl
 import datetime
 import time
 import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('Agg')
 
 RAW_DIR = '../../score-data/CCMR/raw_data/'
 FEATENG_DIR = '../../score-data/CCMR/feateng/'
