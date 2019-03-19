@@ -149,7 +149,7 @@ def gen_user_neg(in_file, out_file):
             else:
                 user_neg_dict[uid].append(iid)
     with open(out_file, 'wb') as f:
-        pkl.dump(user_neg_dict)
+        pkl.dump(user_neg_dict, f)
 
         
 
