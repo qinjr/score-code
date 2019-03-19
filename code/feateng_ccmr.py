@@ -17,6 +17,7 @@ NATION_NUM = 1043 + 1 #+1 no nation
 
 
 TIME_DELTA = 180
+SECONDS_PER_DAY = 24 * 3600
 
 def pos_neg_split(in_file, pos_file, neg_file):
     pos_lines = []
@@ -48,7 +49,8 @@ def time_distri(in_file, plt_file):
             time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
             times.append(time_int)
     start_time = min(times)
-    t_idx = [int((t - start_time) / (24 * 3600 * TIME_DELTA)) for t in times]
+    print(start_time)
+    t_idx = [int((t - start_time) / (SECONDS_PER_DAY* TIME_DELTA)) for t in times]
     print('max time idx: {}'.format(max(t_idx)))
 
     plt.hist(t_idx, bins=range(max(t_idx)+1))
@@ -155,8 +157,8 @@ def gen_user_neg(in_file, out_file):
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
-    # time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
+    time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
     # movie_feat_info(RAW_DIR + 'movie_info_colname.csv')
     # remap_ids(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'remap_rating_pos.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
     # remap_ids(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'remap_rating_neg.csv')
-    gen_user_neg(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'user_neg_dict.csv')
+    # gen_user_neg(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'user_neg_dict.pkl')
