@@ -87,16 +87,18 @@ class CCMRGraphStore(GraphStore):
                 hist_len_user.append(len(user_doc['hist_%d'%(t)]))
         
         arr = np.array(hist_len_user)
-        print('max user hist len: {}'.format(np.max(arr)))
-        print('min user hist len: {}'.format(np.min(arr)))
-        print('null per user: {}'.format(arr[arr == 0].size / self.user_num))
-        print('small(<=5) per user: {}'.format(arr[arr <= 5].size / self.user_num))
-        print('mean user hist len (not null): {}'.format(np.mean(arr[arr > 0])))
+        print('max user slice hist len: {}'.format(np.max(arr)))
+        print('min user slice hist len: {}'.format(np.min(arr)))
+        print('null slice per user: {}'.format(arr[arr == 0].size / self.user_num))
+        print('small(<=5) slice per user: {}'.format(arr[arr <= 5].size / self.user_num))
+        print('mean user slice(not null) hist len: {}'.format(np.mean(arr[arr > 0])))
 
-        # plt.hist(hist_len_user, bins=range(max(hist_len_user)+1))
-        # plt.savefig(user_hist_file)
-        # print('user stat completed')
+        arr = arr.reshape(-1, self.time_idx_num)
+        arr = np.sum(arr, axis=0)
+        print(arr)
 
+        
+        print('-------------------------------------')
         # calculate item doc
         hist_len_item = []
         cursor = self.item_coll.find({})
@@ -108,11 +110,12 @@ class CCMRGraphStore(GraphStore):
         print('min item hist len: {}'.format(np.min(arr)))
         print('null per item: {}'.format(arr[arr == 0].size / self.item_num))
         print('small(<=5) per item: {}'.format(arr[arr <= 5].size / self.item_num))
-        print('mean item hist len (not null): {}'.format(np.mean(arr[arr > 0])))
+        print('mean item hist(not null) len: {}'.format(np.mean(arr[arr > 0])))
         
-        # plt.hist(hist_len_item, bins=range(max(hist_len_item)+1))
-        # plt.savefig(item_hist_file)
-        # print('item stat completed')
+        arr = arr.reshape(-1, self.time_idx_num)
+        arr = np.sum(arr, axis=0)
+        print(arr)
+
 
 if __name__ == "__main__":
     # For CCMR
