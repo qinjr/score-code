@@ -134,7 +134,7 @@ def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_in
     with open(rating_file, 'r') as f:
         for line in f:
             uid, iid, rating, time = line[:-1].split(',')
-            newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time2idx(time)]) + '\n'
+            newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time]) + '\n'
             new_rating_lines.append(newline)
     with open(new_rating_file, 'w') as f:
         f.writelines(new_rating_lines)
@@ -185,9 +185,9 @@ def gen_user_neg(in_file, out_file):
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
-    time2idx(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_pos_idx.csv')
-    time2idx(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'rating_neg_idx.csv')
-    time_distri(FEATENG_DIR + 'rating_pos_idx.csv', FEATENG_DIR + 'time_distri.png')
+    # time2idx(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_pos_idx.csv')
+    # time2idx(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'rating_neg_idx.csv')
+    # time_distri(FEATENG_DIR + 'rating_pos_idx.csv', FEATENG_DIR + 'time_distri.png')
     # movie_feat_info(RAW_DIR + 'movie_info_colname.csv')
     remap_ids(FEATENG_DIR + 'rating_pos_idx.csv', FEATENG_DIR + 'remap_rating_pos_idx.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
     remap_ids(FEATENG_DIR + 'rating_neg_idx.csv', FEATENG_DIR + 'remap_rating_neg_idx.csv')
