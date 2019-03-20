@@ -5,7 +5,7 @@ import time
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 SECONDS_PER_DAY = 24 * 3600
 DATA_DIR = '../../score-data/CCMR/feateng/'
@@ -87,7 +87,7 @@ class CCMRGraphStore(GraphStore):
                 hist_len_user.append(len(user_doc['hist_%d'%(t)]))
         print('max user hist len: {}'.format(max(hist_len_user)))
         print('min user hist len: {}'.format(min(hist_len_user)))
-        print('mean user hist len: {}'.format(sum(hist_len_user)/len(hist_len_user)))
+        print('mean user hist len: {}'.format(np.mean(hist_len_user))
 
         # plt.hist(hist_len_user, bins=range(max(hist_len_user)+1))
         # plt.savefig(user_hist_file)
@@ -101,7 +101,7 @@ class CCMRGraphStore(GraphStore):
                 hist_len_item.append(len(item_doc['hist_%d'%(t)]))
         print('max item hist len: {}'.format(max(hist_len_item)))
         print('min item hist len: {}'.format(min(hist_len_item)))
-        print('mean item hist len: {}'.format(sum(hist_len_item)/len(hist_len_item)))
+        print('mean item hist len: {}'.format(np.mean(hist_len_item))
         
         # plt.hist(hist_len_item, bins=range(max(hist_len_item)+1))
         # plt.savefig(item_hist_file)
