@@ -87,7 +87,7 @@ class CCMRGraphStore(GraphStore):
                 hist_len_user.append(len(user_doc['hist_%d'%(t)]))
         print('max user hist len: {}'.format(max(hist_len_user)))
         print('min user hist len: {}'.format(min(hist_len_user)))
-        print('mean user hist len: {}'.format(np.mean(hist_len_user))
+        print('mean user hist len: {}'.format(np.mean(hist_len_user)))
 
         # plt.hist(hist_len_user, bins=range(max(hist_len_user)+1))
         # plt.savefig(user_hist_file)
