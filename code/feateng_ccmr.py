@@ -126,6 +126,7 @@ def time2idx(in_file, out_file):
             newlines.append(newline)
     with open(out_file, 'w') as f:
         f.writelines(newlines)
+    print('time2idx completed')
 
 def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_info_file = None):
     # remap rating_file
