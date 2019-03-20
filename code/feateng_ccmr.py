@@ -43,13 +43,15 @@ def pos_neg_split(in_file, pos_file, neg_file):
     with open(neg_file, 'w') as f:
         f.writelines(neg_lines)
 
+# filter and transfer to time index
 def time_filter(in_file, out_file):
     newlines = []
     with open(in_file, 'r') as f:
         for line in f:
-            time_str = line[:-1].split(',')[-1]
-            if int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple())) >= START_TIME:
-                newlines.append(line)
+            uid, iid, rating, time_str = line[:-1].split(',')
+            time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
+            if time_int >= START_TIME:
+                newlines.append(','.join([uid, iid, rating, str(int((time_int - START_TIME) / (SECONDS_PER_DAY * TIME_DELTA)))]) + '\n')
     with open(out_file, 'w') as f:
         f.writelines(newlines)
     print('time filtering completed')
@@ -59,15 +61,11 @@ def time_distri(in_file, plt_file):
     times = []
     with open(in_file, 'r') as f:
         for line in f:
-            time_str = line[:-1].split(',')[-1]
-            time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
-            times.append(time_int)
-    start_time = min(times)
-    print(start_time)
-    t_idx = [int((t - start_time) / (SECONDS_PER_DAY* TIME_DELTA)) for t in times]
-    print('max time idx: {}'.format(max(t_idx)))
+            time_idx = int(line[:-1].split(',')[-1])
+            times.append(time_idx)
+    print('max time idx: {}'.format(max(times)))
 
-    plt.hist(t_idx, bins=range(max(t_idx)+1))
+    plt.hist(times, bins=range(max(times)+1))
     plt.savefig(plt_file)
 
 def movie_feat_info(in_file):
@@ -124,7 +122,7 @@ def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_in
     with open(rating_file, 'r') as f:
         for line in f:
             uid, iid, rating, time = line[:-1].split(',')
-            newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time2idx(time)]) + '\n'
+            newline = ','.join([str(int(uid) + 1), str(int(iid) + 1 + USER_NUM), rating, time]) + '\n'
             new_rating_lines.append(newline)
     with open(new_rating_file, 'w') as f:
         f.writelines(new_rating_lines)
