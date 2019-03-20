@@ -78,7 +78,7 @@ class CCMRGraphStore(GraphStore):
         self.item_coll.insert_many(item_doc_list)
         print('item collection completed')
 
-    def cal_stat(self, user_hist_file, item_hist_file):
+    def cal_stat(self):
         # calculate user doc
         hist_len_user = []
         cursor = self.user_coll.find({})
@@ -119,6 +119,6 @@ class CCMRGraphStore(GraphStore):
 
 if __name__ == "__main__":
     # For CCMR
-    gs = CCMRGraphStore(DATA_DIR + 'remap_rating_pos.csv', DATA_DIR + 'remap_movie_info_dict.pkl')
-    # gs.construct_coll()
-    gs.cal_stat(DATA_DIR + 'user_hist_len_distri.png', DATA_DIR + 'item_hist_len_distri.png')
+    gs = CCMRGraphStore(DATA_DIR + 'remap_rating_pos_recent.csv', DATA_DIR + 'remap_movie_info_dict.pkl')
+    gs.construct_coll()
+    gs.cal_stat()

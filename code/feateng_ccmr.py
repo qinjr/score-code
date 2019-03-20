@@ -16,8 +16,10 @@ GENRE_NUM = 62 + 1 #+1 no genre
 NATION_NUM = 1043 + 1 #+1 no nation
 
 
-TIME_DELTA = 180
+TIME_DELTA = 90
 SECONDS_PER_DAY = 24 * 3600
+
+START_TIME = int(time.mktime(datetime.datetime.strptime('2011-01-01', "%Y-%m-%d").timetuple()))
 
 def pos_neg_split(in_file, pos_file, neg_file):
     pos_lines = []
@@ -40,6 +42,18 @@ def pos_neg_split(in_file, pos_file, neg_file):
         f.writelines(pos_lines)
     with open(neg_file, 'w') as f:
         f.writelines(neg_lines)
+
+def time_filter(in_file, out_file):
+    newlines = []
+    with open(in_file, 'r') as f:
+        for line in f:
+            time_str = line[:-1].split(',')[-1]
+            if int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple())) >= START_TIME:
+                newlines.append(line)
+    with open(out_file, 'w') as f:
+        f.writelines(newlines)
+    print('time filtering completed')
+
 
 def time_distri(in_file, plt_file):
     times = []
@@ -101,9 +115,8 @@ def movie_feat_info(in_file):
     print(director_width, actor_width, genre_width, nation_width)
 
 def time2idx(time_str):
-    start_time = 1116432000
     time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
-    return str(int((time_int - start_time) / (SECONDS_PER_DAY * TIME_DELTA)))
+    return str(int((time_int - START_TIME) / (SECONDS_PER_DAY * TIME_DELTA)))
 
 def remap_ids(rating_file, new_rating_file, movie_info_file = None, new_movie_info_file = None):
     # remap rating_file
@@ -159,12 +172,13 @@ def gen_user_neg(in_file, out_file):
     with open(out_file, 'wb') as f:
         pkl.dump(user_neg_dict, f)
 
-        
 
 if __name__ == "__main__":
     # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
-    # time_distri(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'time_distri.png')
+    time_filter(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_pos_recent.csv')
+    time_filter(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'rating_neg_recent.csv')
+    time_distri(FEATENG_DIR + 'rating_pos_recent.csv', FEATENG_DIR + 'time_distri.png')
     # movie_feat_info(RAW_DIR + 'movie_info_colname.csv')
-    remap_ids(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'remap_rating_pos.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
-    # remap_ids(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'remap_rating_neg.csv')
-    # gen_user_neg(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'user_neg_dict.pkl')
+    remap_ids(FEATENG_DIR + 'rating_pos_recent.csv', FEATENG_DIR + 'remap_rating_pos_recent.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
+    remap_ids(FEATENG_DIR + 'rating_neg_recent.csv', FEATENG_DIR + 'remap_rating_neg_recent.csv')
+    gen_user_neg(FEATENG_DIR + 'rating_neg_recent.csv', FEATENG_DIR + 'user_neg_dict.pkl')
