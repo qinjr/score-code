@@ -85,9 +85,13 @@ class CCMRGraphStore(GraphStore):
         for user_doc in cursor:
             for t in range(self.time_idx_num):
                 hist_len_user.append(len(user_doc['hist_%d'%(t)]))
-        plt.hist(hist_len_user, bins=range(max(hist_len_user)+1))
-        plt.savefig(user_hist_file)
-        print('user stat completed')
+        print('max user hist len: {}'.format(max(hist_len_user)))
+        print('min user hist len: {}'.format(min(hist_len_user)))
+        print('mean user hist len: {}'.format(sum(hist_len_user)/len(hist_len_user)))
+
+        # plt.hist(hist_len_user, bins=range(max(hist_len_user)+1))
+        # plt.savefig(user_hist_file)
+        # print('user stat completed')
 
         # calculate item doc
         hist_len_item = []
@@ -95,9 +99,13 @@ class CCMRGraphStore(GraphStore):
         for item_doc in cursor:
             for t in range(self.time_idx_num):
                 hist_len_item.append(len(item_doc['hist_%d'%(t)]))
-        plt.hist(hist_len_item, bins=range(max(hist_len_item)+1))
-        plt.savefig(item_hist_file)
-        print('item stat completed')
+        print('max item hist len: {}'.format(max(hist_len_item)))
+        print('min item hist len: {}'.format(min(hist_len_item)))
+        print('mean item hist len: {}'.format(sum(hist_len_item)/len(hist_len_item)))
+        
+        # plt.hist(hist_len_item, bins=range(max(hist_len_item)+1))
+        # plt.savefig(item_hist_file)
+        # print('item stat completed')
 
 if __name__ == "__main__":
     # For CCMR
