@@ -82,21 +82,17 @@ class CCMRGraphStore(GraphStore):
         # calculate user doc
         hist_len_user = []
         cursor = self.user_coll.find({})
-        # for i in range(1, self.user_num + 1):
-            # user_doc = self.user_coll.find_one({'uid': i})
         for user_doc in cursor:
-            start_t = time.time()
             for t in range(self.time_idx_num):
                 hist_len_user.append(len(user_doc['hist_%d'%(t)]))
-            print('one user time: {}'.format(time.time() - start_t))
         plt.hist(hist_len_user, bins=range(max(hist_len_user)+1))
         plt.savefig(user_hist_file)
         print('user stat completed')
 
         # calculate item doc
         hist_len_item = []
-        for i in range(self.user_num + 1, self.user_num + self.item_num + 1):
-            item_doc = self.item_coll.find_one({'iid': i})
+        cursor = self.item_coll.find({})
+        for item_doc in cursor:
             for t in range(self.time_idx_num):
                 hist_len_item.append(len(item_doc['hist_%d'%(t)]))
         plt.hist(hist_len_item, bins=range(max(hist_len_item)+1))
