@@ -85,9 +85,13 @@ class CCMRGraphStore(GraphStore):
         for user_doc in cursor:
             for t in range(self.time_idx_num):
                 hist_len_user.append(len(user_doc['hist_%d'%(t)]))
-        print('max user hist len: {}'.format(max(hist_len_user)))
-        print('min user hist len: {}'.format(min(hist_len_user)))
-        print('mean user hist len: {}'.format(np.mean(np.array(hist_len_user)[np.array(hist_len_user)>0])))
+        
+        arr = np.array(hist_len_user)
+        print('max user hist len: {}'.format(np.max(arr)))
+        print('min user hist len: {}'.format(np.max(arr)))
+        print('null per user: {}'.format(arr[arr== 0].size / self.user_num))
+        print('small(<=5) per user: {}'.format(arr[arr<= 5] / self.user_num))
+        print('mean user hist len (not null): {}'.format(np.mean(arr[arr>0])))
 
         # plt.hist(hist_len_user, bins=range(max(hist_len_user)+1))
         # plt.savefig(user_hist_file)
@@ -99,9 +103,12 @@ class CCMRGraphStore(GraphStore):
         for item_doc in cursor:
             for t in range(self.time_idx_num):
                 hist_len_item.append(len(item_doc['hist_%d'%(t)]))
-        print('max item hist len: {}'.format(max(hist_len_item)))
-        print('min item hist len: {}'.format(min(hist_len_item)))
-        print('mean item hist len: {}'.format(np.mean(hist_len_item)))
+        arr = np.array(hist_len_item)
+        print('max item hist len: {}'.format(np.max(arr)))
+        print('min item hist len: {}'.format(np.max(arr)))
+        print('null per item: {}'.format(arr[arr== 0].size / self.item_num))
+        print('small(<=5) per item: {}'.format(arr[arr<= 5] / self.item_num))
+        print('mean item hist len (not null): {}'.format(np.mean(arr[arr>0])))
         
         # plt.hist(hist_len_item, bins=range(max(hist_len_item)+1))
         # plt.savefig(item_hist_file)
