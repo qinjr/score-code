@@ -32,7 +32,7 @@ class CCMRGraphStore(GraphStore):
         print('load movie info dict completed')
 
         # about time index
-        self.time_idx_num = 21
+        self.time_idx_num = 19
 
     def gen_user_doc(self, uid):
         user_doc = {}
