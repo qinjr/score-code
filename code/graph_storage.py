@@ -81,14 +81,17 @@ class CCMRGraphStore(GraphStore):
     def cal_stat(self, user_hist_file, item_hist_file):
         # calculate user doc
         hist_len_user = []
-        for i in range(1, self.user_num + 1):
+        cursor = self.user_coll.find({})
+        # for i in range(1, self.user_num + 1):
+            # user_doc = self.user_coll.find_one({'uid': i})
+        for user_doc in cursor:
             start_t = time.time()
-            user_doc = self.user_coll.find_one({'uid': i})
             for t in range(self.time_idx_num):
                 hist_len_user.append(len(user_doc['hist_%d'%(t)]))
             print('one user time: {}'.format(time.time() - start_t))
         plt.hist(hist_len_user, bins=range(max(hist_len_user)+1))
         plt.savefig(user_hist_file)
+        print('user stat completed')
 
         # calculate item doc
         hist_len_item = []
@@ -98,11 +101,10 @@ class CCMRGraphStore(GraphStore):
                 hist_len_item.append(len(item_doc['hist_%d'%(t)]))
         plt.hist(hist_len_item, bins=range(max(hist_len_item)+1))
         plt.savefig(item_hist_file)
-
+        print('item stat completed')
 
 if __name__ == "__main__":
     # For CCMR
     gs = CCMRGraphStore(DATA_DIR + 'remap_rating_pos.csv', DATA_DIR + 'remap_movie_info_dict.pkl')
     # gs.construct_coll()
     gs.cal_stat(DATA_DIR + 'user_hist_len_distri.png', DATA_DIR + 'item_hist_len_distri.png')
-    
