@@ -190,5 +190,5 @@ if __name__ == "__main__":
     for uid in [1, 2, 4920679]:
         print(graph_loader.gen_user_history(uid, 39))
     for iid in [5010458, 5010459, 5010460]:
-        print(graph_loader.gen_user_history(iid, 39))
+        print(graph_loader.gen_item_history(iid, 39))
     print('time: {}'.format((time.time() - t) / 6))
