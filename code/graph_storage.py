@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 SECONDS_PER_DAY = 24 * 3600
-DATA_DIR = '../../score-data/CCMR/feateng/'
+DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 class GraphStore(object):
     def __init__(self):
@@ -32,12 +32,12 @@ class CCMRGraphStore(GraphStore):
         print('load movie info dict completed')
 
         # about time index
-        self.time_idx_num = 41
+        self.time_slice_num = 41
 
     def gen_user_doc(self, uid):
         user_doc = {}
         user_doc['uid'] = uid
-        for t in range(self.time_idx_num):
+        for t in range(self.time_slice_num):
             user_doc['hist_%d'%t] = []
         return user_doc
 
@@ -45,7 +45,7 @@ class CCMRGraphStore(GraphStore):
         item_doc = {}
         item_doc['iid'] = iid
         item_doc['did'], item_doc['aid'], item_doc['gid'], item_doc['nid'] = self.movie_info_dict[str(iid)]
-        for t in range(self.time_idx_num):
+        for t in range(self.time_slice_num):
             item_doc['hist_%d'%t] = []
         return item_doc
 
@@ -83,7 +83,7 @@ class CCMRGraphStore(GraphStore):
         hist_len_user = []
         cursor = self.user_coll.find({})
         for user_doc in cursor:
-            for t in range(self.time_idx_num):
+            for t in range(self.time_slice_num):
                 hist_len_user.append(len(user_doc['hist_%d'%(t)]))
         
         arr = np.array(hist_len_user)
@@ -93,7 +93,7 @@ class CCMRGraphStore(GraphStore):
         print('small(<=5) slice per user: {}'.format(arr[arr <= 5].size / self.user_num))
         print('mean user slice(not null) hist len: {}'.format(np.mean(arr[arr > 0])))
 
-        arr = arr.reshape(-1, self.time_idx_num)
+        arr = arr.reshape(-1, self.time_slice_num)
         arr = np.sum(arr, axis=0)
         print(arr)
 
@@ -103,7 +103,7 @@ class CCMRGraphStore(GraphStore):
         hist_len_item = []
         cursor = self.item_coll.find({})
         for item_doc in cursor:
-            for t in range(self.time_idx_num):
+            for t in range(self.time_slice_num):
                 hist_len_item.append(len(item_doc['hist_%d'%(t)]))
         arr = np.array(hist_len_item)
         print('max item hist len: {}'.format(np.max(arr)))
@@ -112,13 +112,13 @@ class CCMRGraphStore(GraphStore):
         print('small(<=5) per item: {}'.format(arr[arr <= 5].size / self.item_num))
         print('mean item hist(not null) len: {}'.format(np.mean(arr[arr > 0])))
         
-        arr = arr.reshape(-1, self.time_idx_num)
+        arr = arr.reshape(-1, self.time_slice_num)
         arr = np.sum(arr, axis=0)
         print(arr)
 
 
 if __name__ == "__main__":
     # For CCMR
-    gs = CCMRGraphStore(DATA_DIR + 'remap_rating_pos_idx.csv', DATA_DIR + 'remap_movie_info_dict.pkl')
+    gs = CCMRGraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     gs.construct_coll()
     gs.cal_stat()
