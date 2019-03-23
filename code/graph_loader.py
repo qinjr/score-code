@@ -81,8 +81,7 @@ class GraphLoader(object):
 
         start_user_doc = self.user_coll.find_one({'uid': start_uid})
         start_item_doc = self.item_coll.find_one({'iid': start_iid})
-        print(start_user_doc)
-        print(start_item_doc)
+
         for t in range(self.time_slice_num):
             user_1hop_list = start_user_doc['hist_%d'%(t)] #[iid1, iid2, ...]
             item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
