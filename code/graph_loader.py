@@ -128,7 +128,7 @@ class GraphLoader(object):
         return item_1hop, item_2hop
 
 
-    def gen_user_history(self, start_uid, start_iid, pred_time):
+    def gen_user_history(self, start_uid, pred_time):
         user_1hop = []
         user_2hop = []
         
@@ -187,7 +187,8 @@ if __name__ == "__main__":
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
     t = time.time()
-    for uid in [4920679]:
-        for iid in [5010458]:
-            print(graph_loader.gen_history(uid, iid, 39))
-    print('time: {}'.format((time.time() - t)))
+    for uid in [1, 2, 4920679]:
+        print(graph_loader.gen_user_history(uid, 39))
+    for iid in [5010458, 5010459, 5010460]:
+        print(graph_loader.gen_user_history(iid, 39))
+    print('time: {}'.format((time.time() - t) / 6))
