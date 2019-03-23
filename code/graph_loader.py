@@ -165,6 +165,6 @@ if __name__ == "__main__":
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
     t = time.time()
     for uid in range(1, 3):
-        for iid in range(4020696, 4020696 + 3):
+        for iid in range(4920696, 4920696 + 3):
             graph_loader.gen_history(uid, iid)
     print('time: {}'.format((time.time() - t) / 100))
