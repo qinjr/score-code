@@ -40,7 +40,7 @@ class GraphLoader(object):
         if item_feat_dict_file != None:
             with open(item_feat_dict_file, 'rb') as f:
                 self.item_feat_dict = pkl.load(f)
-
+        print('initial completed')
 
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
         if str(uid) in self.user_neg_dict:
@@ -170,4 +170,4 @@ if __name__ == "__main__":
     for uid in range(1, 3):
         for iid in range(4920696, 4920696 + 3):
             graph_loader.gen_history(uid, iid)
-    print('time: {}'.format((time.time() - t) / 100))
+    print('time: {}'.format((time.time() - t) / 9))
