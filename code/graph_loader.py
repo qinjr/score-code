@@ -108,17 +108,19 @@ class GraphLoader(object):
                     user_1hop_list = user_1hop_list + np.random.choice(user_1hop_list, self.obj_per_time_slice - len(user_1hop_list)).tolist()
                 
                 user_1hop_t = []
-                for iid in user_1hop_list and self.item_feat_dict != None:
-                    user_1hop_t.append([iid] + self.item_feat_dict[str(iid)])
-                else:
-                    user_1hop_t.append([iid])
+                for iid in user_1hop_list:
+                    if self.item_feat_dict != None:
+                        user_1hop_t.append([iid] + self.item_feat_dict[str(iid)])
+                    else:
+                        user_1hop_t.append([iid])
                 user_1hop.append(user_1hop_t)
                 
                 user_2hop_t = []
-                for uid in user_2hop_list and self.user_feat_dict != None:
-                    user_2hop_t.append([uid] + self.user_feat_dict[str(uid)])
-                else:
-                    user_2hop_t.append([uid])
+                for uid in user_2hop_list:
+                    if self.user_feat_dict != None:
+                        user_2hop_t.append([uid] + self.user_feat_dict[str(uid)])
+                    else:
+                        user_2hop_t.append([uid])
                 user_2hop.append(user_2hop_t)
             
             # gen item 2 hops history
@@ -144,17 +146,19 @@ class GraphLoader(object):
                     item_1hop_list = item_1hop_list + np.random.choice(item_1hop_list, self.obj_per_time_slice - len(item_1hop_list)).tolist()
                 
                 item_1hop_t = []
-                for uid in item_1hop_list and self.user_feat_dict != None:
-                    item_1hop_t.append([uid] + self.user_feat_dict[str(uid)])
-                else:
-                    item_1hop_t.append([uid])
+                for uid in item_1hop_list:
+                    if self.user_feat_dict != None:
+                        item_1hop_t.append([uid] + self.user_feat_dict[str(uid)])
+                    else:
+                        item_1hop_t.append([uid])
                 item_1hop.append(item_1hop_t)
                 
                 item_2hop_t = []
-                for iid in item_2hop_list and self.item_feat_dict != None:
-                    item_2hop_t.append([iid] + self.item_feat_dict[str(iid)])
-                else:
-                    item_2hop_t.append([iid])
+                for iid in item_2hop_list:
+                    if self.item_feat_dict != None:
+                        item_2hop_t.append([iid] + self.item_feat_dict[str(iid)])
+                    else:
+                        item_2hop_t.append([iid])
                 item_2hop.append(item_2hop_t)
         return user_1hop, user_2hop, item_1hop, item_2hop
 
