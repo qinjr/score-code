@@ -87,10 +87,10 @@ class GraphLoader(object):
             item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
             # if too long
             if len(user_1hop_list) > MAX_LEN:
-                user_1hop_list = np.random.choice(user_1hop_list, MAX_LEN, False)
+                user_1hop_list = np.random.choice(user_1hop_list, MAX_LEN, False).tolist()
             if len(item_1hop_list) > MAX_LEN:
-                item_1hop_list = np.random.choice(item_1hop_list, MAX_LEN, False)
-                
+                item_1hop_list = np.random.choice(item_1hop_list, MAX_LEN, False).tolist()
+
             # gen user 2 hops history
             if user_1hop_list == []:
                 user_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int))
