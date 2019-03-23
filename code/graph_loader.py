@@ -81,8 +81,10 @@ class GraphLoader(object):
 
         start_user_doc = self.user_coll.find_one({'uid': start_uid})
         start_item_doc = self.item_coll.find_one({'iid': start_iid})
-
+        print(start_user_doc)
+        print(start_item_doc)
         for t in range(self.time_slice_num):
+            print(t)
             user_1hop_list = start_user_doc['hist_%d'%(t)] #[iid1, iid2, ...]
             item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
             # gen user 2 hops history
@@ -167,7 +169,7 @@ if __name__ == "__main__":
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
     t = time.time()
-    for uid in range(1, 3):
-        for iid in range(4920696, 4920696 + 3):
+    for uid in [1, 2]:
+        for iid in [5079123, 5055865, 5055862]:
             graph_loader.gen_history(uid, iid)
     print('time: {}'.format((time.time() - t) / 9))
