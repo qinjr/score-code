@@ -2,6 +2,7 @@ import random
 import pymongo
 import pickle as pkl
 import time
+import numpy as np
 
 NEG_SAMPLE_NUM = 9
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
@@ -56,6 +57,16 @@ class GraphLoader(object):
                         target_lines.append(','.join([str(uid), str(neg_iid), str(0)]) + '\n')
         with open(target_file, 'w') as f:
             f.writelines(target_lines)
+        print('generate {} completed'.format(target_file))
+
+    # def get_batch(self, target_file, pred_time):
+    #     label_batch = []
+    #     target_user_batch = []
+    #     target_item_batch = []
+
+    #     with open(target_file, 'r') as f:
+    #         for line in f:
+    #             uid, iid, label
 
 
 if __name__ == "__main__":
