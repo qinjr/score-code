@@ -29,8 +29,12 @@ class GraphLoader(object):
         self.time_slice_num = time_slice_num
     
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
-        user_neg_list = self.user_neg_dict[str(uid)]
-        user_neg_list = [int(iid) for iid in user_neg_list]
+        if str(uid) in self.user_neg_dict:
+            user_neg_list = self.user_neg_dict[str(uid)]
+            user_neg_list = [int(iid) for iid in user_neg_list]
+        else:
+            user_neg_list = []
+        
         if len(user_neg_list) >= neg_sample_num:
             return user_neg_list[:neg_sample_num]
         else:
@@ -43,7 +47,6 @@ class GraphLoader(object):
         cursor = self.user_coll.find({})
         for user_doc in cursor:
             if user_doc['hist_%d'%(pred_time)] != []:
-                t = time.time()
                 uid = user_doc['uid']
                 pos_iids = user_doc['hist_%d'%(pred_time)]
                 for pos_iid in pos_iids:
@@ -51,7 +54,6 @@ class GraphLoader(object):
                     neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
                     for neg_iid in neg_iids:
                         target_lines.append(','.join([str(uid), str(neg_iid), str(0)]) + '\n')
-                print('one user time: {}'.format(time.time() - t))
         with open(target_file, 'w') as f:
             f.writelines(target_lines)
 
