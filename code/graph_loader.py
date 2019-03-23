@@ -73,73 +73,29 @@ class GraphLoader(object):
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
 
-
-    def gen_history(self, start_uid, start_iid, pred_time):
-        user_1hop = []
+    def gen_item_history(self, start_iid, pred_time):
         item_1hop = []
-        user_2hop = []
         item_2hop = []
 
-        start_user_doc = self.user_coll.find_one({'uid': start_uid})
         start_item_doc = self.item_coll.find_one({'iid': start_iid})
+        user_docs = self.user_coll.find({})
+
         for t in range(pred_time):
-            user_1hop_list = start_user_doc['hist_%d'%(t)] #[iid1, iid2, ...]
             item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
             # if too long
-            if len(user_1hop_list) > MAX_LEN:
-                user_1hop_list = np.random.choice(user_1hop_list, MAX_LEN, False).tolist()
             if len(item_1hop_list) > MAX_LEN:
                 item_1hop_list = np.random.choice(item_1hop_list, MAX_LEN, False).tolist()
-
-            # gen user 2 hops history
-            if user_1hop_list == []:
-                user_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
-                user_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
-            else:
-                start_time = time.time()
-                user_2hop_candi = []
-                p_distri = []
-                for iid in user_1hop_list:
-                    item_doc = self.item_coll.find_one({'iid': iid})
-                    degree = len(item_doc['hist_%d'%(t)])
-                    for uid in item_doc['hist_%d'%(t)]:
-                        if uid != start_uid:
-                            user_2hop_candi.append(uid)
-                            p_distri.append(float(1/(degree - 1)))
-                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                user_2hop_list = np.random.choice(user_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                print('point1 time: {}'.format(time.time() - start_time))
-                if len(user_1hop_list) >= self.obj_per_time_slice:
-                    user_1hop_list = np.random.choice(user_1hop_list, self.obj_per_time_slice, replace = False).tolist()
-                else:
-                    user_1hop_list = user_1hop_list + np.random.choice(user_1hop_list, self.obj_per_time_slice - len(user_1hop_list)).tolist()
-                print('point2 time: {}'.format(time.time() - start_time))
-                user_1hop_t = []
-                for iid in user_1hop_list:
-                    if self.item_feat_dict != None:
-                        user_1hop_t.append([iid] + self.item_feat_dict[str(iid)])
-                    else:
-                        user_1hop_t.append([iid])
-                user_1hop.append(user_1hop_t)
-                
-                user_2hop_t = []
-                for uid in user_2hop_list:
-                    if self.user_feat_dict != None:
-                        user_2hop_t.append([uid] + self.user_feat_dict[str(uid)])
-                    else:
-                        user_2hop_t.append([uid])
-                user_2hop.append(user_2hop_t)
-                print('point3 time: {}'.format(time.time() - start_time))
+            
             # gen item 2 hops history
             if item_1hop_list == []:
-                item_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int))
-                item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int))
+                item_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
+                item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
             else:
                 start_time = time.time()
                 item_2hop_candi = []
                 p_distri = []
                 for uid in item_1hop_list:
-                    user_doc = self.user_coll.find_one({'uid': uid})
+                    user_doc = user_docs[uid - 1]
                     degree = len(user_doc['hist_%d'%(t)])
                     for iid in user_doc['hist_%d'%(t)]:
                         if iid != start_iid:
@@ -147,12 +103,12 @@ class GraphLoader(object):
                             p_distri.append(float(1/(degree - 1)))
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                 item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                print('point1 time: {}'.format(time.time() - start_time))
+
                 if len(item_1hop_list) >= self.obj_per_time_slice:
                     item_1hop_list = np.random.choice(item_1hop_list, self.obj_per_time_slice, replace = False).tolist()
                 else:
                     item_1hop_list = item_1hop_list + np.random.choice(item_1hop_list, self.obj_per_time_slice - len(item_1hop_list)).tolist()
-                print('point2 time: {}'.format(time.time() - start_time))
+
                 item_1hop_t = []
                 for uid in item_1hop_list:
                     if self.user_feat_dict != None:
@@ -168,8 +124,63 @@ class GraphLoader(object):
                     else:
                         item_2hop_t.append([iid])
                 item_2hop.append(item_2hop_t)
-                print('point3 time: {}'.format(time.time() - start_time))
-        return user_1hop, user_2hop, item_1hop, item_2hop
+
+        return item_1hop, item_2hop
+
+
+    def gen_user_history(self, start_uid, start_iid, pred_time):
+        user_1hop = []
+        user_2hop = []
+        
+        start_user_doc = self.user_coll.find_one({'uid': start_uid})
+        item_docs = self.item_coll.find({})
+        for t in range(pred_time):
+            user_1hop_list = start_user_doc['hist_%d'%(t)] #[iid1, iid2, ...]
+            
+            # if too long
+            if len(user_1hop_list) > MAX_LEN:
+                user_1hop_list = np.random.choice(user_1hop_list, MAX_LEN, False).tolist()
+            
+            # gen user 2 hops history
+            if user_1hop_list == []:
+                user_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
+                user_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
+            else:
+                start_time = time.time()
+                user_2hop_candi = []
+                p_distri = []
+                for iid in user_1hop_list:
+                    item_doc = item_docs[iid - self.user_num - 1]
+                    degree = len(item_doc['hist_%d'%(t)])
+                    for uid in item_doc['hist_%d'%(t)]:
+                        if uid != start_uid:
+                            user_2hop_candi.append(uid)
+                            p_distri.append(float(1/(degree - 1)))
+                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
+                user_2hop_list = np.random.choice(user_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+
+                if len(user_1hop_list) >= self.obj_per_time_slice:
+                    user_1hop_list = np.random.choice(user_1hop_list, self.obj_per_time_slice, replace = False).tolist()
+                else:
+                    user_1hop_list = user_1hop_list + np.random.choice(user_1hop_list, self.obj_per_time_slice - len(user_1hop_list)).tolist()
+
+                user_1hop_t = []
+                for iid in user_1hop_list:
+                    if self.item_feat_dict != None:
+                        user_1hop_t.append([iid] + self.item_feat_dict[str(iid)])
+                    else:
+                        user_1hop_t.append([iid])
+                user_1hop.append(user_1hop_t)
+                
+                user_2hop_t = []
+                for uid in user_2hop_list:
+                    if self.user_feat_dict != None:
+                        user_2hop_t.append([uid] + self.user_feat_dict[str(uid)])
+                    else:
+                        user_2hop_t.append([uid])
+                user_2hop.append(user_2hop_t)
+            
+        return user_1hop, user_2hop
 
 if __name__ == "__main__":
     graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 'ccmr', DATA_DIR_CCMR + 'user_neg_dict.pkl', OBJ_PER_TIME_SLICE_CCMR, 1, 5)
