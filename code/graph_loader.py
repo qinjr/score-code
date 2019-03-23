@@ -170,5 +170,5 @@ if __name__ == "__main__":
     t = time.time()
     for uid in [1]:
         for iid in [5079123]:
-            graph_loader.gen_history(uid, iid)
+            graph_loader.gen_history(uid, iid, 40)
     print('time: {}'.format((time.time() - t)))
