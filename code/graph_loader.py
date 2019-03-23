@@ -165,6 +165,5 @@ if __name__ == "__main__":
     t = time.time()
     for uid in range(1, 10):
         for iid in range(4020696, 4020696 + 10):
-            tup = graph_loader.gen_history()
-            print(tup)
+            graph_loader.gen_history(uid, iid)
     print('time: {}'.format((time.time() - t) / 100))
