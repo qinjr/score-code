@@ -93,9 +93,10 @@ class GraphLoader(object):
 
             # gen user 2 hops history
             if user_1hop_list == []:
-                user_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int))
-                user_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int))
+                user_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
+                user_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
             else:
+                start_time = time.time()
                 user_2hop_candi = []
                 p_distri = []
                 for iid in user_1hop_list:
@@ -107,12 +108,12 @@ class GraphLoader(object):
                             p_distri.append(float(1/(degree - 1)))
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                 user_2hop_list = np.random.choice(user_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-
+                print('point1 time: {}'.format(time.time() - start_time))
                 if len(user_1hop_list) >= self.obj_per_time_slice:
                     user_1hop_list = np.random.choice(user_1hop_list, self.obj_per_time_slice, replace = False).tolist()
                 else:
                     user_1hop_list = user_1hop_list + np.random.choice(user_1hop_list, self.obj_per_time_slice - len(user_1hop_list)).tolist()
-                
+                print('point2 time: {}'.format(time.time() - start_time))
                 user_1hop_t = []
                 for iid in user_1hop_list:
                     if self.item_feat_dict != None:
@@ -128,12 +129,13 @@ class GraphLoader(object):
                     else:
                         user_2hop_t.append([uid])
                 user_2hop.append(user_2hop_t)
-            
+                print('point3 time: {}'.format(time.time() - start_time))
             # gen item 2 hops history
             if item_1hop_list == []:
                 item_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int))
                 item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int))
             else:
+                start_time = time.time()
                 item_2hop_candi = []
                 p_distri = []
                 for uid in item_1hop_list:
@@ -145,12 +147,12 @@ class GraphLoader(object):
                             p_distri.append(float(1/(degree - 1)))
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                 item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                
+                print('point1 time: {}'.format(time.time() - start_time))
                 if len(item_1hop_list) >= self.obj_per_time_slice:
                     item_1hop_list = np.random.choice(item_1hop_list, self.obj_per_time_slice, replace = False).tolist()
                 else:
                     item_1hop_list = item_1hop_list + np.random.choice(item_1hop_list, self.obj_per_time_slice - len(item_1hop_list)).tolist()
-
+                print('point2 time: {}'.format(time.time() - start_time))
                 item_1hop_t = []
                 for uid in item_1hop_list:
                     if self.user_feat_dict != None:
@@ -166,6 +168,7 @@ class GraphLoader(object):
                     else:
                         item_2hop_t.append([iid])
                 item_2hop.append(item_2hop_t)
+                print('point3 time: {}'.format(time.time() - start_time))
         return user_1hop, user_2hop, item_1hop, item_2hop
 
 if __name__ == "__main__":
