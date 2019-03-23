@@ -82,10 +82,9 @@ class GraphLoader(object):
         start_user_doc = self.user_coll.find_one({'uid': start_uid})
         start_item_doc = self.item_coll.find_one({'iid': start_iid})
         for t in range(pred_time):
+            print(t)
             user_1hop_list = start_user_doc['hist_%d'%(t)] #[iid1, iid2, ...]
             item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
-            print(user_1hop_list)
-            print(item_1hop_list)
             # gen user 2 hops history
             if user_1hop_list == []:
                 user_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int))
@@ -102,12 +101,12 @@ class GraphLoader(object):
                             p_distri.append(float(1/(degree - 1)))
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                 user_2hop_list = np.random.choice(user_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-
+                print('23')
                 if len(user_1hop_list) >= self.obj_per_time_slice:
                     user_1hop_list = np.random.choice(user_1hop_list, self.obj_per_time_slice, replace = False).tolist()
                 else:
                     user_1hop_list = user_1hop_list + np.random.choice(user_1hop_list, self.obj_per_time_slice - len(user_1hop_list)).tolist()
-                
+                print('hhhh')
                 user_1hop_t = []
                 for iid in user_1hop_list:
                     if self.item_feat_dict != None:
@@ -140,12 +139,12 @@ class GraphLoader(object):
                             p_distri.append(float(1/(degree - 1)))
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                 item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-
+                print('233')
                 if len(item_1hop_list) >= self.obj_per_time_slice:
                     item_1hop_list = np.random.choice(item_1hop_list, self.obj_per_time_slice, replace = False).tolist()
                 else:
                     item_1hop_list = item_1hop_list + np.random.choice(item_1hop_list, self.obj_per_time_slice - len(item_1hop_list)).tolist()
-                
+                print('hsd')
                 item_1hop_t = []
                 for uid in item_1hop_list:
                     if self.user_feat_dict != None:
