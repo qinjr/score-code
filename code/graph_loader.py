@@ -173,7 +173,7 @@ if __name__ == "__main__":
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
     t = time.time()
-    for uid in [1]:
-        for iid in [5079123]:
-            graph_loader.gen_history(uid, iid, 40)
+    for uid in [4920679]:
+        for iid in [5010458]:
+            graph_loader.gen_history(uid, iid, 39)
     print('time: {}'.format((time.time() - t)))
