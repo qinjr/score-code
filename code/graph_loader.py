@@ -16,7 +16,7 @@ ITEM_NUM_CCMR = 190129
 
 class GraphLoader(object):
     def __init__(self, time_slice_num, db_name, user_neg_dict_file, obj_per_time_slice,
-                 user_fnum, item_fnum, user_feat_dict_file = None, item_feat_dict_file = None):
+                 user_fnum, item_fnum, target_file, user_feat_dict_file = None, item_feat_dict_file = None):
         self.url = "mongodb://localhost:27017/"
         self.client = pymongo.MongoClient(self.url)
         self.db = self.client[db_name]
@@ -41,8 +41,11 @@ class GraphLoader(object):
         if item_feat_dict_file != None:
             with open(item_feat_dict_file, 'rb') as f:
                 self.item_feat_dict = pkl.load(f)
-        print('initial completed')
+        
+        self.target_f = open(target_file, 'r')
 
+        print('initial completed')
+    
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
         if str(uid) in self.user_neg_dict:
             user_neg_list = self.user_neg_dict[str(uid)]
@@ -65,68 +68,12 @@ class GraphLoader(object):
                 uid = user_doc['uid']
                 pos_iids = user_doc['hist_%d'%(pred_time)]
                 for pos_iid in pos_iids:
-                    target_lines.append(','.join([str(uid), str(pos_iid), str(1)]) + '\n')
                     neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
-                    for neg_iid in neg_iids:
-                        target_lines.append(','.join([str(uid), str(neg_iid), str(0)]) + '\n')
+                    neg_iids = [str(neg_iid) for neg_iid in neg_iids]
+                    target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
         with open(target_file, 'w') as f:
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
-
-    def gen_item_history(self, start_iid, pred_time):
-        item_1hop = []
-        item_2hop = []
-
-        start_item_doc = self.item_coll.find_one({'iid': start_iid})
-        user_docs = self.user_coll.find({})
-
-        for t in range(pred_time):
-            item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
-            # if too long
-            if len(item_1hop_list) > MAX_LEN:
-                item_1hop_list = np.random.choice(item_1hop_list, MAX_LEN, False).tolist()
-            
-            # gen item 2 hops history
-            if item_1hop_list == []:
-                item_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
-                item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
-            else:
-                start_time = time.time()
-                item_2hop_candi = []
-                p_distri = []
-                for uid in item_1hop_list:
-                    user_doc = user_docs[uid - 1]
-                    degree = len(user_doc['hist_%d'%(t)])
-                    for iid in user_doc['hist_%d'%(t)]:
-                        if iid != start_iid:
-                            item_2hop_candi.append(iid)
-                            p_distri.append(float(1/(degree - 1)))
-                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-
-                if len(item_1hop_list) >= self.obj_per_time_slice:
-                    item_1hop_list = np.random.choice(item_1hop_list, self.obj_per_time_slice, replace = False).tolist()
-                else:
-                    item_1hop_list = item_1hop_list + np.random.choice(item_1hop_list, self.obj_per_time_slice - len(item_1hop_list)).tolist()
-
-                item_1hop_t = []
-                for uid in item_1hop_list:
-                    if self.user_feat_dict != None:
-                        item_1hop_t.append([uid] + self.user_feat_dict[str(uid)])
-                    else:
-                        item_1hop_t.append([uid])
-                item_1hop.append(item_1hop_t)
-                
-                item_2hop_t = []
-                for iid in item_2hop_list:
-                    if self.item_feat_dict != None:
-                        item_2hop_t.append([iid] + self.item_feat_dict[str(iid)])
-                    else:
-                        item_2hop_t.append([iid])
-                item_2hop.append(item_2hop_t)
-
-        return item_1hop, item_2hop
-
 
     def gen_user_history(self, start_uid, pred_time):
         user_1hop = []
@@ -182,13 +129,109 @@ class GraphLoader(object):
             
         return user_1hop, user_2hop
 
+    def gen_item_history(self, start_iid, pred_time):
+        item_1hop = []
+        item_2hop = []
+
+        start_item_doc = self.item_coll.find_one({'iid': start_iid})
+        user_docs = self.user_coll.find({})
+
+        for t in range(pred_time):
+            item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
+            # if too long
+            if len(item_1hop_list) > MAX_LEN:
+                item_1hop_list = np.random.choice(item_1hop_list, MAX_LEN, False).tolist()
+            
+            # gen item 2 hops history
+            if item_1hop_list == []:
+                item_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
+                item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
+            else:
+                start_time = time.time()
+                item_2hop_candi = []
+                p_distri = []
+                for uid in item_1hop_list:
+                    user_doc = user_docs[uid - 1]
+                    degree = len(user_doc['hist_%d'%(t)])
+                    for iid in user_doc['hist_%d'%(t)]:
+                        if iid != start_iid:
+                            item_2hop_candi.append(iid)
+                            p_distri.append(float(1/(degree - 1)))
+                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
+                item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+
+                if len(item_1hop_list) >= self.obj_per_time_slice:
+                    item_1hop_list = np.random.choice(item_1hop_list, self.obj_per_time_slice, replace = False).tolist()
+                else:
+                    item_1hop_list = item_1hop_list + np.random.choice(item_1hop_list, self.obj_per_time_slice - len(item_1hop_list)).tolist()
+
+                item_1hop_t = []
+                for uid in item_1hop_list:
+                    if self.user_feat_dict != None:
+                        item_1hop_t.append([uid] + self.user_feat_dict[str(uid)])
+                    else:
+                        item_1hop_t.append([uid])
+                item_1hop.append(item_1hop_t)
+                
+                item_2hop_t = []
+                for iid in item_2hop_list:
+                    if self.item_feat_dict != None:
+                        item_2hop_t.append([iid] + self.item_feat_dict[str(iid)])
+                    else:
+                        item_2hop_t.append([iid])
+                item_2hop.append(item_2hop_t)
+
+        return item_1hop, item_2hop
+
+    def get_batch(self, batch_size, pred_time):
+        if batch_size % (1 + NEG_SAMPLE_NUM) != 0:
+            print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
+            exit(1)
+        line_num = batch_size / 10
+
+        user_1hop_batch = []
+        user_2hop_batch = []
+        item_1hop_batch = []
+        item_2hop_batch = []
+        target_user_batch = []
+        target_item_batch = []
+        label_batch = []
+
+        for b in range(line_num):
+            line = self.target_f.readline()
+            if line == '':
+                break
+            line_list = line[:-1].split(',')
+            uid = int(line_list[0])
+            user_1hop, user_2hop = self.gen_user_history(uid, pred_time)
+            for i in range(1 + NEG_SAMPLE_NUM):
+                iid = int(line_list[1 + i])
+                item_1hop, item_2hop = self.gen_item_history(iid, pred_time)
+                user_1hop_batch.append(user_1hop)
+                user_2hop_batch.append(user_2hop)
+                item_1hop_batch.append(item_1hop)
+                item_2hop_batch.append(item_2hop)
+                target_user_batch.append(uid)
+                target_item_batch.append(iid)
+                if i == 0:
+                    label_batch.append(1)
+                else:
+                    label_batch.append(0)
+        return user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, 
+                target_user_batch, target_item_batch, label_batch
+
+
+
 if __name__ == "__main__":
-    graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 'ccmr', DATA_DIR_CCMR + 'user_neg_dict.pkl', OBJ_PER_TIME_SLICE_CCMR, 1, 5)
-    # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
-    # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
-    t = time.time()
-    for uid in [1, 2, 4920679]:
-        print(graph_loader.gen_user_history(uid, 39))
-    for iid in [5010458, 5010459, 5010460]:
-        print(graph_loader.gen_item_history(iid, 39))
-    print('time: {}'.format((time.time() - t) / 6))
+    graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
+                            'ccmr', 
+                            DATA_DIR_CCMR + 'user_neg_dict.pkl', 
+                            OBJ_PER_TIME_SLICE_CCMR, 
+                            1, 
+                            5,
+                            DATA_DIR_CCMR + 'target_train.txt', 
+                            None, 
+                            DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
+    graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
+    # graph_loader.get_batch()
