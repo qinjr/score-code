@@ -200,6 +200,7 @@ class GraphLoader(object):
             node_1hop, node_2hop = self.node_1hop, self.node_2hop
             self.node_1hop = [None] * self.time_slice_num
             self.node_2hop = [None] * self.time_slice_num
+            print(node_1hop, node_2hop)
             return node_1hop, node_2hop
 
 
@@ -215,6 +216,7 @@ class GraphLoader(object):
             node_1hop, node_2hop = self.node_1hop, self.node_2hop
             self.node_1hop = [None] * self.time_slice_num
             self.node_2hop = [None] * self.time_slice_num
+            print(node_1hop, node_2hop)
             return node_1hop, node_2hop
         
     def __next__(self):
