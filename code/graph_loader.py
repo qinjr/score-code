@@ -50,6 +50,9 @@ class GraphLoader(object):
 
         print('graph loader initial completed')
     
+    def __iter__(self):
+        return self
+        
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
         if str(uid) in self.user_neg_dict:
             user_neg_list = self.user_neg_dict[str(uid)]
