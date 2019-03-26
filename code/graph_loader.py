@@ -16,10 +16,74 @@ OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
+class GraphHandler(object):
+    def __init__(self, db_name):
+        # mongo client and load data
+        self.url = "mongodb://localhost:27017/"
+        self.client = pymongo.MongoClient(self.url)
+        self.db = self.client[db_name]
+        self.user_coll = self.db.user
+        self.item_coll = self.db.item
+        self.user_cursor = self.user_coll.find({})
+        self.item_cursor = self.item_coll.find({})
+        self.user_docs = []
+        self.item_docs = []
+        for user_docs in self.user_cursor:
+            self.user_docs.append(user_docs)
+        for item_docs in self.item_cursor:
+            self.item_docs.append(item_docs)
+        self.user_num = self.user_coll.find().count()
+        self.item_num = self.item_coll.find().count()
+        print('load graph data completed, graph handler initiated')
+    
+    def get_node_doc(self, node_type, node_id):
+        if node_type == 'user':
+            return self.user_docs[1 + node_id]
+        elif node_type == 'item':
+            return self.item_docs[1 + self.user_num + node_id]
+        else:
+            print('WRONG NODE TYPE: {}'.format(node_type))
+            exit(1)
+    
+    def get_user_item_num(self):
+        return self.user_num, self.item_num
+    
+    def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
+        if str(uid) in self.user_neg_dict:
+            user_neg_list = self.user_neg_dict[str(uid)]
+            user_neg_list = [int(iid) for iid in user_neg_list]
+        else:
+            user_neg_list = []
+        
+        if len(user_neg_list) >= neg_sample_num:
+            return user_neg_list[:neg_sample_num]
+        else:
+            for i in range(neg_sample_num - len(user_neg_list)):
+                user_neg_list.append(random.randint(iid_start, iid_end))
+            return user_neg_list
+
+    def gen_target_file(self, neg_sample_num, target_file, pred_time):
+        target_lines = []
+        cursor = self.user_coll.find({})
+        for user_doc in cursor:
+            if user_doc['hist_%d'%(pred_time)] != []:
+                uid = user_doc['uid']
+                pos_iids = user_doc['hist_%d'%(pred_time)]
+                for pos_iid in pos_iids:
+                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
+                    neg_iids = [str(neg_iid) for neg_iid in neg_iids]
+                    target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
+        with open(target_file, 'w') as f:
+            f.writelines(target_lines)
+        print('generate {} completed'.format(target_file))
+
+
 class GraphLoader(object):
-    def __init__(self, time_slice_num, db_name, user_neg_dict_file, obj_per_time_slice,
+    def __init__(self, time_slice_num, graph_handler, user_neg_dict_file, obj_per_time_slice,
                  user_fnum, item_fnum, target_file, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
+        self.graph_loader = graph_handler
+
         # multi-thread
         self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
         self.worker_n = WORKER_N
@@ -37,23 +101,24 @@ class GraphLoader(object):
             thread.start()
         
         # mongo client and load data
-        self.url = "mongodb://localhost:27017/"
-        self.client = pymongo.MongoClient(self.url)
-        self.db = self.client[db_name]
-        self.user_coll = self.db.user
-        self.item_coll = self.db.item
-        self.user_cursor = self.user_coll.find({})
-        self.item_cursor = self.item_coll.find({})
-        self.user_docs = []
-        self.item_docs = []
-        for user_docs in self.user_cursor:
-            self.user_docs.append(user_docs)
-        for item_docs in self.item_cursor:
-            self.item_docs.append(item_docs)
-        print('load graph data completed')
+        # self.url = "mongodb://localhost:27017/"
+        # self.client = pymongo.MongoClient(self.url)
+        # self.db = self.client[db_name]
+        # self.user_coll = self.db.user
+        # self.item_coll = self.db.item
+        # self.user_cursor = self.user_coll.find({})
+        # self.item_cursor = self.item_coll.find({})
+        # self.user_docs = []
+        # self.item_docs = []
+        # for user_docs in self.user_cursor:
+        #     self.user_docs.append(user_docs)
+        # for item_docs in self.item_cursor:
+        #     self.item_docs.append(item_docs)
+        # print('load graph data completed')
 
-        self.user_num = self.user_coll.find().count()
-        self.item_num = self.item_coll.find().count()
+        # self.user_num = self.user_coll.find().count()
+        # self.item_num = self.item_coll.find().count()
+        self.user_num, self.item_num = self.graph_handler.get_user_item_num()
         
         self.obj_per_time_slice = obj_per_time_slice
         with open(user_neg_dict_file, 'rb') as f:
@@ -82,35 +147,6 @@ class GraphLoader(object):
     
     def __iter__(self):
         return self
-
-    def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
-        if str(uid) in self.user_neg_dict:
-            user_neg_list = self.user_neg_dict[str(uid)]
-            user_neg_list = [int(iid) for iid in user_neg_list]
-        else:
-            user_neg_list = []
-        
-        if len(user_neg_list) >= neg_sample_num:
-            return user_neg_list[:neg_sample_num]
-        else:
-            for i in range(neg_sample_num - len(user_neg_list)):
-                user_neg_list.append(random.randint(iid_start, iid_end))
-            return user_neg_list
-
-    def gen_target_file(self, neg_sample_num, target_file):
-        target_lines = []
-        cursor = self.user_coll.find({})
-        for user_doc in cursor:
-            if user_doc['hist_%d'%(self.pred_time)] != []:
-                uid = user_doc['uid']
-                pos_iids = user_doc['hist_%d'%(self.pred_time)]
-                for pos_iid in pos_iids:
-                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
-                    neg_iids = [str(neg_iid) for neg_iid in neg_iids]
-                    target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
-        with open(target_file, 'w') as f:
-            f.writelines(target_lines)
-        print('generate {} completed'.format(target_file))
 
     def gen_node_neighbor(self, name):
         node_1hop = []
@@ -278,8 +314,9 @@ class GraphLoader(object):
 
 
 if __name__ == "__main__":
+    graph_handler = GraphHandler('ccmr')
     graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
-                            'ccmr', 
+                            graph_handler, 
                             DATA_DIR_CCMR + 'user_neg_dict.pkl', 
                             OBJ_PER_TIME_SLICE_CCMR, 
                             1, 
