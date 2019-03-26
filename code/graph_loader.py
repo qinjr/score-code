@@ -69,7 +69,7 @@ class GraphLoader(object):
         self.node_2hop = [None] * self.time_slice_num
 
         for i in range(self.worker_n):
-            thread = multiprocessing.Process(target=self.gen_node_neighbor, args[i])
+            thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
             thread.daemon = True
             self.thread_list.append(thread)
             thread.start()
