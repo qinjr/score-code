@@ -23,8 +23,15 @@ class GraphLoader(object):
         self.db = self.client[db_name]
         self.user_coll = self.db.user
         self.item_coll = self.db.item
-        self.user_docs = self.user_coll.find({})
-        self.item_docs = self.item_coll.find({})
+        self.user_cursor = self.user_coll.find({})
+        self.item_cursor = self.item_coll.find({})
+        self.user_docs = []
+        self.item_docs = []
+        for user_docs in self.user_cursor:
+            self.user_docs.append(user_docs)
+        for item_docs in self.item_cursor:
+            self.item_docs.append(item_docs)
+        print('load graph data completed')
         
         self.user_num = self.user_coll.find().count()
         self.item_num = self.item_coll.find().count()
