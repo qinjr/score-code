@@ -23,9 +23,12 @@ class GraphLoader(object):
         self.db = self.client[db_name]
         self.user_coll = self.db.user
         self.item_coll = self.db.item
+        self.user_docs = self.user_coll.find({})
+        self.item_docs = self.item_coll.find({})
+        
         self.user_num = self.user_coll.find().count()
         self.item_num = self.item_coll.find().count()
-
+        
         self.obj_per_time_slice = obj_per_time_slice
         with open(user_neg_dict_file, 'rb') as f:
             self.user_neg_dict = pkl.load(f)
@@ -87,7 +90,6 @@ class GraphLoader(object):
         user_2hop = []
         
         start_user_doc = self.user_coll.find_one({'uid': start_uid})
-        item_docs = self.item_coll.find({})
         for t in range(self.pred_time):
             user_1hop_list = start_user_doc['hist_%d'%(t)] #[iid1, iid2, ...]
             
@@ -104,7 +106,7 @@ class GraphLoader(object):
                 user_2hop_candi = []
                 p_distri = []
                 for iid in user_1hop_list:
-                    item_doc = item_docs[iid - self.user_num - 1]
+                    item_doc = self.item_docs[iid - self.user_num - 1]
                     degree = len(item_doc['hist_%d'%(t)])
                     for uid in item_doc['hist_%d'%(t)]:
                         if uid != start_uid:
@@ -141,7 +143,6 @@ class GraphLoader(object):
         item_2hop = []
 
         start_item_doc = self.item_coll.find_one({'iid': start_iid})
-        user_docs = self.user_coll.find({})
 
         for t in range(self.pred_time):
             item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
@@ -158,7 +159,7 @@ class GraphLoader(object):
                 item_2hop_candi = []
                 p_distri = []
                 for uid in item_1hop_list:
-                    user_doc = user_docs[uid - 1]
+                    user_doc = self.user_docs[uid - 1]
                     degree = len(user_doc['hist_%d'%(t)])
                     for iid in user_doc['hist_%d'%(t)]:
                         if iid != start_iid:
