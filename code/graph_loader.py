@@ -3,9 +3,11 @@ import pymongo
 import pickle as pkl
 import time
 import numpy as np
+import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
+WORKER_N = 16
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
@@ -57,6 +59,20 @@ class GraphLoader(object):
 
         self.batch_size = batch_size
         self.pred_time = pred_time
+        
+        # multi-thread
+        self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
+        self.worker_n = WORKER_N
+        self.worker_done = multiprocessing.Value('d', self.time_slice_num)
+        self.thread_list = []
+        self.node_1hop = [None] * self.time_slice_num
+        self.node_2hop = [None] * self.time_slice_num
+
+        for i in range(self.worker_n):
+            thread = multiprocessing.Process(target=self.gen_node_neighbor)
+            thread.daemon = True
+            self.thread_list.append(thread)
+            thread.start()
 
         print('graph loader initial completed')
     
@@ -92,118 +108,115 @@ class GraphLoader(object):
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
 
-    def gen_user_history(self, start_uid):
-        user_1hop = []
-        user_2hop = []
+    def gen_node_neighbor(self):
+        node_1hop = []
+        node_2hop = []
         
-        start_user_doc = self.user_coll.find_one({'uid': start_uid})
-        for t in range(self.pred_time):
-            user_1hop_list = start_user_doc['hist_%d'%(t)] #[iid1, iid2, ...]
+        while self.work_q.empty() == False and self.worker_done.value != self.time_slice_num:
+            start_node_id, node_type, time_slice = self.work_q.get()
+            if node_type == 'user':
+                start_node_doc = self.user_coll.find_one({'uid': start_node_id})
+                node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
+                node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
+                
+                node_1hop_nei_docs = self.item_docs
+                node_1hop_nei_fnum = self.item_fnum
+                node_1hop_nei_feat_dict = self.item_feat_dict
+                node_2hop_nei_docs = self.user_docs
+                node_2hop_nei_fnum = self.user_fnum
+                node_2hop_nei_feat_dict = self.user_feat_dict
+
+                index_reduce = self.user_num
+
+            elif node_type == 'item':
+                start_node_doc = self.item_coll.find_one({'iid': start_node_id})
+                node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
+                node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
+
+                node_1hop_nei_docs = self.user_docs
+                node_1hop_nei_fnum = self.user_fnum
+                node_1hop_nei_feat_dict = self.user_feat_dict
+                node_2hop_nei_docs = self.item_docs
+                node_2hop_nei_fnum = self.item_fnum
+                node_2hop_nei_feat_dict = self.item_feat_dict
+
+                index_reduce = 0
             
-            # if too long
-            if len(user_1hop_list) > MAX_LEN:
-                user_1hop_list = np.random.choice(user_1hop_list, MAX_LEN, False).tolist()
+            node_1hop_list = start_node_doc['hist_%d'%(pred_time)] #[iid1, iid2, ...]
             
-            # gen user 2 hops history
-            if user_1hop_list == []:
-                user_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
-                user_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
+            # gen node 2 hops history
+            if node_1hop_list == []:
+                node_1hop.append(node_1hop_dummy)
+                node_2hop.append(node_2hop_dummy)
             else:
                 # deal with 1hop
-                if len(user_1hop_list) >= self.obj_per_time_slice:
-                    user_1hop_list = np.random.choice(user_1hop_list, self.obj_per_time_slice, replace = False).tolist()
+                if len(node_1hop_list) >= self.obj_per_time_slice:
+                    node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
                 else:
-                    user_1hop_list = user_1hop_list + np.random.choice(user_1hop_list, self.obj_per_time_slice - len(user_1hop_list)).tolist()
+                    node_1hop_list = node_1hop_list + np.random.choice(node_1hop_list, self.obj_per_time_slice - len(node_1hop_list)).tolist()
 
-                user_1hop_t = []
-                for iid in user_1hop_list:
-                    if self.item_feat_dict != None:
-                        user_1hop_t.append([iid] + self.item_feat_dict[str(iid)])
+                node_1hop_t = []
+                for node_id in node_1hop_list:
+                    if node_1hop_nei_feat_dict != None:
+                        node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
                     else:
-                        user_1hop_t.append([iid])
-                user_1hop.append(user_1hop_t)
+                        node_1hop_t.append([node_id])
+                self.node_1hop[time_slice] = node_1hop_t
 
                 # deal with 2hop
-                user_2hop_candi = []
+                node_2hop_candi = []
                 p_distri = []
-                for iid in user_1hop_list:
-                    item_doc = self.item_docs[iid - self.user_num - 1]
-                    degree = len(item_doc['hist_%d'%(t)])
-                    for uid in item_doc['hist_%d'%(t)]:
-                        if uid != start_uid:
-                            user_2hop_candi.append(uid)
+                for node_id in node_1hop_list:
+                    node_1hop_nei_doc = node_1hop_nei_docs[node_id - index_reduce - 1]
+                    degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
+                    for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
+                        if node_2hop_id != start_node_id:
+                            node_2hop_candi.append(node_2hop_id)
                             p_distri.append(float(1/(degree - 1)))
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                user_2hop_list = np.random.choice(user_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                if user_2hop_list != []:
-                    user_2hop_t = []
-                    for uid in user_2hop_list:
-                        if self.user_feat_dict != None:
-                            user_2hop_t.append([uid] + self.user_feat_dict[str(uid)])
+                node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+                if node_2hop_list != []:
+                    node_2hop_t = []
+                    for node_2hop_id in node_2hop_list:
+                        if node_2hop_nei_feat_dict != None:
+                            node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                         else:
-                            user_2hop_t.append([uid])
-                    user_2hop.append(user_2hop_t)
+                            node_2hop_t.append([node_2hop_id])
+                    self.node_2hop[time_slice] = node_2hop_t
                 else:
-                    user_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
-            
-        return user_1hop, user_2hop
+                    self.node_2hop[time_slice] = node_2hop_dummy
+            with self.worker_done.get_lock():
+                self.worker_done.value += 1
+
+    def gen_user_history(self, start_uid):
+        while self.work_q.empty() == False:
+            continue
+        
+        for i in range(self.time_slice_num):
+            self.work_q.put((start_uid, 'user', i))
+        with self.worker_done.get_lock():
+            self.worker_done.value = 0
+        while self.worker_done == self.time_slice_num and self.work_q.empty():
+            node_1hop, node_2hop = self.node_1hop, self.node_2hop
+            self.node_1hop = [None] * self.time_slice_num
+            self.node_2hop = [None] * self.time_slice_num
+            return node_1hop, node_2hop
+
 
     def gen_item_history(self, start_iid):
-        item_1hop = []
-        item_2hop = []
-
-        start_item_doc = self.item_coll.find_one({'iid': start_iid})
-
-        for t in range(self.pred_time):
-            item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
-            # if too long
-            if len(item_1hop_list) > MAX_LEN:
-                item_1hop_list = np.random.choice(item_1hop_list, MAX_LEN, False).tolist()
-            
-            # gen item 2 hops history
-            if item_1hop_list == []:
-                item_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
-                item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
-            else:
-                # deal with 1hop
-                if len(item_1hop_list) >= self.obj_per_time_slice:
-                    item_1hop_list = np.random.choice(item_1hop_list, self.obj_per_time_slice, replace = False).tolist()
-                else:
-                    item_1hop_list = item_1hop_list + np.random.choice(item_1hop_list, self.obj_per_time_slice - len(item_1hop_list)).tolist()
-
-                item_1hop_t = []
-                for uid in item_1hop_list:
-                    if self.user_feat_dict != None:
-                        item_1hop_t.append([uid] + self.user_feat_dict[str(uid)])
-                    else:
-                        item_1hop_t.append([uid])
-                item_1hop.append(item_1hop_t)
-
-                # deal with 2hop
-                item_2hop_candi = []
-                p_distri = []
-                for uid in item_1hop_list:
-                    user_doc = self.user_docs[uid - 1]
-                    degree = len(user_doc['hist_%d'%(t)])
-                    for iid in user_doc['hist_%d'%(t)]:
-                        if iid != start_iid:
-                            item_2hop_candi.append(iid)
-                            p_distri.append(float(1/(degree - 1)))
-                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                if item_2hop_candi != []:
-                    item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                    item_2hop_t = []
-                    for iid in item_2hop_list:
-                        if self.item_feat_dict != None:
-                            item_2hop_t.append([iid] + self.item_feat_dict[str(iid)])
-                        else:
-                            item_2hop_t.append([iid])
-                    item_2hop.append(item_2hop_t)
-                else:
-                    item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
-
-        return item_1hop, item_2hop
-
+        while self.work_q.empty() == False:
+            continue
+        
+        for i in range(self.time_slice_num):
+            self.work_q.put((start_iid, 'item', i))
+        with self.worker_done.get_lock():
+            self.worker_done.value = 0
+        while self.worker_done == self.time_slice_num and self.work_q.empty():
+            node_1hop, node_2hop = self.node_1hop, self.node_2hop
+            self.node_1hop = [None] * self.time_slice_num
+            self.node_2hop = [None] * self.time_slice_num
+            return node_1hop, node_2hop
+        
     def __next__(self):
         if self.batch_size % (1 + NEG_SAMPLE_NUM) != 0:
             print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
@@ -262,4 +275,5 @@ if __name__ == "__main__":
     t = time.time()
     for batch_data in graph_loader:
         print('batch time: {}'.format(time.time() - t))
-        t = time.time()
+        break
+        # t = time.time()
