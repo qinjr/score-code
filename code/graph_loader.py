@@ -52,7 +52,7 @@ class GraphLoader(object):
     
     def __iter__(self):
         return self
-        
+
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
         if str(uid) in self.user_neg_dict:
             user_neg_list = self.user_neg_dict[str(uid)]
@@ -190,7 +190,7 @@ class GraphLoader(object):
 
         return item_1hop, item_2hop
 
-    def next(self):
+    def __next__(self):
         if batch_size % (1 + NEG_SAMPLE_NUM) != 0:
             print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
             exit(1)
@@ -224,7 +224,7 @@ class GraphLoader(object):
                     label_batch.append(1)
                 else:
                     label_batch.append(0)
-        return (user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch)
+        return [user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch]
 
 
 
