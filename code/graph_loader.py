@@ -249,6 +249,7 @@ class GraphLoader(object):
         target_user_batch = []
         target_item_batch = []
         label_batch = []
+        curr_uid = 0
 
         for b in range(line_num):
             line = self.target_f.readline()
@@ -259,19 +260,32 @@ class GraphLoader(object):
             line_list = line[:-1].split(',')
             uid = int(line_list[0])
             user_1hop, user_2hop = self.gen_user_history(uid)
-            for i in range(1 + NEG_SAMPLE_NUM):
-                iid = int(line_list[1 + i])
+            user_1hop_batch += [user_1hop for i in range(1 + NEG_SAMPLE_NUM)]
+            user_2hop_batch += [user_2hop for i in range(1 + NEG_SAMPLE_NUM)]
+            target_user_batch += [uid] * 10
+            if curr_uid != uid:
+                for i in range(1 + NEG_SAMPLE_NUM):
+                    iid = int(line_list[1 + i])
+                    item_1hop, item_2hop = self.gen_item_history(iid)
+                    item_1hop_batch.append(item_1hop)
+                    item_2hop_batch.append(item_2hop)
+                    target_item_batch.append(iid)
+                    if i == 0:
+                        label_batch.append(1)
+                    else:
+                        label_batch.append(0)
+            else:
+                iid = int(line_list[1])
                 item_1hop, item_2hop = self.gen_item_history(iid)
-                user_1hop_batch.append(user_1hop)
-                user_2hop_batch.append(user_2hop)
                 item_1hop_batch.append(item_1hop)
                 item_2hop_batch.append(item_2hop)
-                target_user_batch.append(uid)
+                item_1hop_batch += item_1hop_batch[-(1 + NEG_SAMPLE_NUM):-1]
+                item_2hop_batch += item_2hop_batch[-(1 + NEG_SAMPLE_NUM):-1]
+                target_user_batch += [uid] * 10
                 target_item_batch.append(iid)
-                if i == 0:
-                    label_batch.append(1)
-                else:
-                    label_batch.append(0)
+                target_item_batch += target_item_batch[-(1 + NEG_SAMPLE_NUM):-1]
+                label_batch += label_batch[-(1 + NEG_SAMPLE_NUM):]
+
         return [user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch]
 
     def change_pred_time(self, new_pred_time):
@@ -287,7 +301,7 @@ if __name__ == "__main__":
                             1, 
                             5,
                             DATA_DIR_CCMR + 'target_train.txt',
-                            10,
+                            100,
                             40, 
                             None, 
                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
@@ -295,7 +309,6 @@ if __name__ == "__main__":
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
     t = time.time()
     for batch_data in graph_loader:
-        print(batch_data)
+        print(batch_data[-3:])
         print('batch time: {}'.format(time.time() - t))
-        break
-        # t = time.time()
+        t = time.time()
