@@ -3,7 +3,6 @@ import pymongo
 import pickle as pkl
 import time
 import numpy as np
-import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
@@ -202,8 +201,12 @@ class GraphLoader(object):
                 node_1hop_nei_doc = self.get_node_doc(node_1hop_nei_type, node_id)
                 degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                 for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
+                    if node_2hop_id == start_node_id:
+                        print('hh')
                     if node_2hop_id != start_node_id:
                         node_2hop_candi.append(node_2hop_id)
+                        print(node_1hop_nei_doc)
+                        print(time_slice)
                         p_distri.append(float(1/(degree - 1)))
             if node_2hop_candi != []:
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
