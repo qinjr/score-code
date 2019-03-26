@@ -235,7 +235,7 @@ if __name__ == "__main__":
                             DATA_DIR_CCMR + 'target_train.txt', 
                             None, 
                             100,
-                            40
+                            40,
                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
