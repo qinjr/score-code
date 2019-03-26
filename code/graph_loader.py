@@ -191,10 +191,10 @@ class GraphLoader(object):
         return item_1hop, item_2hop
 
     def __next__(self):
-        if batch_size % (1 + NEG_SAMPLE_NUM) != 0:
+        if self.batch_size % (1 + NEG_SAMPLE_NUM) != 0:
             print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
             exit(1)
-        line_num = batch_size / 10
+        line_num = self.batch_size / 10
 
         user_1hop_batch = []
         user_2hop_batch = []
