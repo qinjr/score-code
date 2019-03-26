@@ -102,7 +102,8 @@ class GraphLoader(object):
 
         # self.user_num = self.user_coll.find().count()
         # self.item_num = self.item_coll.find().count()
-        self.user_num, self.item_num = self.graph_handler.get_user_item_num()
+
+        self.user_num, self.item_num = graph_handler.get_user_item_num()
         
         self.obj_per_time_slice = obj_per_time_slice
         with open(user_neg_dict_file, 'rb') as f:
@@ -151,7 +152,8 @@ class GraphLoader(object):
     def gen_node_neighbor(self, name):
         node_1hop = []
         node_2hop = []
-        
+        global graph_handler
+
         while True:
             if self.complete == 1:
                 return
@@ -160,7 +162,7 @@ class GraphLoader(object):
                 print('work:{} begin'.format(name))
                 start_node_id, node_type, time_slice = self.work_q.get()
                 if node_type == 'user':
-                    start_node_doc = self.graph_handler.get_node_doc('user', start_node_id) 
+                    start_node_doc = graph_handler.get_node_doc('user', start_node_id) 
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     
@@ -172,7 +174,7 @@ class GraphLoader(object):
                     index_reduce = self.user_num
 
                 elif node_type == 'item':
-                    start_node_doc = self.graph_handler.get_node_doc('item', start_node_id) 
+                    start_node_doc = graph_handler.get_node_doc('item', start_node_id) 
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
@@ -208,7 +210,7 @@ class GraphLoader(object):
                     node_2hop_candi = []
                     p_distri = []
                     for node_id in node_1hop_list:
-                        node_1hop_nei_doc = self.graph_handler.get_node_doc(node_1hop_nei_type, node_id)
+                        node_1hop_nei_doc = graph_handler.get_node_doc(node_1hop_nei_type, node_id)
                         degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                         for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
                             if node_2hop_id != start_node_id:
