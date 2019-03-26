@@ -195,6 +195,7 @@ class GraphLoader(object):
                     node_1hop_t.append([node_id])
 
             # deal with 2hop
+            start_time1 = time.time()
             node_2hop_candi = []
             p_distri = []
             for node_id in node_1hop_list:
@@ -204,20 +205,22 @@ class GraphLoader(object):
                     if node_2hop_id != start_node_id:
                         node_2hop_candi.append(node_2hop_id)
                         p_distri.append(float(1/(degree - 1)))
-            p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-            node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-            if node_2hop_list != []:
+            if node_2hop_candi != []:
+                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
+                start_time2 = time.time()
+                node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+                print('sampling time: {}'.format(time.time() - start_time2))
                 node_2hop_t = []
                 for node_2hop_id in node_2hop_list:
                     if node_2hop_nei_feat_dict != None:
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
                         node_2hop_t.append([node_2hop_id])
+                print('whole 2 hop time: {}'.format(time.time() - start_time1))
                 return node_1hop_t, node_2hop_t
             else:
                 return node_1hop_t, node_2hop_dummy
             
-    
     def gen_user_history(self, start_uid):
         user_1hop, user_2hop = [], []
         for i in range(self.pred_time):
@@ -225,7 +228,6 @@ class GraphLoader(object):
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
         return user_1hop, user_2hop
-        
 
     def gen_item_history(self, start_iid):
         item_1hop, item_2hop = [], []
