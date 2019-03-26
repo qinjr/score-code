@@ -82,24 +82,7 @@ class GraphLoader(object):
     def __init__(self, time_slice_num, graph_handler, user_neg_dict_file, obj_per_time_slice,
                  user_fnum, item_fnum, target_file, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
-        self.graph_loader = graph_handler
-        self.time_slice_num = time_slice_num
-        
-        # multi-thread
-        self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
-        self.worker_n = WORKER_N
-        self.worker_begin = multiprocessing.Value('d', 0)
-        self.complete = multiprocessing.Value('d', 0)
-
-        self.thread_list = []
-        self.node_1hop = [None] * self.time_slice_num
-        self.node_2hop = [None] * self.time_slice_num
-
-        for i in range(self.worker_n):
-            thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
-            thread.daemon = True
-            self.thread_list.append(thread)
-            thread.start()
+        self.graph_handler = graph_handler
         
         # mongo client and load data
         # self.url = "mongodb://localhost:27017/"
@@ -143,6 +126,22 @@ class GraphLoader(object):
 
         self.batch_size = batch_size
         self.pred_time = pred_time
+
+        # multi-thread
+        self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
+        self.worker_n = WORKER_N
+        self.worker_begin = multiprocessing.Value('d', 0)
+        self.complete = multiprocessing.Value('d', 0)
+
+        self.thread_list = []
+        self.node_1hop = [None] * self.time_slice_num
+        self.node_2hop = [None] * self.time_slice_num
+
+        for i in range(self.worker_n):
+            thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
+            thread.daemon = True
+            self.thread_list.append(thread)
+            thread.start()
 
         print('graph loader initial completed')
     
@@ -234,7 +233,7 @@ class GraphLoader(object):
         while self.work_q.empty() == False:
             continue
 
-        for i in range(self.time_slice_num):
+        for i in range(self.pred_time):
             self.work_q.put((start_uid, 'user', i))
         with self.worker_begin.get_lock():
             self.worker_begin.value = 1
@@ -253,7 +252,7 @@ class GraphLoader(object):
         while self.work_q.empty() == False:
             continue
 
-        for i in range(self.time_slice_num):
+        for i in range(self.pred_time):
             self.work_q.put((start_iid, 'item', i))
         with self.worker_begin.get_lock():
             self.worker_begin.value = 1
