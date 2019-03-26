@@ -69,7 +69,7 @@ class GraphLoader(object):
         self.node_2hop = [None] * self.time_slice_num
 
         for i in range(self.worker_n):
-            thread = multiprocessing.Process(target=self.gen_node_neighbor)
+            thread = multiprocessing.Process(target=self.gen_node_neighbor, args[i])
             thread.daemon = True
             self.thread_list.append(thread)
             thread.start()
@@ -108,11 +108,12 @@ class GraphLoader(object):
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
 
-    def gen_node_neighbor(self):
+    def gen_node_neighbor(self, name):
         node_1hop = []
         node_2hop = []
         
         while self.work_q.empty() == False and self.worker_done.value != self.time_slice_num:
+            print('work:{} begin'.format(name))
             start_node_id, node_type, time_slice = self.work_q.get()
             if node_type == 'user':
                 start_node_doc = self.user_coll.find_one({'uid': start_node_id})
@@ -191,11 +192,13 @@ class GraphLoader(object):
     def gen_user_history(self, start_uid):
         while self.work_q.empty() == False:
             continue
-        
+        print('begin')
         for i in range(self.time_slice_num):
             self.work_q.put((start_uid, 'user', i))
+            print(self.work_q)
         with self.worker_done.get_lock():
             self.worker_done.value = 0
+            print('begin')
         while self.worker_done == self.time_slice_num and self.work_q.empty():
             node_1hop, node_2hop = self.node_1hop, self.node_2hop
             self.node_1hop = [None] * self.time_slice_num
