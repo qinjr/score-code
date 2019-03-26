@@ -20,6 +20,23 @@ class GraphLoader(object):
     def __init__(self, time_slice_num, db_name, user_neg_dict_file, obj_per_time_slice,
                  user_fnum, item_fnum, target_file, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
+        # multi-thread
+        self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
+        self.worker_n = WORKER_N
+        self.worker_begin = multiprocessing.Value('d', 0)
+        self.complete = multiprocessing.Value('d', 0)
+
+        self.thread_list = []
+        self.node_1hop = [None] * self.time_slice_num
+        self.node_2hop = [None] * self.time_slice_num
+
+        for i in range(self.worker_n):
+            thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
+            thread.daemon = True
+            self.thread_list.append(thread)
+            thread.start()
+        
+        # mongo client and load data
         self.url = "mongodb://localhost:27017/"
         self.client = pymongo.MongoClient(self.url)
         self.db = self.client[db_name]
@@ -47,6 +64,7 @@ class GraphLoader(object):
         self.item_fnum = item_fnum
         self.user_feat_dict = None
         self.item_feat_dict = None
+        
         # side information dict
         if user_feat_dict_file != None:
             with open(user_feat_dict_file, 'rb') as f:
@@ -59,22 +77,6 @@ class GraphLoader(object):
 
         self.batch_size = batch_size
         self.pred_time = pred_time
-        
-        # multi-thread
-        self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
-        self.worker_n = WORKER_N
-        self.worker_begin = multiprocessing.Value('d', 0)
-        self.complete = multiprocessing.Value('d', 0)
-
-        self.thread_list = []
-        self.node_1hop = [None] * self.time_slice_num
-        self.node_2hop = [None] * self.time_slice_num
-
-        for i in range(self.worker_n):
-            thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
-            thread.daemon = True
-            self.thread_list.append(thread)
-            thread.start()
 
         print('graph loader initial completed')
     
