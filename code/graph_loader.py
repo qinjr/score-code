@@ -38,9 +38,9 @@ class GraphHandler(object):
     
     def get_node_doc(self, node_type, node_id):
         if node_type == 'user':
-            return self.user_docs[1 + node_id]
+            return self.user_docs[node_id - 1]
         elif node_type == 'item':
-            return self.item_docs[1 + self.user_num + node_id]
+            return self.item_docs[node_id - 1 - self.user_num]
         else:
             print('WRONG NODE TYPE: {}'.format(node_type))
             exit(1)
@@ -160,29 +160,25 @@ class GraphLoader(object):
                 print('work:{} begin'.format(name))
                 start_node_id, node_type, time_slice = self.work_q.get()
                 if node_type == 'user':
-                    start_node_doc = self.user_coll.find_one({'uid': start_node_id})
+                    start_node_doc = self.graph_handler.get_node_doc('user', start_node_id) 
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     
-                    node_1hop_nei_docs = self.item_docs
+                    node_1hop_nei_type = 'item'
                     node_1hop_nei_fnum = self.item_fnum
                     node_1hop_nei_feat_dict = self.item_feat_dict
-                    node_2hop_nei_docs = self.user_docs
-                    node_2hop_nei_fnum = self.user_fnum
                     node_2hop_nei_feat_dict = self.user_feat_dict
 
                     index_reduce = self.user_num
 
                 elif node_type == 'item':
-                    start_node_doc = self.item_coll.find_one({'iid': start_node_id})
+                    start_node_doc = self.graph_handler.get_node_doc('item', start_node_id) 
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
-                    node_1hop_nei_docs = self.user_docs
+                    node_1hop_nei_type = 'user'
                     node_1hop_nei_fnum = self.user_fnum
                     node_1hop_nei_feat_dict = self.user_feat_dict
-                    node_2hop_nei_docs = self.item_docs
-                    node_2hop_nei_fnum = self.item_fnum
                     node_2hop_nei_feat_dict = self.item_feat_dict
 
                     index_reduce = 0
@@ -212,7 +208,7 @@ class GraphLoader(object):
                     node_2hop_candi = []
                     p_distri = []
                     for node_id in node_1hop_list:
-                        node_1hop_nei_doc = node_1hop_nei_docs[node_id - index_reduce - 1]
+                        node_1hop_nei_doc = self.graph_handler.get_node_doc(node_1hop_nei_type, node_id)
                         degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                         for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
                             if node_2hop_id != start_node_id:
