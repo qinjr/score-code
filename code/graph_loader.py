@@ -190,7 +190,7 @@ class GraphLoader(object):
                             item_2hop_candi.append(iid)
                             p_distri.append(float(1/(degree - 1)))
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                if item_2hop_candi != []
+                if item_2hop_candi != []:
                     item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
                     item_2hop_t = []
                     for iid in item_2hop_list:
