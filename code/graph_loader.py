@@ -32,7 +32,7 @@ class GraphLoader(object):
         for item_docs in self.item_cursor:
             self.item_docs.append(item_docs)
         print('load graph data completed')
-        
+
         self.user_num = self.user_coll.find().count()
         self.item_num = self.item_coll.find().count()
         
@@ -109,19 +109,7 @@ class GraphLoader(object):
                 user_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
                 user_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
             else:
-                start_time = time.time()
-                user_2hop_candi = []
-                p_distri = []
-                for iid in user_1hop_list:
-                    item_doc = self.item_docs[iid - self.user_num - 1]
-                    degree = len(item_doc['hist_%d'%(t)])
-                    for uid in item_doc['hist_%d'%(t)]:
-                        if uid != start_uid:
-                            user_2hop_candi.append(uid)
-                            p_distri.append(float(1/(degree - 1)))
-                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                user_2hop_list = np.random.choice(user_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-
+                # deal with 1hop
                 if len(user_1hop_list) >= self.obj_per_time_slice:
                     user_1hop_list = np.random.choice(user_1hop_list, self.obj_per_time_slice, replace = False).tolist()
                 else:
@@ -134,14 +122,29 @@ class GraphLoader(object):
                     else:
                         user_1hop_t.append([iid])
                 user_1hop.append(user_1hop_t)
-                
-                user_2hop_t = []
-                for uid in user_2hop_list:
-                    if self.user_feat_dict != None:
-                        user_2hop_t.append([uid] + self.user_feat_dict[str(uid)])
-                    else:
-                        user_2hop_t.append([uid])
-                user_2hop.append(user_2hop_t)
+
+                # deal with 2hop
+                user_2hop_candi = []
+                p_distri = []
+                for iid in user_1hop_list:
+                    item_doc = self.item_docs[iid - self.user_num - 1]
+                    degree = len(item_doc['hist_%d'%(t)])
+                    for uid in item_doc['hist_%d'%(t)]:
+                        if uid != start_uid:
+                            user_2hop_candi.append(uid)
+                            p_distri.append(float(1/(degree - 1)))
+                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
+                user_2hop_list = np.random.choice(user_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+                if user_2hop_list != []:
+                    user_2hop_t = []
+                    for uid in user_2hop_list:
+                        if self.user_feat_dict != None:
+                            user_2hop_t.append([uid] + self.user_feat_dict[str(uid)])
+                        else:
+                            user_2hop_t.append([uid])
+                    user_2hop.append(user_2hop_t)
+                else:
+                    user_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
             
         return user_1hop, user_2hop
 
@@ -162,19 +165,7 @@ class GraphLoader(object):
                 item_1hop.append(np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist())
                 item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
             else:
-                start_time = time.time()
-                item_2hop_candi = []
-                p_distri = []
-                for uid in item_1hop_list:
-                    user_doc = self.user_docs[uid - 1]
-                    degree = len(user_doc['hist_%d'%(t)])
-                    for iid in user_doc['hist_%d'%(t)]:
-                        if iid != start_iid:
-                            item_2hop_candi.append(iid)
-                            p_distri.append(float(1/(degree - 1)))
-                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-
+                # deal with 1hop
                 if len(item_1hop_list) >= self.obj_per_time_slice:
                     item_1hop_list = np.random.choice(item_1hop_list, self.obj_per_time_slice, replace = False).tolist()
                 else:
@@ -187,14 +178,29 @@ class GraphLoader(object):
                     else:
                         item_1hop_t.append([uid])
                 item_1hop.append(item_1hop_t)
-                
-                item_2hop_t = []
-                for iid in item_2hop_list:
-                    if self.item_feat_dict != None:
-                        item_2hop_t.append([iid] + self.item_feat_dict[str(iid)])
-                    else:
-                        item_2hop_t.append([iid])
-                item_2hop.append(item_2hop_t)
+
+                # deal with 2hop
+                item_2hop_candi = []
+                p_distri = []
+                for uid in item_1hop_list:
+                    user_doc = self.user_docs[uid - 1]
+                    degree = len(user_doc['hist_%d'%(t)])
+                    for iid in user_doc['hist_%d'%(t)]:
+                        if iid != start_iid:
+                            item_2hop_candi.append(iid)
+                            p_distri.append(float(1/(degree - 1)))
+                p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
+                if item_2hop_candi != []
+                    item_2hop_list = np.random.choice(item_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+                    item_2hop_t = []
+                    for iid in item_2hop_list:
+                        if self.item_feat_dict != None:
+                            item_2hop_t.append([iid] + self.item_feat_dict[str(iid)])
+                        else:
+                            item_2hop_t.append([iid])
+                    item_2hop.append(item_2hop_t)
+                else:
+                    item_2hop.append(np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist())
 
         return item_1hop, item_2hop
 
@@ -234,6 +240,9 @@ class GraphLoader(object):
                     label_batch.append(0)
         return [user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch]
 
+    def change_pred_time(self, new_pred_time):
+        self.pred_time = new_pred_time
+        return
 
 
 if __name__ == "__main__":
@@ -250,5 +259,11 @@ if __name__ == "__main__":
                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
-    for batch_data in graph_loader:
-        print(batch_data[-1])
+    # for batch_data in graph_loader:
+    #     t = time.time()
+    #     print(batch_data[-1])
+    #     print('batch time')
+    for i in range(100):
+        t = time.time()
+        print(graph_loader.__next__())
+        print('batch time: {}'.format(time.time() - t))
