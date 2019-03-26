@@ -83,7 +83,8 @@ class GraphLoader(object):
                  user_fnum, item_fnum, target_file, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
         self.graph_loader = graph_handler
-
+        self.time_slice_num = time_slice_num
+        
         # multi-thread
         self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
         self.worker_n = WORKER_N
