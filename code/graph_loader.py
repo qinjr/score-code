@@ -259,11 +259,7 @@ if __name__ == "__main__":
                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
-    # for batch_data in graph_loader:
-    #     t = time.time()
-    #     print(batch_data[-1])
-    #     print('batch time')
-    for i in range(100):
-        t = time.time()
-        print(graph_loader.__next__())
+    t = time.time()
+    for batch_data in graph_loader:
         print('batch time: {}'.format(time.time() - t))
+        t = time.time()
