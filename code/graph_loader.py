@@ -16,7 +16,8 @@ ITEM_NUM_CCMR = 190129
 
 class GraphLoader(object):
     def __init__(self, time_slice_num, db_name, user_neg_dict_file, obj_per_time_slice,
-                 user_fnum, item_fnum, target_file, user_feat_dict_file = None, item_feat_dict_file = None):
+                 user_fnum, item_fnum, target_file, batch_size, pred_time,
+                 user_feat_dict_file = None, item_feat_dict_file = None):
         self.url = "mongodb://localhost:27017/"
         self.client = pymongo.MongoClient(self.url)
         self.db = self.client[db_name]
@@ -44,7 +45,10 @@ class GraphLoader(object):
         
         self.target_f = open(target_file, 'r')
 
-        print('initial completed')
+        self.batch_size = batch_size
+        self.pred_time = pred_time
+
+        print('graph loader initial completed')
     
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
         if str(uid) in self.user_neg_dict:
@@ -60,13 +64,13 @@ class GraphLoader(object):
                 user_neg_list.append(random.randint(iid_start, iid_end))
             return user_neg_list
 
-    def gen_target_file(self, pred_time, neg_sample_num, target_file):
+    def gen_target_file(self, neg_sample_num, target_file):
         target_lines = []
         cursor = self.user_coll.find({})
         for user_doc in cursor:
-            if user_doc['hist_%d'%(pred_time)] != []:
+            if user_doc['hist_%d'%(self.pred_time)] != []:
                 uid = user_doc['uid']
-                pos_iids = user_doc['hist_%d'%(pred_time)]
+                pos_iids = user_doc['hist_%d'%(self.pred_time)]
                 for pos_iid in pos_iids:
                     neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
                     neg_iids = [str(neg_iid) for neg_iid in neg_iids]
@@ -75,13 +79,13 @@ class GraphLoader(object):
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
 
-    def gen_user_history(self, start_uid, pred_time):
+    def gen_user_history(self, start_uid):
         user_1hop = []
         user_2hop = []
         
         start_user_doc = self.user_coll.find_one({'uid': start_uid})
         item_docs = self.item_coll.find({})
-        for t in range(pred_time):
+        for t in range(self.pred_time):
             user_1hop_list = start_user_doc['hist_%d'%(t)] #[iid1, iid2, ...]
             
             # if too long
@@ -129,14 +133,14 @@ class GraphLoader(object):
             
         return user_1hop, user_2hop
 
-    def gen_item_history(self, start_iid, pred_time):
+    def gen_item_history(self, start_iid):
         item_1hop = []
         item_2hop = []
 
         start_item_doc = self.item_coll.find_one({'iid': start_iid})
         user_docs = self.user_coll.find({})
 
-        for t in range(pred_time):
+        for t in range(self.pred_time):
             item_1hop_list = start_item_doc['hist_%d'%(t)] #[uid1, uid2, ...]
             # if too long
             if len(item_1hop_list) > MAX_LEN:
@@ -183,7 +187,7 @@ class GraphLoader(object):
 
         return item_1hop, item_2hop
 
-    def get_batch(self, batch_size, pred_time):
+    def next(self):
         if batch_size % (1 + NEG_SAMPLE_NUM) != 0:
             print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
             exit(1)
@@ -200,13 +204,13 @@ class GraphLoader(object):
         for b in range(line_num):
             line = self.target_f.readline()
             if line == '':
-                break
+                raise StopIteration
             line_list = line[:-1].split(',')
             uid = int(line_list[0])
-            user_1hop, user_2hop = self.gen_user_history(uid, pred_time)
+            user_1hop, user_2hop = self.gen_user_history(uid, self.pred_time)
             for i in range(1 + NEG_SAMPLE_NUM):
                 iid = int(line_list[1 + i])
-                item_1hop, item_2hop = self.gen_item_history(iid, pred_time)
+                item_1hop, item_2hop = self.gen_item_history(iid, self.pred_time)
                 user_1hop_batch.append(user_1hop)
                 user_2hop_batch.append(user_2hop)
                 item_1hop_batch.append(item_1hop)
@@ -217,7 +221,7 @@ class GraphLoader(object):
                     label_batch.append(1)
                 else:
                     label_batch.append(0)
-        return user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch
+        return (user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch)
 
 
 
@@ -230,7 +234,10 @@ if __name__ == "__main__":
                             5,
                             DATA_DIR_CCMR + 'target_train.txt', 
                             None, 
+                            100,
+                            40
                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
-    graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
-    # graph_loader.get_batch()
+    # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
+    # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
+    for batch_data in graph_loader:
+        print(batch_data[-1])
