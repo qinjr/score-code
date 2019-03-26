@@ -149,7 +149,7 @@ class GraphLoader(object):
 
                     index_reduce = 0
                 
-                node_1hop_list = start_node_doc['hist_%d'%(pred_time)] #[iid1, iid2, ...]
+                node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
                 
                 # gen node 2 hops history
                 if node_1hop_list == []:
