@@ -151,7 +151,7 @@ class GraphLoader(object):
         if node_type == 'user':
             return self.user_docs[node_id - 1]
         elif node_type == 'item':
-            return self.user_docs[node_id - 1 - self.user_num]
+            return self.item_docs[node_id - 1 - self.user_num]
 
     def gen_node_neighbor(self, start_node_id, node_type, time_slice):
         if node_type == 'user':
@@ -194,33 +194,28 @@ class GraphLoader(object):
                     node_1hop_t.append([node_id])
 
             # deal with 2hop
-            start_time1 = time.time()
+            # start_time1 = time.time()
             node_2hop_candi = []
             p_distri = []
             for node_id in node_1hop_list:
                 node_1hop_nei_doc = self.get_node_doc(node_1hop_nei_type, node_id)
                 degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                 for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
-                    if node_2hop_id == start_node_id:
-                        print('hh')
                     if node_2hop_id != start_node_id:
                         node_2hop_candi.append(node_2hop_id)
-                        # print(node_1hop_nei_doc)
-                        print(time_slice)
-                        print(start_node_id)
                         p_distri.append(float(1/(degree - 1)))
             if node_2hop_candi != []:
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                start_time2 = time.time()
+                # start_time2 = time.time()
                 node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                print('sampling time: {}'.format(time.time() - start_time2))
+                # print('sampling time: {}'.format(time.time() - start_time2))
                 node_2hop_t = []
                 for node_2hop_id in node_2hop_list:
                     if node_2hop_nei_feat_dict != None:
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
                         node_2hop_t.append([node_2hop_id])
-                print('whole 2 hop time: {}'.format(time.time() - start_time1))
+                # print('whole 2 hop time: {}'.format(time.time() - start_time1))
                 return node_1hop_t, node_2hop_t
             else:
                 return node_1hop_t, node_2hop_dummy
