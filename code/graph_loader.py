@@ -7,6 +7,7 @@ import numpy as np
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
 WORKER_N = 2
+START_TIME = 20
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
@@ -180,7 +181,7 @@ class GraphLoader(object):
         if node_1hop_list == []:
             return node_1hop_dummy, node_2hop_dummy
         else:
-            t = time.time()
+            # t = time.time()
             # deal with 1hop
             if len(node_1hop_list) >= self.obj_per_time_slice:
                 node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
@@ -193,13 +194,13 @@ class GraphLoader(object):
                     node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
                 else:
                     node_1hop_t.append([node_id])
-            print('1hop time: {}'.format(time.time() - t))
+            # print('1hop time: {}'.format(time.time() - t))
             # deal with 2hop
             # start_time1 = time.time()
             
             node_2hop_candi = []
             p_distri = []
-            t = time.time()
+            # t = time.time()
             for node_id in node_1hop_list:
                 node_1hop_nei_doc = self.get_node_doc(node_1hop_nei_type, node_id)
                 degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
@@ -207,9 +208,9 @@ class GraphLoader(object):
                     if node_2hop_id != start_node_id:
                         node_2hop_candi.append(node_2hop_id)
                         p_distri.append(float(1/(degree - 1)))
-            print('2 hop former time: {}'.format(time.time() - t))
+            # print('2 hop former time: {}'.format(time.time() - t))
             if node_2hop_candi != []:
-                t = time.time()
+                # t = time.time()
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                 # start_time2 = time.time()
                 node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
@@ -220,29 +221,29 @@ class GraphLoader(object):
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
                         node_2hop_t.append([node_2hop_id])
-                print('2 hop latter time: {}'.format(time.time() - t))
+                # print('2 hop latter time: {}'.format(time.time() - t))
                 return node_1hop_t, node_2hop_t
             else:
                 return node_1hop_t, node_2hop_dummy
             
     def gen_user_history(self, start_uid):
         user_1hop, user_2hop = [], []
-        for i in range(self.pred_time):
-            t = time.time()
+        for i in range(START_TIME, self.pred_time):
+            # t = time.time()
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_uid, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
-            print('user time per slice: {}'.format(time.time() - t))
+            # print('user time per slice: {}'.format(time.time() - t))
         return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid):
         item_1hop, item_2hop = [], []
-        for i in range(self.pred_time):
-            t = time.time()
+        for i in range(START_TIME, self.pred_time):
+            # t = time.time()
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_iid, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
-            print('item time per slice: {}'.format(time.time() - t))
+            # print('item time per slice: {}'.format(time.time() - t))
         return item_1hop, item_2hop
         
     def __next__(self):
@@ -317,7 +318,12 @@ if __name__ == "__main__":
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
     t = time.time()
+    st = time.time()
+    i = 0
     for batch_data in graph_loader:
-        print(batch_data[-3:])
+        # print(batch_data[-3:])
         print('batch time: {}'.format(time.time() - t))
         t = time.time()
+        i += 1
+        if i == 100:
+            print('average time:{}'.format((time.time() - st)/100))
