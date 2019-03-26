@@ -79,7 +79,7 @@ class GraphHandler(object):
 
 
 class GraphLoader(object):
-    def __init__(self, time_slice_num, graph_handler, user_neg_dict_file, obj_per_time_slice,
+    def __init__(self, time_slice_num, user_neg_dict_file, obj_per_time_slice,
                  user_fnum, item_fnum, target_file, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
         global graph_handler
@@ -313,7 +313,6 @@ class GraphLoader(object):
 if __name__ == "__main__":
     graph_handler = GraphHandler('ccmr')
     graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
-                            graph_handler, 
                             DATA_DIR_CCMR + 'user_neg_dict.pkl', 
                             OBJ_PER_TIME_SLICE_CCMR, 
                             1, 
