@@ -193,7 +193,7 @@ class GraphLoader(object):
                     node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
                 else:
                     node_1hop_t.append([node_id])
-            print('1hop time: {}'.format(time.tiem() - t))
+            print('1hop time: {}'.format(time.time() - t))
             # deal with 2hop
             # start_time1 = time.time()
             
