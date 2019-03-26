@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 16
+WORKER_N = 2
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
@@ -83,7 +83,6 @@ class GraphLoader(object):
                  user_fnum, item_fnum, target_file, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
         global graph_handler
-        self.graph_handler = graph_handler
         
         # mongo client and load data
         # self.url = "mongodb://localhost:27017/"
