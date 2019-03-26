@@ -210,10 +210,10 @@ class GraphLoader(object):
                 raise StopIteration
             line_list = line[:-1].split(',')
             uid = int(line_list[0])
-            user_1hop, user_2hop = self.gen_user_history(uid, self.pred_time)
+            user_1hop, user_2hop = self.gen_user_history(uid)
             for i in range(1 + NEG_SAMPLE_NUM):
                 iid = int(line_list[1 + i])
-                item_1hop, item_2hop = self.gen_item_history(iid, self.pred_time)
+                item_1hop, item_2hop = self.gen_item_history(iid)
                 user_1hop_batch.append(user_1hop)
                 user_2hop_batch.append(user_2hop)
                 item_1hop_batch.append(item_1hop)
