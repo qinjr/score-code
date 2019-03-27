@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 4
+WORKER_N = 8
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
@@ -211,8 +211,8 @@ class GraphLoader(object):
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.time_slice_num:
                 user_1hop, user_2hop = self.node_1hop, self.node_2hop
-                self.node_1hop = [None] * 16
-                self.node_2hop = [None] * 16
+                self.node_1hop = [None] * self.time_slice_num
+                self.node_2hop = [None] * self.time_slice_num
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 0
                 with self.work_cnt.get_lock():
@@ -228,8 +228,8 @@ class GraphLoader(object):
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.time_slice_num:
                 item_1hop, item_2hop = self.node_1hop, self.node_2hop
-                self.node_1hop = [None] * 16
-                self.node_2hop = [None] * 16
+                self.node_1hop = [None] * self.time_slice_num
+                self.node_2hop = [None] * self.time_slice_num
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 0
                 with self.work_cnt.get_lock():
