@@ -7,6 +7,7 @@ import numpy as np
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
 WORKER_N = 2
+POPULAR = 5
 START_TIME = 20
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
@@ -210,10 +211,14 @@ class GraphLoader(object):
                     node_1hop_nei_doc = self.item_docs[node_id - 1 - self.user_num]
                 # node_1hop_nei_doc = self.get_node_doc(node_1hop_nei_type, node_id)
                 degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
-                for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
-                    if node_2hop_id != start_node_id:
-                        node_2hop_candi.append(node_2hop_id)
-                        p_distri.append(1/(degree - 1))
+                if degree <= POPULAR:
+                    for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
+                        if node_2hop_id != start_node_id:
+                            node_2hop_candi.append(node_2hop_id)
+                            p_distri.append(1/(degree - 1))
+                else:
+                    node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
+                    p_distri.append(1/(degree - 1))
             # print('2 hop prepare time: {}'.format(time.time() - t))
             if node_2hop_candi != []:
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
