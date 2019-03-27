@@ -338,5 +338,5 @@ if __name__ == "__main__":
         t = time.time()
         i += 1
         if i == 100:
-            return
+            break
             # print('average time:{}'.format((time.time() - st)/100))
