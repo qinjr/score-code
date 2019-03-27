@@ -218,37 +218,37 @@ class GraphLoader(object):
                 start_time2 = time.time()
                 node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
                 print('sampling time: {}'.format(time.time() - start_time2))
-                t = time.time()
+                # t = time.time()
                 node_2hop_t = []
                 for node_2hop_id in node_2hop_list:
                     if node_2hop_nei_feat_dict != None:
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
                         node_2hop_t.append([node_2hop_id])
-                print('after sampling time: {}'.format(time.time() - t))
+                # print('after sampling time: {}'.format(time.time() - t))
                 return node_1hop_t, node_2hop_t
             else:
                 return node_1hop_t, node_2hop_dummy
             
     def gen_user_history(self, start_uid):
         user_1hop, user_2hop = [], []
-        # t = time.time()
+        t = time.time()
         for i in range(START_TIME, self.pred_time):
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_uid, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
-        # print('gen_user_history time: {}'.format(time.time() - t))
+        print('gen_user_history time: {}'.format(time.time() - t))
         return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid):
         item_1hop, item_2hop = [], []
-        # t = time.time()
+        t = time.time()
         for i in range(START_TIME, self.pred_time):
             
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_iid, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
-        # print('gen_item_history time: {}'.format(time.time() - t))
+        print('gen_item_history time: {}'.format(time.time() - t))
         return item_1hop, item_2hop
         
     def __next__(self):
