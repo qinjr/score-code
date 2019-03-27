@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 1
+WORKER_N = 4
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
@@ -19,25 +19,23 @@ ITEM_NUM_CCMR = 190129
 
 class GraphLoader(object):
     # mongo client and load data
-    # url = "mongodb://localhost:27017/"
-    # client = pymongo.MongoClient(url)
-    # db = client['ccmr']
-    # user_coll = db.user
-    # item_coll = db.item
-    # user_cursor = user_coll.find({})
-    # item_cursor = item_coll.find({})
-    # user_docs = []
-    # item_docs = []
-    # for user_doc in user_cursor:
-    #     user_docs.append(user_doc)
-    # for item_doc in item_cursor:
-    #     item_docs.append(item_doc)
-    # print('load static graph data completed')
     url = "mongodb://localhost:27017/"
     client = pymongo.MongoClient(url)
     db = client['ccmr']
     user_coll = db.user
     item_coll = db.item
+    user_cursor = user_coll.find({})
+    item_cursor = item_coll.find({})
+    user_docs = []
+    item_docs = []
+    for user_doc in user_cursor:
+        user_docs.append(user_doc)
+    for item_doc in item_cursor:
+        item_docs.append(item_doc)
+    
+    with open(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'rb') as f:
+        user_neg_dict = pkl.load(f)
+    print('load static data completed')
 
     def __init__(self, time_slice_num, db_name, user_neg_dict_file, obj_per_time_slice,
                  user_fnum, item_fnum, target_file, batch_size, pred_time,
@@ -46,8 +44,6 @@ class GraphLoader(object):
         self.item_num = GraphLoader.item_coll.find().count()
         
         self.obj_per_time_slice = obj_per_time_slice
-        with open(user_neg_dict_file, 'rb') as f:
-            self.user_neg_dict = pkl.load(f)
         self.time_slice_num = time_slice_num
 
         self.user_fnum = user_fnum
@@ -69,21 +65,21 @@ class GraphLoader(object):
         self.pred_time = pred_time
 
         # multi-thread
-        # self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
-        # self.worker_n = WORKER_N
-        # self.worker_begin = multiprocessing.Value('d', 0)
-        # self.complete = multiprocessing.Value('d', 0)
-        # self.work_cnt = multiprocessing.Value('d', 0)
+        self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
+        self.worker_n = WORKER_N
+        self.worker_begin = multiprocessing.Value('d', 0)
+        self.complete = multiprocessing.Value('d', 0)
+        self.work_cnt = multiprocessing.Value('d', 0)
 
-        # self.thread_list = []
-        # self.node_1hop = [None] * self.time_slice_num
-        # self.node_2hop = [None] * self.time_slice_num
+        self.thread_list = []
+        self.node_1hop = [None] * self.time_slice_num
+        self.node_2hop = [None] * self.time_slice_num
 
-        # for i in range(self.worker_n):
-        #     thread = multiprocessing.Process(target=self.gen_node_neighbor)#, args=[i])
-        #     thread.daemon = True
-        #     self.thread_list.append(thread)
-        #     thread.start()
+        for i in range(self.worker_n):
+            thread = multiprocessing.Process(target=self.gen_node_neighbor)#, args=[i])
+            thread.daemon = True
+            self.thread_list.append(thread)
+            thread.start()
 
         print('graph loader initial completed')
     
@@ -91,8 +87,8 @@ class GraphLoader(object):
         return self
 
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
-        if str(uid) in self.user_neg_dict:
-            user_neg_list = self.user_neg_dict[str(uid)]
+        if str(uid) in GraphLoader.user_neg_dict:
+            user_neg_list = GraphLoader.user_neg_dict[str(uid)]
             user_neg_list = [int(iid) for iid in user_neg_list]
         else:
             user_neg_list = []
@@ -125,8 +121,7 @@ class GraphLoader(object):
             if not self.work_q.empty() and self.worker_begin.value == 1:
                 start_node_id, node_type, time_slice = self.work_q.get()
                 if node_type == 'user':
-                    # start_node_doc = GraphLoader.user_docs[start_node_id - 1] 
-                    start_node_doc = GraphLoader.user_coll.find_one({'uid': start_node_id})
+                    start_node_doc = GraphLoader.user_docs[start_node_id - 1] 
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     
@@ -136,8 +131,7 @@ class GraphLoader(object):
                     node_2hop_nei_feat_dict = self.user_feat_dict
 
                 elif node_type == 'item':
-                    # start_node_doc = GraphLoader.item_docs[start_node_id - 1 - self.user_num] 
-                    start_node_doc = GraphLoader.item_coll.find_one({'iid': start_node_id})
+                    start_node_doc = GraphLoader.item_docs[start_node_id - 1 - self.user_num] 
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
@@ -176,11 +170,9 @@ class GraphLoader(object):
                     p_distri = []
                     for node_id in node_1hop_list_unique:
                         if node_1hop_nei_type == 'item':
-                            # node_1hop_nei_doc = GraphLoader.item_docs[node_id - 1 - self.user_num]
-                            node_1hop_nei_doc = GraphLoader.item_coll.find_one({'iid':node_id})
+                            node_1hop_nei_doc = GraphLoader.item_docs[node_id - 1 - self.user_num]
                         elif node_1hop_nei_type == 'user':
-                            # node_1hop_nei_doc = GraphLoader.user_docs[node_id - 1]
-                            node_1hop_nei_doc = GraphLoader.user_coll.find_one({'uid':node_id})
+                            node_1hop_nei_doc = GraphLoader.user_docs[node_id - 1]
 
                         degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                         if degree > 1:
