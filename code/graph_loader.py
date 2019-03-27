@@ -330,6 +330,17 @@ if __name__ == "__main__":
                             40, 
                             None, 
                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    graph_loader3 = GraphLoader(TIME_SLICE_NUM_CCMR,
+                            'ccmr',
+                            DATA_DIR_CCMR + 'user_neg_dict.pkl', 
+                            OBJ_PER_TIME_SLICE_CCMR, 
+                            1, 
+                            5,
+                            DATA_DIR_CCMR + 'target_test.txt',
+                            100,
+                            40, 
+                            None, 
+                            DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')    
     print('2 graph loader complete')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
