@@ -326,7 +326,7 @@ if __name__ == "__main__":
     # graph_loader.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
     t = time.time()
     # st = time.time()
-    # i = 0
+    i = 0
     for batch_data in graph_loader:
         # print(batch_data[-3:])
         print('batch time: {}'.format(time.time() - t))
