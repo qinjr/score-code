@@ -202,26 +202,30 @@ class GraphLoader(object):
             p_distri = []
             # t = time.time()
             for node_id in node_1hop_list:
-                node_1hop_nei_doc = self.get_node_doc(node_1hop_nei_type, node_id)
+                if node_1hop_nei_type == 'user':
+                    node_1hop_nei_doc = self.user_docs[node_id - 1]
+                elif node_1hop_nei_type == 'item':
+                    node_1hop_nei_doc = self.item_docs[node_id - 1 - self.user_num]
+                # node_1hop_nei_doc = self.get_node_doc(node_1hop_nei_type, node_id)
                 degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                 for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
                     if node_2hop_id != start_node_id:
                         node_2hop_candi.append(node_2hop_id)
-                        p_distri.append(float(1/(degree - 1)))
+                        p_distri.append(1/(degree - 1))
             # print('2 hop former time: {}'.format(time.time() - t))
             if node_2hop_candi != []:
-                # t = time.time()
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                # start_time2 = time.time()
+                start_time2 = time.time()
                 node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                # print('sampling time: {}'.format(time.time() - start_time2))
+                print('sampling time: {}'.format(time.time() - start_time2))
+                t = time.time()
                 node_2hop_t = []
                 for node_2hop_id in node_2hop_list:
                     if node_2hop_nei_feat_dict != None:
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
                         node_2hop_t.append([node_2hop_id])
-                # print('2 hop latter time: {}'.format(time.time() - t))
+                print('after sampling time: {}'.format(time.time() - t))
                 return node_1hop_t, node_2hop_t
             else:
                 return node_1hop_t, node_2hop_dummy
