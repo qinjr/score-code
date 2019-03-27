@@ -29,9 +29,9 @@ class GraphLoader(object):
     user_docs = []
     item_docs = []
     for user_doc in user_cursor:
-        user_docs.append(user_docs)
+        user_docs.append(user_doc)
     for item_doc in item_cursor:
-        item_docs.append(item_docs)
+        item_docs.append(item_doc)
     print('load static graph data completed')
 
     def __init__(self, time_slice_num, db_name, user_neg_dict_file, obj_per_time_slice,
