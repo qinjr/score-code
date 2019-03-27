@@ -337,7 +337,6 @@ if __name__ == "__main__":
         print('batch time: {}'.format(time.time() - t))
         t = time.time()
         i += 1
-        print('batch {}'.format(i))
         if i == 100:
-            break
+            return
             # print('average time:{}'.format((time.time() - st)/100))
