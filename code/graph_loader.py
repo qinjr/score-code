@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 8
+WORKER_N = 1
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
