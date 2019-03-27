@@ -33,19 +33,17 @@ class GraphLoader(object):
     # for item_doc in item_cursor:
     #     item_docs.append(item_doc)
     # print('load static graph data completed')
+    url = "mongodb://localhost:27017/"
+    client = pymongo.MongoClient(url)
+    db = client['ccmr']
+    user_coll = db.user
+    item_coll = db.item
 
     def __init__(self, time_slice_num, db_name, user_neg_dict_file, obj_per_time_slice,
                  user_fnum, item_fnum, target_file, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
-
-        url = "mongodb://localhost:27017/"
-        client = pymongo.MongoClient(url)
-        db = client[db_name]
-        self.user_coll = db.user
-        self.item_coll = db.item
-
-        self.user_num = USER_NUM_CCMR#self.user_coll.find().count()
-        self.item_num = ITEM_NUM_CCMR#self.item_coll.find().count()
+        self.user_num = GraphLoader.user_coll.find().count()
+        self.item_num = GraphLoader.item_coll.find().count()
         
         self.obj_per_time_slice = obj_per_time_slice
         with open(user_neg_dict_file, 'rb') as f:
@@ -108,7 +106,7 @@ class GraphLoader(object):
 
     def gen_target_file(self, neg_sample_num, target_file, pred_time):
         target_lines = []
-        cursor = self.user_coll.find({})
+        cursor = GraphLoader.user_coll.find({})
         for user_doc in cursor:
             if user_doc['hist_%d'%(pred_time)] != []:
                 uid = user_doc['uid']
@@ -128,7 +126,7 @@ class GraphLoader(object):
                 start_node_id, node_type, time_slice = self.work_q.get()
                 if node_type == 'user':
                     # start_node_doc = GraphLoader.user_docs[start_node_id - 1] 
-                    start_node_doc = self.user_coll.find_one({'uid': start_node_id})
+                    start_node_doc = GraphLoader.user_coll.find_one({'uid': start_node_id})
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     
@@ -139,7 +137,7 @@ class GraphLoader(object):
 
                 elif node_type == 'item':
                     # start_node_doc = GraphLoader.item_docs[start_node_id - 1 - self.user_num] 
-                    start_node_doc = self.item_coll.find_one({'iid': start_node_id})
+                    start_node_doc = GraphLoader.item_coll.find_one({'iid': start_node_id})
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
@@ -179,10 +177,10 @@ class GraphLoader(object):
                     for node_id in node_1hop_list_unique:
                         if node_1hop_nei_type == 'item':
                             # node_1hop_nei_doc = GraphLoader.item_docs[node_id - 1 - self.user_num]
-                            node_1hop_nei_doc = self.item_coll.find_one({'iid':node_id})
+                            node_1hop_nei_doc = GraphLoader.item_coll.find_one({'iid':node_id})
                         elif node_1hop_nei_type == 'user':
                             # node_1hop_nei_doc = GraphLoader.user_docs[node_id - 1]
-                            node_1hop_nei_doc = self.user_coll.find_one({'uid':node_id})
+                            node_1hop_nei_doc = GraphLoader.user_coll.find_one({'uid':node_id})
 
                         degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                         if degree > 1:
