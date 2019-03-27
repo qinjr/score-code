@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 16
+WORKER_N = 8
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
@@ -44,8 +44,8 @@ class GraphLoader(object):
         self.user_coll = db.user
         self.item_coll = db.item
 
-        self.user_num = self.user_coll.find().count()
-        self.item_num = self.item_coll.find().count()
+        self.user_num = USER_NUM_CCMR#self.user_coll.find().count()
+        self.item_num = ITEM_NUM_CCMR#self.item_coll.find().count()
         
         self.obj_per_time_slice = obj_per_time_slice
         with open(user_neg_dict_file, 'rb') as f:
