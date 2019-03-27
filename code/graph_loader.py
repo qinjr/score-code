@@ -69,21 +69,21 @@ class GraphLoader(object):
         self.pred_time = pred_time
 
         # multi-thread
-        self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
-        self.worker_n = WORKER_N
-        self.worker_begin = multiprocessing.Value('d', 0)
-        self.complete = multiprocessing.Value('d', 0)
-        self.work_cnt = multiprocessing.Value('d', 0)
+        # self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
+        # self.worker_n = WORKER_N
+        # self.worker_begin = multiprocessing.Value('d', 0)
+        # self.complete = multiprocessing.Value('d', 0)
+        # self.work_cnt = multiprocessing.Value('d', 0)
 
-        self.thread_list = []
-        self.node_1hop = [None] * self.time_slice_num
-        self.node_2hop = [None] * self.time_slice_num
+        # self.thread_list = []
+        # self.node_1hop = [None] * self.time_slice_num
+        # self.node_2hop = [None] * self.time_slice_num
 
-        for i in range(self.worker_n):
-            thread = multiprocessing.Process(target=self.gen_node_neighbor)#, args=[i])
-            thread.daemon = True
-            self.thread_list.append(thread)
-            thread.start()
+        # for i in range(self.worker_n):
+        #     thread = multiprocessing.Process(target=self.gen_node_neighbor)#, args=[i])
+        #     thread.daemon = True
+        #     self.thread_list.append(thread)
+        #     thread.start()
 
         print('graph loader initial completed')
     
