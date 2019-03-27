@@ -183,6 +183,7 @@ class GraphLoader(object):
         else:
             # t = time.time()
             # deal with 1hop
+            node_1hop_list_unique = node_1hop_list
             if len(node_1hop_list) >= self.obj_per_time_slice:
                 node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
             else:
@@ -201,7 +202,7 @@ class GraphLoader(object):
             node_2hop_candi = []
             p_distri = []
             # t = time.time()
-            for node_id in node_1hop_list:
+            for node_id in node_1hop_list_unique:
                 if node_1hop_nei_type == 'user':
                     node_1hop_nei_doc = self.user_docs[node_id - 1]
                 elif node_1hop_nei_type == 'item':
