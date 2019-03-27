@@ -155,7 +155,6 @@ class GraphLoader(object):
             return self.item_docs[node_id - 1 - self.user_num]
 
     def gen_node_neighbor(self, start_node_id, node_type, time_slice):
-        gen_time = time.time()
         if node_type == 'user':
             start_node_doc = self.user_docs[start_node_id - 1] 
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
@@ -177,13 +176,11 @@ class GraphLoader(object):
             node_2hop_nei_feat_dict = self.item_feat_dict
         
         node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
-        
+
         # gen node 2 hops history
         if node_1hop_list == []:
-            print('gen time: {}'.format(time.time() - gen_time), file=open('log2.txt','a'))
             return node_1hop_dummy, node_2hop_dummy
         else:
-            # t = time.time()
             # deal with 1hop
             if len(node_1hop_list) >= self.obj_per_time_slice:
                 node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
@@ -198,13 +195,10 @@ class GraphLoader(object):
                     node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
                 else:
                     node_1hop_t.append([node_id])
-            # print('1hop time: {}'.format(time.time() - t), file=open('log.txt','a'))
-            # deal with 2hop
-            # start_time1 = time.time()
-            
+
+            # deal with 2hop            
             node_2hop_candi = []
             p_distri = []
-            # t = time.time()
             for node_id in node_1hop_list_unique:
                 if node_1hop_nei_type == 'item':
                     node_1hop_nei_doc = self.item_docs[node_id - 1 - self.user_num]
@@ -215,50 +209,39 @@ class GraphLoader(object):
                 if degree > 1:
                     node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
                     p_distri += [1/(degree - 1)] * degree
-                    # for node_2hop_id in node_1hop_nei_doc['hist_%d'%(time_slice)]:
-                    #     if node_2hop_id != start_node_id:
-                    #         node_2hop_candi.append(node_2hop_id)
-                    #         p_distri.append(1/(degree - 1))
 
-            # print('2 hop prepare time: {}'.format(time.time() - t), file=open('log.txt','a'))
             if node_2hop_candi != []:
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                # start_time2 = time.time()
                 node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                # print('sampling time: {}'.format(time.time() - start_time2), file=open('log.txt','a'))
-                # t = time.time()
                 node_2hop_t = []
                 for node_2hop_id in node_2hop_list:
                     if node_2hop_nei_feat_dict != None:
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
                         node_2hop_t.append([node_2hop_id])
-                # print('after sampling time: {}'.format(time.time() - t))
-                print('gen time: {}'.format(time.time() - gen_time), file=open('log2.txt','a'))
                 return node_1hop_t, node_2hop_t
             else:
-                print('gen time: {}'.format(time.time() - gen_time), file=open('log2.txt','a'))
                 return node_1hop_t, node_2hop_dummy
             
     def gen_user_history(self, start_uid):
         user_1hop, user_2hop = [], []
-        # t = time.time()
+        t = time.time()
         for i in range(START_TIME, self.pred_time):
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_uid, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
-        # print('gen_user_history time: {}'.format(time.time() - t))
+        print('gen_user_history time: {}'.format(time.time() - t))
         return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid):
         item_1hop, item_2hop = [], []
-        # t = time.time()
+        t = time.time()
         for i in range(START_TIME, self.pred_time):
             
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_iid, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
-        # print('gen_item_history time: {}'.format(time.time() - t))
+        print('gen_item_history time: {}'.format(time.time() - t))
         return item_1hop, item_2hop
         
     def __next__(self):
