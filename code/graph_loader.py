@@ -218,7 +218,7 @@ class GraphLoader(object):
                             p_distri.append(1/(degree - 1))
                 else:
                     node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
-                    p_distri.append(1/(degree - 1))
+                    p_distri += [1/(degree - 1)] * degree
             # print('2 hop prepare time: {}'.format(time.time() - t))
             if node_2hop_candi != []:
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
