@@ -230,23 +230,23 @@ class GraphLoader(object):
             
     def gen_user_history(self, start_uid):
         user_1hop, user_2hop = [], []
-        t = time.time()
+        # t = time.time()
         for i in range(START_TIME, self.pred_time):
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_uid, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
-        print('gen_user_history time: {}'.format(time.time() - t))
+        # print('gen_user_history time: {}'.format(time.time() - t))
         return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid):
         item_1hop, item_2hop = [], []
-        t = time.time()
+        # t = time.time()
         for i in range(START_TIME, self.pred_time):
             
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_iid, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
-        print('gen_item_history time: {}'.format(time.time() - t))
+        # print('gen_item_history time: {}'.format(time.time() - t))
         return item_1hop, item_2hop
         
     def __next__(self):
@@ -349,10 +349,10 @@ if __name__ == "__main__":
     i = 0
     for batch_data in graph_loader:
         # print(batch_data[-3:])
-        # print('batch time: {}'.format(time.time() - t))
-        # t = time.time()
+        print('batch time: {}'.format(time.time() - t))
+        t = time.time()
         i += 1
-        print('batch {}'.format(i), file=open('log2.txt','a'))
+        print('batch {}'.format(i))
         if i == 100:
             break
             # print('average time:{}'.format((time.time() - st)/100))
