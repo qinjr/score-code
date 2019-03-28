@@ -320,15 +320,14 @@ if __name__ == "__main__":
                                 40,
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    u1, u2 = graph_loader.gen_user_history(1)
-    print(u1, u2)
-    # t = time.time()
-    # i = 0
-    # for batch_data in graph_loader:
-    #     # print(batch_data[-3:])
-    #     print('batch time: {}'.format(time.time() - t))
-    #     t = time.time()
-    #     i += 1
-    #     if i == 100:
-    #         break
-    #         print('average time:{}'.format((time.time() - st)/100))
+    
+    t = time.time()
+    i = 0
+    for batch_data in graph_loader:
+        # print(batch_data[-3:])
+        print('batch time: {}'.format(time.time() - t))
+        t = time.time()
+        i += 1
+        if i == 100:
+            break
+            print('average time:{}'.format((time.time() - st)/100))
