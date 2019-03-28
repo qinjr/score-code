@@ -57,15 +57,17 @@ class TargetGen(object):
         print('generate {} completed'.format(target_file))
 
 class GraphLoader(object):
-    def __init__(self, time_slice_num, db_name, obj_per_time_slice,
-                 user_fnum, item_fnum, user_feat_dict_file = None, 
-                 item_feat_dict_file = None):
+    def __init__(self, db_name, obj_per_time_slice,
+                 user_fnum, item_fnum, batch_size, pred_time,
+                 user_feat_dict_file = None, item_feat_dict_file = None):
         self.db_name = db_name
+        self.batch_size = batch_size
+        self.pred_time = pred_time
+
         self.user_num = USER_NUM_CCMR
         self.item_num = ITEM_NUM_CCMR
         
         self.obj_per_time_slice = obj_per_time_slice
-        self.time_slice_num = time_slice_num
 
         self.user_fnum = user_fnum
         self.item_fnum = item_fnum
@@ -80,15 +82,16 @@ class GraphLoader(object):
             with open(item_feat_dict_file, 'rb') as f:
                 self.item_feat_dict = pkl.load(f)
         
-        self.work_q = multiprocessing.Queue(maxsize=self.time_slice_num)
+        # multiprocessing
+        self.work_q = multiprocessing.Queue(maxsize=self.pred_time)
         self.worker_n = WORKER_N
         self.worker_begin = multiprocessing.Value('d', 0)
         self.complete = multiprocessing.Value('d', 0)
         self.work_cnt = multiprocessing.Value('d', 0)
 
         self.thread_list = []
-        self.node_1hop = [None] * self.time_slice_num
-        self.node_2hop = [None] * self.time_slice_num
+        self.node_1hop = [None] * self.pred_time
+        self.node_2hop = [None] * self.pred_time
 
         for i in range(self.worker_n):
             thread = multiprocessing.Process(target=self.gen_node_neighbor)
@@ -193,14 +196,14 @@ class GraphLoader(object):
     def gen_user_history(self, start_uid):
         while True:
             if self.work_q.empty() and self.worker_begin.value == 0:
-                for i in range(self.time_slice_num):
+                for i in range(self.pred_time):
                     self.work_q.put((start_uid, 'user', i))
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 1
-            if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.time_slice_num:
+            if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
                 user_1hop, user_2hop = self.node_1hop, self.node_2hop
-                self.node_1hop = [None] * 16
-                self.node_2hop = [None] * 16
+                self.node_1hop = [None] * self.pred_time
+                self.node_2hop = [None] * self.pred_time
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 0
                 with self.work_cnt.get_lock():
@@ -210,11 +213,11 @@ class GraphLoader(object):
     def gen_item_history(self, start_iid):
         while True:
             if self.work_q.empty() and self.worker_begin.value == 0:
-                for i in range(self.time_slice_num):
+                for i in range(self.pred_time):
                     self.work_q.put((start_iid, 'item', i))
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 1
-            if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.time_slice_num:
+            if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
                 item_1hop, item_2hop = self.node_1hop, self.node_2hop
                 self.node_1hop = [None] * 16
                 self.node_2hop = [None] * 16
@@ -281,11 +284,12 @@ class GraphLoader(object):
 
 
 if __name__ == "__main__":
-    graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR,
-                                'ccmr',
+    graph_loader = GraphLoader('ccmr',
                                 OBJ_PER_TIME_SLICE_CCMR,
                                 1,
                                 5,
+                                100,
+                                40
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     
