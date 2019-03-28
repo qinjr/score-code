@@ -58,10 +58,10 @@ class TargetGen(object):
         print('generate {} completed'.format(target_file))
 
 class GraphHandler(object):
-    def __init__(self, time_slice_num, mongo_client, db_name, obj_per_time_slice,
+    def __init__(self, time_slice_num, db_name, obj_per_time_slice,
                  user_fnum, item_fnum, user_feat_dict_file = None, 
                  item_feat_dict_file = None):
-        self.client = mongo_client
+        self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.user_coll = self.client[db_name].user
         self.item_coll = self.client[db_name].item
         self.user_num = self.user_coll.find().count()
@@ -176,7 +176,7 @@ class GraphHandler(object):
 
 
 class GraphLoader(object):
-    def __init__(self, graph_handler_list, batch_size, target_file, pred_time, 
+    def __init__(self, graph_handler_params, batch_size, target_file, pred_time, 
                 worker_n = WORKER_N, max_q_size = 10, wait_time = 0.05):
         self.batch_size = batch_size
         self.max_q_size = max_q_size
@@ -207,8 +207,7 @@ class GraphLoader(object):
         thread.daemon = True
         thread.start()
         for i in range(worker_n):
-            graph_handler = graph_handler_list[i]
-            thread = multiprocessing.Process(target=self.worker, args=[graph_handler])
+            thread = multiprocessing.Process(target=self.worker, args=[graph_handler_params])
             self.threads.append(thread)
             thread.daemon = True
             thread.start()
@@ -236,7 +235,9 @@ class GraphLoader(object):
                     self.producer_stop.value = 1
                     break
     
-    def worker(self, graph_handler):
+    def worker(self, params):
+        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6])
+        
         while not (self.work.qsize() == 0 and self.producer_stop.value == 1):
             try:
                 uids, iids = self.work.get(timeout=self.wait_time)
@@ -284,17 +285,19 @@ class GraphLoader(object):
 
 if __name__ == "__main__":
     client = pymongo.MongoClient("mongodb://localhost:27017/")
-    graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
-                                client, 
-                                'ccmr',
-                                OBJ_PER_TIME_SLICE_CCMR,
-                                1,
-                                5,
-                                None, 
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    graph_handler_list = [graph_handler] * WORKER_N
+    graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr', OBJ_PER_TIME_SLICE_CCMR, \
+                            1, 5, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
+    # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
+    #                             client, 
+    #                             'ccmr',
+    #                             OBJ_PER_TIME_SLICE_CCMR,
+    #                             1,
+    #                             5,
+    #                             None, 
+    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    # graph_handler_list = [graph_handler] * WORKER_N
 
-    graph_loader = GraphLoader(graph_handler_list, 100, DATA_DIR_CCMR + 'target_train.txt', 40)
+    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 40)
     # graph_handler.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
     # graph_handler.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
     t = time.time()
