@@ -144,7 +144,7 @@ class GraphLoader(object):
                     self.queue_2hop.put((node_2hop_dummy, time_slice))
                     with self.work_cnt.get_lock():
                         self.work_cnt.value += 1
-                    print('cal time: {}'.format(time.time-t))
+                    print('cal time: {}'.format(time.time()-t))
                     # return node_1hop_dummy, node_2hop_dummy
                 else:
                     # deal with 1hop
@@ -192,13 +192,13 @@ class GraphLoader(object):
                         self.queue_2hop.put((node_2hop_t, time_slice))
                         with self.work_cnt.get_lock():
                             self.work_cnt.value += 1
-                        print('cal time: {}'.format(time.time-t))
+                        print('cal time: {}'.format(time.time()-t))
                     else:
                         self.queue_1hop.put((node_1hop_t, time_slice))
                         self.queue_2hop.put((node_2hop_dummy, time_slice))
                         with self.work_cnt.get_lock():
                             self.work_cnt.value += 1
-                        print('cal time: {}'.format(time.time-t))
+                        print('cal time: {}'.format(time.time()-t))
                         # return node_1hop_t, node_2hop_dummy
             else:
                 time.sleep(0.01)
