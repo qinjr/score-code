@@ -95,14 +95,14 @@ class GraphLoader(object):
         self.node_2hop = [None] * self.pred_time
 
         for i in range(self.worker_n):
-            thread = multiprocessing.Process(target=self.gen_node_neighbor)
+            thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
             thread.daemon = True
             self.thread_list.append(thread)
             thread.start()
 
         print('graph loader initial completed')
 
-    def gen_node_neighbor(self):
+    def gen_node_neighbor(self, name):
         url = "mongodb://localhost:27017/"
         client = pymongo.MongoClient(url)
         db = client[self.db_name]
@@ -113,6 +113,7 @@ class GraphLoader(object):
                 return
             if self.work_q.empty() == False and self.worker_begin.value == 1:
                 start_node_id, node_type, time_slice = self.work_q.get()
+                print(start_node_id, node_type, time_slice, name)
                 if node_type == 'user':
                     start_node_doc = user_coll.find({'uid': start_node_id})[0]
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
@@ -195,7 +196,6 @@ class GraphLoader(object):
                             self.work_cnt.value += 1
                         # return node_1hop_t, node_2hop_dummy
 
-
     def gen_user_history(self, start_uid):
         while True:
             if self.work_q.empty() and self.worker_begin.value == 0:
@@ -204,6 +204,7 @@ class GraphLoader(object):
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
+                print('begin summary')
                 user_1hop, user_2hop = self.node_1hop, self.node_2hop
                 self.node_1hop = [None] * self.pred_time
                 self.node_2hop = [None] * self.pred_time
@@ -296,14 +297,14 @@ if __name__ == "__main__":
                                 40,
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    
-    t = time.time()
-    i = 0
-    for batch_data in graph_loader:
-        # print(batch_data[-3:])
-        print('batch time: {}'.format(time.time() - t))
-        t = time.time()
-        i += 1
-        if i == 100:
-            break
-            print('average time:{}'.format((time.time() - st)/100))
+    graph_loader.gen_user_history(1)
+    # t = time.time()
+    # i = 0
+    # for batch_data in graph_loader:
+    #     # print(batch_data[-3:])
+    #     print('batch time: {}'.format(time.time() - t))
+    #     t = time.time()
+    #     i += 1
+    #     if i == 100:
+    #         break
+    #         print('average time:{}'.format((time.time() - st)/100))
