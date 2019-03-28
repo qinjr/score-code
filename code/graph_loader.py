@@ -291,7 +291,7 @@ if __name__ == "__main__":
                                 1,
                                 5,
                                 100,
-                                40
+                                40,
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     
