@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 8
+WORKER_N = 16
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
@@ -85,7 +85,7 @@ class GraphHandler(object):
         print('graph loader initial completed')
 
     def gen_node_neighbor(self, start_node_id, node_type, time_slice):
-        t=time.time()
+        # t=time.time()
         if node_type == 'user':
             start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
@@ -107,13 +107,13 @@ class GraphHandler(object):
             node_2hop_nei_feat_dict = self.item_feat_dict
         
         node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
-        print('phase1 time: {}'.format(time.time()-t))
+        # print('phase1 time: {}'.format(time.time()-t))
         
         # gen node 2 hops history
         if node_1hop_list == []:
             return node_1hop_dummy, node_2hop_dummy
         else:
-            t=time.time()
+            # t=time.time()
             # deal with 1hop
             if len(node_1hop_list) >= self.obj_per_time_slice:
                 node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
@@ -128,29 +128,29 @@ class GraphHandler(object):
                     node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
                 else:
                     node_1hop_t.append([node_id])
-            print('phase2 time: {}'.format(time.time()-t))
-            st=time.time()
+            # print('phase2 time: {}'.format(time.time()-t))
+            # st=time.time()
             # deal with 2hop            
             node_2hop_candi = []
             p_distri = []
             # for node_id in node_1hop_list_unique:
             if node_1hop_nei_type == 'item':
-                t=time.time()
+                # t=time.time()
                 node_1hop_nei_docs = self.item_coll.find({'iid': {'$in': node_1hop_list_unique}})
-                print('find item time: {}'.format(time.time()-t))
+                # print('find item time: {}'.format(time.time()-t))
                 # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
             elif node_1hop_nei_type == 'user':
-                t=time.time()
+                # t=time.time()
                 node_1hop_nei_docs = self.user_coll.find({'uid': {'$in': node_1hop_list_unique}})
-                print('find user time: {}'.format(time.time()-t))
+                # print('find user time: {}'.format(time.time()-t))
                 # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
             for node_1hop_nei_doc in node_1hop_nei_docs:
                 degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                 if degree > 1:
                     node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
                     p_distri += [1/(degree - 1)] * degree
-            print('phase3 time: {}'.format(time.time()-st))
-            t=time.time()
+            # print('phase3 time: {}'.format(time.time()-st))
+            # t=time.time()
             if node_2hop_candi != []:
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                 node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
@@ -160,7 +160,7 @@ class GraphHandler(object):
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
                         node_2hop_t.append([node_2hop_id])
-                print('phase4 time: {}'.format(time.time()-t))
+                # print('phase4 time: {}'.format(time.time()-t))
                 return node_1hop_t, node_2hop_t
             else:
                 return node_1hop_t, node_2hop_dummy
