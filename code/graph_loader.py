@@ -289,7 +289,7 @@ class GraphLoader(object):
 if __name__ == "__main__":
     graph_loader = GraphLoader('ccmr',
                                 OBJ_PER_TIME_SLICE_CCMR,
-                                DATA_DIR_CCMR + 'target_train.txt'
+                                DATA_DIR_CCMR + 'target_train.txt',
                                 1,
                                 5,
                                 100,
