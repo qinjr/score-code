@@ -84,22 +84,21 @@ class GraphLoader(object):
                 self.item_feat_dict = pkl.load(f)
         
         # multiprocessing
-        with multiprocessing.Manager() as manager:
-            self.work_q = multiprocessing.Queue(maxsize=self.pred_time)
-            self.worker_n = WORKER_N
-            self.worker_begin = multiprocessing.Value('d', 0)
-            self.complete = multiprocessing.Value('d', 0)
-            self.work_cnt = multiprocessing.Value('d', 0)
+        self.work_q = multiprocessing.Queue(maxsize=self.pred_time)
+        self.worker_n = WORKER_N
+        self.worker_begin = multiprocessing.Value('d', 0)
+        self.complete = multiprocessing.Value('d', 0)
+        self.work_cnt = multiprocessing.Value('d', 0)
 
-            self.thread_list = []
-            self.node_1hop = manager.list(range(self.pred_time))
-            self.node_2hop = manager.list(range(self.pred_time))
+        self.thread_list = []
+        self.node_1hop = [None] * self.pred_time
+        self.node_2hop = [None] * self.pred_time
 
-            for i in range(self.worker_n):
-                thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
-                thread.daemon = True
-                self.thread_list.append(thread)
-                thread.start()
+        for i in range(self.worker_n):
+            thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
+            thread.daemon = True
+            self.thread_list.append(thread)
+            thread.start()
 
         print('graph loader initial completed')
 
@@ -205,10 +204,10 @@ class GraphLoader(object):
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
+                print('begin summary')
                 user_1hop, user_2hop = self.node_1hop, self.node_2hop
-                with multiprocessing.Manager() as manager:
-                    self.node_1hop = manager.list(range(self.pred_time))
-                    self.node_2hop = manager.list(range(self.pred_time))
+                self.node_1hop = [None] * self.pred_time
+                self.node_2hop = [None] * self.pred_time
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 0
                 with self.work_cnt.get_lock():
@@ -299,8 +298,7 @@ if __name__ == "__main__":
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     u1, u2 = graph_loader.gen_user_history(1)
-    print(u1)
-    print(u2)
+    print(u1, u2)
     # t = time.time()
     # i = 0
     # for batch_data in graph_loader:
