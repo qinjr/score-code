@@ -236,6 +236,7 @@ class GraphLoader(object):
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
+                print('begin summary')
                 item_1hop_list = []
                 item_2hop_list = []
                 for i in range(self.pred_time):
