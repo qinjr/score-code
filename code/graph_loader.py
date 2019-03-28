@@ -363,7 +363,7 @@ class GraphLoader(object):
             while self.work.qsize() >= self.max_q_size:
                 time.sleep(self.wait_time)
             self.work.put((uids, iids))
-
+            print('produce')
             if self.prod_batch_num == self.num_of_batch:
                 with self.producer_stop.get_lock():
                     self.producer_stop.value = 1
@@ -375,6 +375,7 @@ class GraphLoader(object):
                 uids, iids = self.work.get(timeout=self.wait_time)
             except:
                 continue
+            print('work')
             user_1hop_batch = []
             user_2hop_batch = []
             item_1hop_batch = []
