@@ -85,14 +85,15 @@ class GraphLoader(object):
         
         # multiprocessing
         self.work_q = multiprocessing.Queue(maxsize=self.pred_time)
+        self.queue_1hop = multiprocessing.Queue(maxsize=self.pred_time)
+        self.queue_2hop = multiprocessing.Queue(maxsize=self.pred_time)
+
         self.worker_n = WORKER_N
         self.worker_begin = multiprocessing.Value('d', 0)
         self.complete = multiprocessing.Value('d', 0)
         self.work_cnt = multiprocessing.Value('d', 0)
 
         self.thread_list = []
-        self.node_1hop = [None] * self.pred_time
-        self.node_2hop = [None] * self.pred_time
 
         for i in range(self.worker_n):
             thread = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
@@ -138,8 +139,8 @@ class GraphLoader(object):
                 
                 # gen node 2 hops history
                 if node_1hop_list == []:
-                    self.node_1hop[time_slice] = node_1hop_dummy
-                    self.node_2hop[time_slice] = node_2hop_dummy
+                    self.queue_1hop.put((node_1hop_dummy, time_slice))
+                    self.queue_2hop.put((node_2hop_dummy, time_slice))
                     with self.work_cnt.get_lock():
                         self.work_cnt.value += 1
                     # return node_1hop_dummy, node_2hop_dummy
@@ -185,13 +186,13 @@ class GraphLoader(object):
                             else:
                                 node_2hop_t.append([node_2hop_id])
                         # return node_1hop_t, node_2hop_t
-                        self.node_1hop[time_slice] = node_1hop_t
-                        self.node_2hop[time_slice] = node_2hop_t
+                        self.queue_1hop.put((node_1hop_t, time_slice))
+                        self.queue_2hop.put((node_2hop_t, time_slice))
                         with self.work_cnt.get_lock():
                             self.work_cnt.value += 1
                     else:
-                        self.node_1hop[time_slice] = node_1hop_t
-                        self.node_2hop[time_slice] = node_2hop_dummy
+                        self.queue_1hop.put((node_1hop_t, time_slice))
+                        self.queue_2hop.put((node_2hop_dummy, time_slice))
                         with self.work_cnt.get_lock():
                             self.work_cnt.value += 1
                         # return node_1hop_t, node_2hop_dummy
@@ -205,9 +206,20 @@ class GraphLoader(object):
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
                 print('begin summary')
-                user_1hop, user_2hop = self.node_1hop, self.node_2hop
-                self.node_1hop = [None] * self.pred_time
-                self.node_2hop = [None] * self.pred_time
+                user_1hop_list = []
+                user_2hop_list = []
+                for i in range(self.pred_time):
+                    user_1hop_list.append(self.queue_1hop.get())
+                    user_2hop_list.append(self.queue_2hop.get())
+                user_1hop_list = sorted(user_1hop_list, key=lambda t:t[1])
+                user_2hop_list = sorted(user_2hop_list, key=lambda t:t[1])
+                
+                user_1hop, user_2hop = [], []
+                for tup in user_1hop_list:
+                    user_1hop.append(tup[0])
+                for tup in user_2hop_list:
+                    user_2hop.append(tup[0])
+                    
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 0
                 with self.work_cnt.get_lock():
