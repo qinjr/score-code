@@ -57,12 +57,13 @@ class TargetGen(object):
         print('generate {} completed'.format(target_file))
 
 class GraphLoader(object):
-    def __init__(self, db_name, obj_per_time_slice,
+    def __init__(self, db_name, obj_per_time_slice, target_file
                  user_fnum, item_fnum, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
         self.db_name = db_name
         self.batch_size = batch_size
         self.pred_time = pred_time
+        self.target_f = open(target_file, 'r')
 
         self.user_num = USER_NUM_CCMR
         self.item_num = ITEM_NUM_CCMR
@@ -288,6 +289,7 @@ class GraphLoader(object):
 if __name__ == "__main__":
     graph_loader = GraphLoader('ccmr',
                                 OBJ_PER_TIME_SLICE_CCMR,
+                                DATA_DIR_CCMR + 'target_train.txt'
                                 1,
                                 5,
                                 100,
