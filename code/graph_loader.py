@@ -114,7 +114,7 @@ class GraphLoader(object):
                 return
             if self.work_q.empty() == False and self.worker_begin.value == 1:
                 start_node_id, node_type, time_slice = self.work_q.get()
-                print(start_node_id, node_type, time_slice, name)
+                # print(start_node_id, node_type, time_slice, name)
                 if node_type == 'user':
                     start_node_doc = user_coll.find({'uid': start_node_id})[0]
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
@@ -197,19 +197,19 @@ class GraphLoader(object):
                             self.work_cnt.value += 1
                         # return node_1hop_t, node_2hop_dummy
             else:
-                time.sleep(0.01)
+                time.sleep(0.1)
     
     def gen_user_history(self, start_uid):
         while True:
             if not self.work_q.empty():
-                time.sleep(0.01)
+                time.sleep(0.1)
             if self.work_q.empty() and self.worker_begin.value == 0:
                 for i in range(self.pred_time):
                     self.work_q.put((start_uid, 'user', i))
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
-                print('begin summary')
+                # print('begin summary')
                 user_1hop_list = []
                 user_2hop_list = []
                 for i in range(self.pred_time):
@@ -232,13 +232,15 @@ class GraphLoader(object):
 
     def gen_item_history(self, start_iid):
         while True:
+            if not self.work_q.empty():
+                time.sleep(0.1)
             if self.work_q.empty() and self.worker_begin.value == 0:
                 for i in range(self.pred_time):
                     self.work_q.put((start_iid, 'item', i))
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
-                print('begin summary')
+                # print('begin summary')
                 item_1hop_list = []
                 item_2hop_list = []
                 for i in range(self.pred_time):
