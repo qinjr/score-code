@@ -86,7 +86,7 @@ class GraphHandler(object):
 
     def gen_node_neighbor(self, start_node_id, node_type, time_slice):
         if node_type == 'user':
-            start_node_doc = self.user_coll.find_one({'uid': start_node_id})
+            start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             
@@ -96,7 +96,7 @@ class GraphHandler(object):
             node_2hop_nei_feat_dict = self.user_feat_dict
 
         elif node_type == 'item':
-            start_node_doc = self.item_coll.find_one({'iid': start_node_id})
+            start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
