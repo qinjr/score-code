@@ -129,12 +129,14 @@ class GraphHandler(object):
             # deal with 2hop            
             node_2hop_candi = []
             p_distri = []
-            for node_id in node_1hop_list_unique:
-                if node_1hop_nei_type == 'item':
-                    node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
-                elif node_1hop_nei_type == 'user':
-                    node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
-
+            # for node_id in node_1hop_list_unique:
+            if node_1hop_nei_type == 'item':
+                node_1hop_nei_docs = self.item_coll.find({'iid': {'$in': node_1hop_list_unique}})
+                # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
+            elif node_1hop_nei_type == 'user':
+                node_1hop_nei_docs = self.user_coll.find({'uid': {'$in': node_1hop_list_unique}})
+                # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
+            for node_1hop_nei_doc in node_1hop_nei_docs:
                 degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                 if degree > 1:
                     node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
