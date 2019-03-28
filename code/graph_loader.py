@@ -201,6 +201,8 @@ class GraphLoader(object):
     
     def gen_user_history(self, start_uid):
         while True:
+            if not self.work_q.empty():
+                time.sleep(0.01)
             if self.work_q.empty() and self.worker_begin.value == 0:
                 for i in range(self.pred_time):
                     self.work_q.put((start_uid, 'user', i))
