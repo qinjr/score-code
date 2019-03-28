@@ -16,7 +16,7 @@ OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
-class TargetGen(obj):
+class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):
         with open(user_neg_dict_file, 'rb') as f:
             self.user_neg_dict = pkl.load(f)  
