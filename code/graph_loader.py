@@ -287,7 +287,6 @@ if __name__ == "__main__":
     graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr', OBJ_PER_TIME_SLICE_CCMR, \
                             1, 5, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
     graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
-                                client, 
                                 'ccmr',
                                 OBJ_PER_TIME_SLICE_CCMR,
                                 1,
