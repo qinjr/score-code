@@ -346,7 +346,7 @@ class GraphLoader(object):
             thread.start()
     
     def producer(self):
-        while self.producer_stop == 0:
+        while self.producer_stop.value == 0:
             uids = []
             iids = []
             if (self.prod_batch_num + 1) * self.batch_size2line_num <= len(self.target_lines):
@@ -363,19 +363,17 @@ class GraphLoader(object):
             while self.work.qsize() >= self.max_q_size:
                 time.sleep(self.wait_time)
             self.work.put((uids, iids))
-            print('produce')
             if self.prod_batch_num == self.num_of_batch:
                 with self.producer_stop.get_lock():
                     self.producer_stop.value = 1
                     break
     
     def worker(self):
-        while not (self.work.qsize() == 0 and self.producer_stop == 1):
+        while not (self.work.qsize() == 0 and self.producer_stop.value == 1):
             try:
                 uids, iids = self.work.get(timeout=self.wait_time)
             except:
                 continue
-            print('work')
             user_1hop_batch = []
             user_2hop_batch = []
             item_1hop_batch = []
@@ -407,9 +405,9 @@ class GraphLoader(object):
         return self
 
     def __next__(self):
-        while self.results.empty() and self.worker_stop != self.worker_n:
+        while self.results.empty() and self.worker_stop.value != self.worker_n:
             time.sleep(self.wait_time)
-        if self.results.empty() and self.worker_stop == self.worker_n:
+        if self.results.empty() and self.worker_stop.value == self.worker_n:
             for thread in self.threads:
                 thread.terminate()
             raise StopIteration
