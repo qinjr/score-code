@@ -57,7 +57,7 @@ class TargetGen(object):
         print('generate {} completed'.format(target_file))
 
 class GraphLoader(object):
-    def __init__(self, db_name, obj_per_time_slice, target_file
+    def __init__(self, db_name, obj_per_time_slice, target_file,
                  user_fnum, item_fnum, batch_size, pred_time,
                  user_feat_dict_file = None, item_feat_dict_file = None):
         self.db_name = db_name
