@@ -298,7 +298,9 @@ if __name__ == "__main__":
                                 40,
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    graph_loader.gen_user_history(1)
+    u1, u2 = graph_loader.gen_user_history(1)
+    print(u1)
+    print(u2)
     # t = time.time()
     # i = 0
     # for batch_data in graph_loader:
