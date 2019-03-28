@@ -69,6 +69,8 @@ class GraphLoader(object):
         db = client['ccmr']
         self.user_coll = db.user
         self.item_coll = db.item
+        user_cursor = self.user_coll.find({})
+        item_cursor = self.item_coll.find({})
         with multiprocessing.Manager() as manager:
             self.user_docs = manager.list()
             self.item_docs = manager.list()
