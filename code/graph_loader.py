@@ -293,7 +293,7 @@ if __name__ == "__main__":
                                 5,
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    for i in range(100):
+    for i in range(1, 100):
         graph_handler.gen_user_history(i, 40)
     # graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 40)
     # # graph_handler.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
