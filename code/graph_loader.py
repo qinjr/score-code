@@ -9,6 +9,7 @@ NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
 WORKER_N = 16
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
+START_TIME = 30
 
 # CCMR dataset parameters
 TIME_SLICE_NUM_CCMR = 41
@@ -168,22 +169,22 @@ class GraphHandler(object):
 
     def gen_user_history(self, start_uid, pred_time):
         user_1hop, user_2hop = [], []
-        t = time.time()
-        for i in range(pred_time):
+        # t = time.time()
+        for i in range(START_TIME, pred_time):
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_uid, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
-        print('gen_user_history time: {}'.format(time.time() - t))
+        # print('gen_user_history time: {}'.format(time.time() - t))
         return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid, pred_time):
         item_1hop, item_2hop = [], []
-        t = time.time()
-        for i in range(pred_time):
+        # t = time.time()
+        for i in range(START_TIME, pred_time):
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_iid, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
-        print('gen_item_history time: {}'.format(time.time() - t))
+        # print('gen_item_history time: {}'.format(time.time() - t))
         return item_1hop, item_2hop
 
 
@@ -293,6 +294,7 @@ class GraphLoader(object):
                 thread.terminate()
             raise StopIteration
         re = self.results.get()
+        print('batch done')
         return re
 
 if __name__ == "__main__":
