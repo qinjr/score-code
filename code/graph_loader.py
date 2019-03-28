@@ -359,7 +359,7 @@ class GraphLoader(object):
                 uids.append(line_list[0])
                 iids += line_list[1:]
             uids = [int(uid) for uid in uids]
-            iids = [int(uid) for iid in iids]
+            iids = [int(iid) for iid in iids]
             while self.work.qsize() >= self.max_q_size:
                 time.sleep(self.wait_time)
             self.work.put((uids, iids))
