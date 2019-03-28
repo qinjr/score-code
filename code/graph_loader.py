@@ -323,7 +323,7 @@ if __name__ == "__main__":
                                 DATA_DIR_CCMR + 'target_train.txt',
                                 1,
                                 5,
-                                100,
+                                10,
                                 40,
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
