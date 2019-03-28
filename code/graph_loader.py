@@ -219,7 +219,7 @@ class GraphLoader(object):
                     user_1hop.append(tup[0])
                 for tup in user_2hop_list:
                     user_2hop.append(tup[0])
-                    
+
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 0
                 with self.work_cnt.get_lock():
@@ -234,9 +234,20 @@ class GraphLoader(object):
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
-                item_1hop, item_2hop = self.node_1hop, self.node_2hop
-                self.node_1hop = [None] * 16
-                self.node_2hop = [None] * 16
+                item_1hop_list = []
+                item_2hop_list = []
+                for i in range(self.pred_time):
+                    item_1hop_list.append(self.queue_1hop.get())
+                    item_2hop_list.append(self.queue_2hop.get())
+                item_1hop_list = sorted(item_1hop_list, key=lambda t:t[1])
+                item_2hop_list = sorted(item_2hop_list, key=lambda t:t[1])
+                
+                item_1hop, item_2hop = [], []
+                for tup in item_1hop_list:
+                    item_1hop.append(tup[0])
+                for tup in item_2hop_list:
+                    item_2hop.append(tup[0])
+
                 with self.worker_begin.get_lock():
                     self.worker_begin.value = 0
                 with self.work_cnt.get_lock():
