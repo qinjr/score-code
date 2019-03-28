@@ -241,6 +241,7 @@ class GraphLoader(object):
                     self.worker_begin.value = 1
             if self.work_q.empty() and self.worker_begin.value == 1 and self.work_cnt.value == self.pred_time:
                 print('begin summary')
+                t = time.time()
                 item_1hop_list = []
                 item_2hop_list = []
                 for i in range(self.pred_time):
@@ -259,6 +260,7 @@ class GraphLoader(object):
                     self.worker_begin.value = 0
                 with self.work_cnt.get_lock():
                     self.work_cnt.value = 0
+                print('time: {}'.format(time.time()-t))
                 return item_1hop, item_2hop
     
     def __iter__(self):
