@@ -196,7 +196,9 @@ class GraphLoader(object):
                         with self.work_cnt.get_lock():
                             self.work_cnt.value += 1
                         # return node_1hop_t, node_2hop_dummy
-
+            else:
+                time.sleep(0.01)
+    
     def gen_user_history(self, start_uid):
         while True:
             if self.work_q.empty() and self.worker_begin.value == 0:
