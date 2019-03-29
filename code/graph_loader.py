@@ -117,7 +117,7 @@ class GraphLoader(object):
                     start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
                 except:
                     continue
-                print('process-{} begin working')
+                print('process-{} begin working'.format(name))
                 if node_type == 'user':
                     # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
                     start_node_doc = user_cursor[start_node_id - 1]
@@ -220,6 +220,7 @@ class GraphLoader(object):
         time.sleep(self.wait_time)
         while True:
             if self.work_cnt == self.pred_time - START_TIME:
+                print('begin resulting')
                 user_1hop_list, user_2hop_list = [], []
                 user_1hop, user_2hop = [], []
                 for i in range(self.pred_time - START_TIME):
