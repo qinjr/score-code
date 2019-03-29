@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 4
+WORKER_N = 10
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -219,7 +219,7 @@ class GraphLoader(object):
         print('produce user complete')
         time.sleep(self.wait_time)
         while True:
-            if self.work_cnt == self.pred_time - START_TIME:
+            if self.work_cnt.value == self.pred_time - START_TIME:
                 print('begin resulting')
                 user_1hop_list, user_2hop_list = [], []
                 user_1hop, user_2hop = [], []
