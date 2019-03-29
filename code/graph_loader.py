@@ -170,16 +170,17 @@ class GraphLoader(object):
                     # deal with 2hop            
                     node_2hop_candi = []
                     p_distri = []
+                    print(len(node_1hop_list_unique))
                     for node_id in node_1hop_list_unique:
                         if node_1hop_nei_type == 'item':
-                            # t=time.time()
+                            t=time.time()
                             node_1hop_nei_doc = item_cursor[node_id - 1 - self.user_num]
-                            # print('find item time: {}'.format(time.time()-t))
+                            print('find item time: {}'.format(time.time()-t))
                             # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
                         elif node_1hop_nei_type == 'user':
-                            # t=time.time()
+                            t=time.time()
                             node_1hop_nei_doc = user_cursor[node_id - 1]
-                            # print('find user time: {}'.format(time.time()-t))
+                            print('find user time: {}'.format(time.time()-t))
                             # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
                             degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
                             if degree > 1:
