@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 10
+WORKER_N = 5
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -102,7 +102,6 @@ class GraphLoader(object):
             process.start()
     
     def gen_node_neighbor(self, name):
-        print('process-{} begin'.format(name))
         url = "mongodb://localhost:27017/"
         client = pymongo.MongoClient(url)
         db = client[self.db_name]
@@ -117,7 +116,6 @@ class GraphLoader(object):
                     start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
                 except:
                     continue
-                print('process-{} begin working'.format(name))
                 if node_type == 'user':
                     # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
                     start_node_doc = user_cursor[start_node_id - 1]
@@ -216,11 +214,9 @@ class GraphLoader(object):
             self.work_q.put((start_uid, 'user', i))
         with self.work_cnt.get_lock():
             self.work_cnt.value = 0
-        print('produce user complete')
         time.sleep(self.wait_time)
         while True:
             if self.work_cnt.value == self.pred_time - START_TIME:
-                print('begin resulting')
                 user_1hop_list, user_2hop_list = [], []
                 user_1hop, user_2hop = [], []
                 for i in range(self.pred_time - START_TIME):
@@ -274,7 +270,7 @@ if __name__ == "__main__":
         graph_loader.gen_user_history(i)
         print('user gen time: {}'.format(time.time() - t))
     
-    # for i in range(1 + USER_NUM_CCMR, 100 + USER_NUM_CCMR):
-    #     t = time.time()
-    #     graph_loader.gen_item_history(i)
-    #     print('item gen time: {}'.format(time.time() - t))
+    for i in range(1 + USER_NUM_CCMR, 100 + USER_NUM_CCMR):
+        t = time.time()
+        graph_loader.gen_item_history(i)
+        print('item gen time: {}'.format(time.time() - t))
