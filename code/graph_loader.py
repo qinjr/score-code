@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 5
+WORKER_N = 10
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -265,10 +265,10 @@ if __name__ == "__main__":
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
                                 100, 
                                 40)
-    for i in range(1, 100):
-        t = time.time()
-        graph_loader.gen_user_history(i)
-        print('user gen time: {}'.format(time.time() - t))
+    # for i in range(1, 100):
+    #     t = time.time()
+    #     graph_loader.gen_user_history(i)
+    #     print('user gen time: {}'.format(time.time() - t))
     
     for i in range(1 + USER_NUM_CCMR, 100 + USER_NUM_CCMR):
         t = time.time()
