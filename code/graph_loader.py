@@ -117,7 +117,7 @@ class GraphLoader(object):
                     start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
                 except:
                     continue
-
+                print('process-{} begin working')
                 if node_type == 'user':
                     # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
                     start_node_doc = user_cursor[start_node_id - 1]
@@ -216,6 +216,7 @@ class GraphLoader(object):
             self.work_q.put((start_uid, 'user', i))
         with self.work_cnt.get_lock():
             self.work_cnt.value = 0
+        print('produce user complete')
         time.sleep(self.wait_time)
         while True:
             if self.work_cnt == self.pred_time - START_TIME:
@@ -272,7 +273,7 @@ if __name__ == "__main__":
         graph_loader.gen_user_history(i)
         print('user gen time: {}'.format(time.time() - t))
     
-    for i in range(1 + USER_NUM_CCMR, 100 + USER_NUM_CCMR):
-        t = time.time()
-        graph_loader.gen_item_history(i)
-        print('item gen time: {}'.format(time.time() - t))
+    # for i in range(1 + USER_NUM_CCMR, 100 + USER_NUM_CCMR):
+    #     t = time.time()
+    #     graph_loader.gen_item_history(i)
+    #     print('item gen time: {}'.format(time.time() - t))
