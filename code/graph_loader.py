@@ -238,7 +238,7 @@ class GraphLoader(object):
             self.work_cnt.value = 0
         time.sleep(self.wait_time)
         while True:
-            if self.work_cnt == self.pred_time - START_TIME:
+            if self.work_cnt.value == self.pred_time - START_TIME:
                 item_1hop_list, item_2hop_list = [], []
                 item_1hop, item_2hop = [], []
                 for i in range(self.pred_time - START_TIME):
