@@ -278,7 +278,7 @@ class GraphLoader(object):
                         label_batch.append(1)
                     else:
                         label_batch.append(0)
-            
+            print('gen result')
             self.results.put((user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch))
         with self.worker_stop.get_lock():
             self.worker_stop.value += 1
