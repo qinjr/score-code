@@ -83,10 +83,10 @@ class CCMRGraphStore(GraphStore):
         print('user and item doc list completed')
 
         for i in range(len(list_of_user_doc_list)):
-            db['user_%d'%(i)].insert_many(list_of_user_doc_list[i])
+            self.db['user_%d'%(i)].insert_many(list_of_user_doc_list[i])
         print('user collection completed')
         for i in range(len(list_of_item_doc_list)):
-            db['item_%d'%(i)].insert_many(list_of_item_doc_list[i])
+            self.db['item_%d'%(i)].insert_many(list_of_item_doc_list[i])
         print('item collection completed')
 
         # insert user collections

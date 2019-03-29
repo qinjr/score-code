@@ -17,6 +17,9 @@ OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
+USER_PER_COLLECTION = 100000
+ITEM_PER_COLLECTION = 100000
+
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):
         with open(user_neg_dict_file, 'rb') as f:
@@ -105,8 +108,16 @@ class GraphLoader(object):
         url = "mongodb://localhost:27017/"
         client = pymongo.MongoClient(url)
         db = client[self.db_name]
-        user_cursor = db.user.find({})
-        item_cursor = db.item.find({})
+
+        user_coll_num = self.user_num // USER_PER_COLLECTION
+        if self.user_num % USER_PER_COLLECTION != 0:
+            user_coll_num += 1
+        item_coll_num = self.item_num // ITEM_PER_COLLECTION
+        if self.item_num % ITEM_PER_COLLECTION != 0:
+            item_coll_num += 1
+
+        user_colls = [db['user_%d'%(i)] for i in range(user_coll_num)]
+        item_colls = [db['item_%d'%(i)] for i in range(item_coll_num)]
         
         while True:
             if self.work_cnt.value == self.pred_time - START_TIME:
@@ -119,7 +130,7 @@ class GraphLoader(object):
                 t=time.time()
                 if node_type == 'user':
                     # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
-                    start_node_doc = user_cursor[start_node_id - 1]
+                    start_node_doc = user_colls[(start_node_id - 1) // USER_PER_COLLECTION].find({'uid': start_node_id})[0]#user_cursor[start_node_id - 1]
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     
@@ -130,7 +141,7 @@ class GraphLoader(object):
 
                 elif node_type == 'item':
                     # start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
-                    start_node_doc = item_cursor[start_node_id - 1 - self.user_num]
+                    start_node_doc = item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]#item_cursor[start_node_id - 1 - self.user_num]
                     node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                     node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
@@ -174,12 +185,12 @@ class GraphLoader(object):
                     for node_id in node_1hop_list_unique:
                         if node_1hop_nei_type == 'item':
                             t=time.time()
-                            node_1hop_nei_doc = item_cursor[node_id - 1 - self.user_num]
+                            node_1hop_nei_doc = item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]#item_cursor[node_id - 1 - self.user_num]
                             print('find item time: {}'.format(time.time()-t))
                             # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
                         elif node_1hop_nei_type == 'user':
                             t=time.time()
-                            node_1hop_nei_doc = user_cursor[node_id - 1]
+                            node_1hop_nei_doc = user_colls[(start_node_id - 1) // USER_PER_COLLECTION].find({'uid': node_id})[0]#user_cursor[node_id - 1]
                             print('find user time: {}'.format(time.time()-t))
                             # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
                             degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
