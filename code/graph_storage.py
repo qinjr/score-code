@@ -9,8 +9,8 @@ import numpy as np
 
 SECONDS_PER_DAY = 24 * 3600
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
-USER_PER_COLLECTION = 100000
-ITEM_PER_COLLECTION = 100000
+USER_PER_COLLECTION = 10000
+ITEM_PER_COLLECTION = 10000
 
 class GraphStore(object):
     def __init__(self):

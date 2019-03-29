@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 10
+WORKER_N = 8
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -17,8 +17,8 @@ OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
-USER_PER_COLLECTION = 100000
-ITEM_PER_COLLECTION = 100000
+USER_PER_COLLECTION = 10000
+ITEM_PER_COLLECTION = 10000
 
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):
@@ -181,7 +181,6 @@ class GraphLoader(object):
                     # deal with 2hop            
                     node_2hop_candi = []
                     p_distri = []
-                    print(len(node_1hop_list_unique))
                     for node_id in node_1hop_list_unique:
                         if node_1hop_nei_type == 'item':
                             # t=time.time()
