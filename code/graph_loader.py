@@ -110,7 +110,7 @@ class GraphLoader(object):
         item_cursor = db.item.find({})
         # t=time.time()
         while True:
-            if self.work_cnt == self.pred_time - START_TIME:
+            if self.work_cnt.value == self.pred_time - START_TIME:
                 time.sleep(self.wait_time)
             else:
                 try:
