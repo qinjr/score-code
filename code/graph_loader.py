@@ -65,6 +65,8 @@ class GraphHandler(object):
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.user_coll = self.client[db_name].user
         self.item_coll = self.client[db_name].item
+        self.user_cursor = self.user_coll.find({})
+        self.item_cursor = self.item_coll.find({})
         self.user_num = self.user_coll.find().count()
         self.item_num = self.item_coll.find().count()
         
@@ -88,7 +90,8 @@ class GraphHandler(object):
     def gen_node_neighbor(self, start_node_id, node_type, time_slice):
         # t=time.time()
         if node_type == 'user':
-            start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
+            # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
+            start_node_doc = self.user_cursor[start_node_id - 1]
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             
@@ -98,7 +101,8 @@ class GraphHandler(object):
             node_2hop_nei_feat_dict = self.user_feat_dict
 
         elif node_type == 'item':
-            start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
+            # start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
+            start_node_doc = self.user_cursor[start_node_id - 1 - self.user_num]
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
@@ -134,22 +138,21 @@ class GraphHandler(object):
             # deal with 2hop            
             node_2hop_candi = []
             p_distri = []
-            # for node_id in node_1hop_list_unique:
-            if node_1hop_nei_type == 'item':
-                # t=time.time()
-                node_1hop_nei_docs = self.item_coll.find({'iid': {'$in': node_1hop_list_unique}})
-                # print('find item time: {}'.format(time.time()-t))
-                # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
-            elif node_1hop_nei_type == 'user':
-                # t=time.time()
-                node_1hop_nei_docs = self.user_coll.find({'uid': {'$in': node_1hop_list_unique}})
-                # print('find user time: {}'.format(time.time()-t))
-                # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
-            for node_1hop_nei_doc in node_1hop_nei_docs:
-                degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
-                if degree > 1:
-                    node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
-                    p_distri += [1/(degree - 1)] * degree
+            for node_id in node_1hop_list_unique:
+                if node_1hop_nei_type == 'item':
+                    # t=time.time()
+                    node_1hop_nei_doc = self.item_cursor[node_id - 1 - self.user_num]
+                    # print('find item time: {}'.format(time.time()-t))
+                    # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
+                elif node_1hop_nei_type == 'user':
+                    # t=time.time()
+                    node_1hop_nei_doc = self.user_cursor[node_id - 1]
+                    # print('find user time: {}'.format(time.time()-t))
+                    # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
+                    degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
+                    if degree > 1:
+                        node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
+                        p_distri += [1/(degree - 1)] * degree
             # print('phase3 time: {}'.format(time.time()-st))
             # t=time.time()
             if node_2hop_candi != []:
