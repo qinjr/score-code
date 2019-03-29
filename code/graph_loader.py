@@ -102,7 +102,7 @@ class GraphHandler(object):
 
         elif node_type == 'item':
             # start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
-            start_node_doc = self.user_cursor[start_node_id - 1 - self.user_num]
+            start_node_doc = self.item_cursor[start_node_id - 1 - self.user_num]
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
