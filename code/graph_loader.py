@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 10
+WORKER_N = 6
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -61,7 +61,7 @@ class TargetGen(object):
 class GraphLoader(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice,
                  user_fnum, item_fnum, user_feat_dict_file, item_feat_dict_file,
-                 batch_size, pred_time, worker_n=WORKER_N, wait_time=0.01):
+                 batch_size, pred_time, worker_n=WORKER_N, wait_time=0.05):
         self.db_name = db_name
         self.user_num = USER_NUM_CCMR
         self.item_num = ITEM_NUM_CCMR
