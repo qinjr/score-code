@@ -169,22 +169,22 @@ class GraphHandler(object):
 
     def gen_user_history(self, start_uid, pred_time):
         user_1hop, user_2hop = [], []
-        # t = time.time()
+        t = time.time()
         for i in range(START_TIME, pred_time):
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_uid, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
-        # print('gen_user_history time: {}'.format(time.time() - t))
+        print('gen_user_history time: {}'.format(time.time() - t))
         return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid, pred_time):
         item_1hop, item_2hop = [], []
-        # t = time.time()
+        t = time.time()
         for i in range(START_TIME, pred_time):
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_iid, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
-        # print('gen_item_history time: {}'.format(time.time() - t))
+        print('gen_item_history time: {}'.format(time.time() - t))
         return item_1hop, item_2hop
 
 
@@ -206,7 +206,7 @@ class GraphLoader(object):
         self.num_of_batch = len(self.target_lines) // self.batch_size2line_num
         if self.num_of_batch * self.batch_size2line_num < len(self.target_lines):
             self.num_of_batch += 1
-        
+
         # multiprocessing
         self.prod_batch_num = 0 # for producer
         self.work = multiprocessing.Queue(maxsize=self.max_q_size)
@@ -298,28 +298,29 @@ class GraphLoader(object):
         return re
 
 if __name__ == "__main__":
-    graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr', OBJ_PER_TIME_SLICE_CCMR, \
+    # graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr', OBJ_PER_TIME_SLICE_CCMR, \
                             1, 5, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
-    # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
-    #                             'ccmr',
-    #                             OBJ_PER_TIME_SLICE_CCMR,
-    #                             1,
-    #                             5,
-    #                             None, 
-    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    # for i in range(1, 100):
-    #     graph_handler.gen_user_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 40)
-    # # graph_handler.gen_target_file(TIME_SLICE_NUM_CCMR - 2, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt')
-    # # graph_handler.gen_target_file(TIME_SLICE_NUM_CCMR - 1, NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt')
-    t = time.time()
-    st = time.time()
-    i = 0
-    for batch_data in graph_loader:
-        # print(batch_data[-3:])
-        print('batch time: {}'.format(time.time() - t))
-        t = time.time()
-        i += 1
-        if i == 100:
-            break
-            print('average time:{}'.format((time.time() - st)/100))
+    graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
+                                'ccmr',
+                                OBJ_PER_TIME_SLICE_CCMR,
+                                1,
+                                5,
+                                None, 
+                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    for i in range(1, 100):
+        graph_handler.gen_user_history(i, 40)
+    for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
+        graph_handler.gen_item_history(i, 40)
+    # graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 40)
+    
+    # t = time.time()
+    # st = time.time()
+    # i = 0
+    # for batch_data in graph_loader:
+    #     # print(batch_data[-3:])
+    #     print('batch time: {}'.format(time.time() - t))
+    #     t = time.time()
+    #     i += 1
+    #     if i == 100:
+    #         break
+    #         print('average time:{}'.format((time.time() - st)/100))
