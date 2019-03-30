@@ -28,8 +28,15 @@ class TargetGen(object):
         url = "mongodb://localhost:27017/"
         client = pymongo.MongoClient(url)
         db = client[db_name]
-        self.user_coll = db.user
-        self.item_coll = db.item
+        user_coll_num = self.user_num // USER_PER_COLLECTION
+        if self.user_num % USER_PER_COLLECTION != 0:
+            user_coll_num += 1
+        item_coll_num = self.item_num // ITEM_PER_COLLECTION
+        if self.item_num % ITEM_PER_COLLECTION != 0:
+            item_coll_num += 1
+
+        self.user_colls = [db['user_%d'%(i)] for i in range(user_coll_num)]
+        self.item_colls = [db['item_%d'%(i)] for i in range(item_coll_num)]
         
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
             if str(uid) in self.user_neg_dict:
@@ -47,16 +54,17 @@ class TargetGen(object):
 
     def gen_target_file(self, neg_sample_num, target_file, pred_time):
         target_lines = []
-        cursor = self.user_coll.find({})
-        for user_doc in cursor:
-            if user_doc['hist_%d'%(pred_time)] != []:
-                uid = user_doc['uid']
-                pos_iids = user_doc['hist_%d'%(pred_time)]
-                # for pos_iid in pos_iids:
-                pos_iid = pos_iids[0]
-                neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
-                neg_iids = [str(neg_iid) for neg_iid in neg_iids]
-                target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
+        for user_coll in self.user_colls:
+            cursor = user_coll.find({})
+            for user_doc in cursor:
+                if user_doc['hist_%d'%(pred_time)] != []:
+                    uid = user_doc['uid']
+                    pos_iids = user_doc['hist_%d'%(pred_time)]
+                    # for pos_iid in pos_iids:
+                    pos_iid = pos_iids[0]
+                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
+                    neg_iids = [str(neg_iid) for neg_iid in neg_iids]
+                    target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
         with open(target_file, 'w') as f:
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
@@ -349,29 +357,33 @@ class GraphLoader(object):
         return [user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch]
 
 if __name__ == "__main__":
-    graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
-                                'ccmr', 
-                                OBJ_PER_TIME_SLICE_CCMR,
-                                DATA_DIR_CCMR + 'target_train.txt',
-                                1,
-                                5,
-                                None,
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
-                                100, 
-                                39)
-    for i in range(1, 2):
-        t = time.time()
-        user_1hop, user_2hop = graph_loader.gen_user_history(i)
-        print(user_1hop)
-        print('user gen time: {}'.format(time.time() - t))
+    # graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
+    #                             'ccmr', 
+    #                             OBJ_PER_TIME_SLICE_CCMR,
+    #                             DATA_DIR_CCMR + 'target_train.txt',
+    #                             1,
+    #                             5,
+    #                             None,
+    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
+    #                             100, 
+    #                             39)
+    # for i in range(1, 2):
+    #     t = time.time()
+    #     user_1hop, user_2hop = graph_loader.gen_user_history(i)
+    #     print(user_1hop)
+    #     print('user gen time: {}'.format(time.time() - t))
     
-    for i in range(1 + USER_NUM_CCMR, 2 + USER_NUM_CCMR):
-        t = time.time()
-        item_1hop, item_2hop = graph_loader.gen_item_history(i)
-        print(item_1hop)
-        print('item gen time: {}'.format(time.time() - t))
+    # for i in range(1 + USER_NUM_CCMR, 2 + USER_NUM_CCMR):
+    #     t = time.time()
+    #     item_1hop, item_2hop = graph_loader.gen_item_history(i)
+    #     print(item_1hop)
+    #     print('item gen time: {}'.format(time.time() - t))
     
     # t = time.time()
     # for batch_data in graph_loader:
     #     print('batch_time: {}'.format(time.time() - t))
     #     t = time.time()
+
+    tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr')
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 39)
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 40)
