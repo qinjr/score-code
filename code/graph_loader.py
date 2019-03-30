@@ -134,7 +134,7 @@ class GraphLoader(object):
                 start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
             except:
                 continue
-            t=time.time()
+            # t=time.time()
             if node_type == 'user':
                 # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
                 start_node_doc = user_colls[(start_node_id - 1) // USER_PER_COLLECTION].find({'uid': start_node_id})[0]#user_cursor[start_node_id - 1]
@@ -165,7 +165,7 @@ class GraphLoader(object):
                 self.result_1hop_q.put((node_1hop_dummy, time_slice))
                 self.result_2hop_q.put((node_2hop_dummy, time_slice))
                 with self.work_cnt.get_lock():
-                    print('worker time: {}'.format(time.time()-t))
+                    # print('worker time: {}'.format(time.time()-t))
                     self.work_cnt.value += 1
                     if self.work_cnt.value == self.pred_time - START_TIME:
                         self.work_end.set()
@@ -224,7 +224,7 @@ class GraphLoader(object):
                     self.result_2hop_q.put((node_2hop_t, time_slice))
                     with self.work_cnt.get_lock():
                         # print('phase 4 time: {}'.format(time.time()-t))
-                        print('worker time: {}'.format(time.time()-t))
+                        # print('worker time: {}'.format(time.time()-t))
                         self.work_cnt.value += 1
                         if self.work_cnt.value == self.pred_time - START_TIME:
                             self.work_end.set()
@@ -236,7 +236,7 @@ class GraphLoader(object):
                     self.result_2hop_q.put((node_2hop_dummy, time_slice))
                     with self.work_cnt.get_lock():
                         # print('phase 4 time: {}'.format(time.time()-t))
-                        print('worker time: {}'.format(time.time()-t))
+                        # print('worker time: {}'.format(time.time()-t))
                         self.work_cnt.value += 1
                         if self.work_cnt.value == self.pred_time - START_TIME:
                             self.work_begin.clear()
