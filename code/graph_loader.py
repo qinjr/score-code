@@ -192,10 +192,10 @@ class GraphLoader(object):
                             node_1hop_nei_doc = user_colls[(node_id - 1) // USER_PER_COLLECTION].find({'uid': node_id})[0]#user_cursor[node_id - 1]
                             # print('find user time: {}'.format(time.time()-t))
                             # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
-                            degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
-                            if degree > 1:
-                                node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
-                                p_distri += [1/(degree - 1)] * degree
+                        degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
+                        if degree > 1:
+                            node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
+                            p_distri += [1/(degree - 1)] * degree
                     print('phase3 time: {}'.format(time.time()-st))
                     # t=time.time()
                     if node_2hop_candi != []:
