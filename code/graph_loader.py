@@ -240,7 +240,7 @@ class GraphLoader(object):
         with self.work_cnt.get_lock():
             self.work_cnt.value = 0
             self.event.clear()
-        time.sleep(self.wait_time)
+        # time.sleep(self.wait_time)
         # while True:
         self.event.wait()
         # if self.work_cnt.value == self.pred_time - START_TIME:
