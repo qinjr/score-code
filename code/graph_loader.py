@@ -161,7 +161,7 @@ class GraphLoader(object):
                     with self.work_cnt.get_lock():
                         print('worker time: {}'.format(time.time()-t))
                         self.work_cnt.value += 1
-                        if self.work_cnt.value == self.pred - START_TIME:
+                        if self.work_cnt.value == self.pred_time - START_TIME:
                             self.event.set()
                     # return node_1hop_dummy, node_2hop_dummy
                 else:
@@ -218,7 +218,7 @@ class GraphLoader(object):
                             # print('phase 4 time: {}'.format(time.time()-t))
                             print('worker time: {}'.format(time.time()-t))
                             self.work_cnt.value += 1
-                            if self.work_cnt.value == self.pred - START_TIME:
+                            if self.work_cnt.value == self.pred_time - START_TIME:
                                 self.event.set()
                             
                         # return node_1hop_t, node_2hop_t
@@ -229,7 +229,7 @@ class GraphLoader(object):
                             # print('phase 4 time: {}'.format(time.time()-t))
                             print('worker time: {}'.format(time.time()-t))
                             self.work_cnt.value += 1
-                            if self.work_cnt.value == self.pred - START_TIME:
+                            if self.work_cnt.value == self.pred_time - START_TIME:
                                 self.event.set()
                         # return node_1hop_t, node_2hop_dummy
 
