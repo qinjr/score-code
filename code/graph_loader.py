@@ -151,7 +151,7 @@ class GraphLoader(object):
                     node_2hop_nei_feat_dict = self.item_feat_dict
                 
                 node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
-                print('phase1 time: {}'.format(time.time()-t))
+                # print('phase1 time: {}'.format(time.time()-t))
                 
                 # gen node 2 hops history
                 if node_1hop_list == []:
@@ -159,9 +159,10 @@ class GraphLoader(object):
                     self.result_2hop_q.put((node_2hop_dummy, time_slice))
                     with self.work_cnt.get_lock():
                         self.work_cnt.value += 1
+                    print('worker time: {}'.format(time.time()-t))
                     # return node_1hop_dummy, node_2hop_dummy
                 else:
-                    t=time.time()
+                    # t=time.time()
                     # deal with 1hop
                     if len(node_1hop_list) >= self.obj_per_time_slice:
                         node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
@@ -176,8 +177,8 @@ class GraphLoader(object):
                             node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
                         else:
                             node_1hop_t.append([node_id])
-                    print('phase2 time: {}'.format(time.time()-t))
-                    st=time.time()
+                    # print('phase2 time: {}'.format(time.time()-t))
+                    # st=time.time()
                     # deal with 2hop            
                     node_2hop_candi = []
                     p_distri = []
@@ -196,8 +197,8 @@ class GraphLoader(object):
                         if degree > 1:
                             node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
                             p_distri += [1/(degree - 1)] * degree
-                    print('phase3 time: {}'.format(time.time()-st))
-                    t=time.time()
+                    # print('phase3 time: {}'.format(time.time()-st))
+                    # t=time.time()
                     if node_2hop_candi != []:
                         p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                         node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
@@ -211,7 +212,8 @@ class GraphLoader(object):
                         self.result_1hop_q.put((node_1hop_t, time_slice))
                         self.result_2hop_q.put((node_2hop_t, time_slice))
                         with self.work_cnt.get_lock():
-                            print('phase 4 time: {}'.format(time.time()-t))
+                            # print('phase 4 time: {}'.format(time.time()-t))
+                            print('worker time: {}'.format(time.time()-t))
                             self.work_cnt.value += 1
                             
                         # return node_1hop_t, node_2hop_t
@@ -219,7 +221,8 @@ class GraphLoader(object):
                         self.result_1hop_q.put((node_1hop_t, time_slice))
                         self.result_2hop_q.put((node_2hop_dummy, time_slice))
                         with self.work_cnt.get_lock():
-                            print('phase 4 time: {}'.format(time.time()-t))
+                            # print('phase 4 time: {}'.format(time.time()-t))
+                            print('worker time: {}'.format(time.time()-t))
                             self.work_cnt.value += 1
                         # return node_1hop_t, node_2hop_dummy
 
