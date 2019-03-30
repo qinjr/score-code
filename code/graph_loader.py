@@ -97,6 +97,7 @@ class GraphLoader(object):
         self.result_1hop_q = multiprocessing.Queue()
         self.result_2hop_q = multiprocessing.Queue()
         self.work_cnt = multiprocessing.Value('d', self.pred_time - START_TIME)
+        self.event = multiprocessing.Event()
 
         for i in range(worker_n):
             process = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
@@ -158,8 +159,10 @@ class GraphLoader(object):
                     self.result_1hop_q.put((node_1hop_dummy, time_slice))
                     self.result_2hop_q.put((node_2hop_dummy, time_slice))
                     with self.work_cnt.get_lock():
+                        print('worker time: {}'.format(time.time()-t))
                         self.work_cnt.value += 1
-                    print('worker time: {}'.format(time.time()-t))
+                        if self.work_cnt.value == self.pred - START_TIME:
+                            self.event.set()
                     # return node_1hop_dummy, node_2hop_dummy
                 else:
                     # t=time.time()
@@ -215,6 +218,8 @@ class GraphLoader(object):
                             # print('phase 4 time: {}'.format(time.time()-t))
                             print('worker time: {}'.format(time.time()-t))
                             self.work_cnt.value += 1
+                            if self.work_cnt.value == self.pred - START_TIME:
+                                self.event.set()
                             
                         # return node_1hop_t, node_2hop_t
                     else:
@@ -224,6 +229,8 @@ class GraphLoader(object):
                             # print('phase 4 time: {}'.format(time.time()-t))
                             print('worker time: {}'.format(time.time()-t))
                             self.work_cnt.value += 1
+                            if self.work_cnt.value == self.pred - START_TIME:
+                                self.event.set()
                         # return node_1hop_t, node_2hop_dummy
 
 
@@ -233,21 +240,22 @@ class GraphLoader(object):
         with self.work_cnt.get_lock():
             self.work_cnt.value = 0
         time.sleep(self.wait_time)
-        while True:
-            if self.work_cnt.value == self.pred_time - START_TIME:
-                user_1hop_list, user_2hop_list = [], []
-                user_1hop, user_2hop = [], []
-                for i in range(self.pred_time - START_TIME):
-                    user_1hop_list.append(self.result_1hop_q.get())
-                    user_2hop_list.append(self.result_2hop_q.get())
-                user_1hop_list = sorted(user_1hop_list, key=lambda tup:tup[1])
-                user_2hop_list = sorted(user_2hop_list, key=lambda tup:tup[1])
-                for i in range(self.pred_time - START_TIME):
-                    user_1hop.append(user_1hop_list[i][0])
-                    user_2hop.append(user_2hop_list[i][0])
-                return user_1hop, user_2hop
-            else:
-                time.sleep(self.wait_time)
+        # while True:
+        self.event.wait()
+        # if self.work_cnt.value == self.pred_time - START_TIME:
+        user_1hop_list, user_2hop_list = [], []
+        user_1hop, user_2hop = [], []
+        for i in range(self.pred_time - START_TIME):
+            user_1hop_list.append(self.result_1hop_q.get())
+            user_2hop_list.append(self.result_2hop_q.get())
+        user_1hop_list = sorted(user_1hop_list, key=lambda tup:tup[1])
+        user_2hop_list = sorted(user_2hop_list, key=lambda tup:tup[1])
+        for i in range(self.pred_time - START_TIME):
+            user_1hop.append(user_1hop_list[i][0])
+            user_2hop.append(user_2hop_list[i][0])
+        return user_1hop, user_2hop
+        # else:
+        #     time.sleep(self.wait_time)
     
     def gen_item_history(self, start_iid):
         for i in range(START_TIME, self.pred_time):
