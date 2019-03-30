@@ -121,6 +121,7 @@ class GraphLoader(object):
         
         while True:
             if self.work_cnt.value == self.pred_time - START_TIME:
+                print('worker sleep')
                 time.sleep(self.wait_time)
             else:
                 try:
@@ -241,6 +242,7 @@ class GraphLoader(object):
                     user_2hop.append(user_2hop_list[i][0])
                 return user_1hop, user_2hop
             else:
+                print('return sleep')
                 time.sleep(self.wait_time)
     
     def gen_item_history(self, start_iid):
