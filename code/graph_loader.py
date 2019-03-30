@@ -251,6 +251,7 @@ class GraphLoader(object):
         time.sleep(self.wait_time)
         while True:
             if self.work_cnt.value == self.pred_time - START_TIME:
+                t=time.time()
                 item_1hop_list, item_2hop_list = [], []
                 item_1hop, item_2hop = [], []
                 for i in range(self.pred_time - START_TIME):
@@ -261,6 +262,7 @@ class GraphLoader(object):
                 for i in range(self.pred_time - START_TIME):
                     item_1hop.append(item_1hop_list[i][0])
                     item_2hop.append(item_2hop_list[i][0])
+                print('return tinme: {}'.format(time.time()-t))
                 return item_1hop, item_2hop
             else:
                 time.sleep(self.wait_time)
