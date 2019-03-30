@@ -17,8 +17,8 @@ OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
-USER_PER_COLLECTION = 1000
-ITEM_PER_COLLECTION = 1000
+USER_PER_COLLECTION = 100
+ITEM_PER_COLLECTION = 100
 
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):
@@ -159,6 +159,7 @@ class GraphLoader(object):
                     self.result_1hop_q.put((node_1hop_dummy, time_slice))
                     self.result_2hop_q.put((node_2hop_dummy, time_slice))
                     with self.work_cnt.get_lock():
+                        print('worker time: {}'.format(time.time()-t))
                         self.work_cnt.value += 1
                         if self.work_cnt.value == self.pred_time - START_TIME:
                             self.event.set()
@@ -215,6 +216,7 @@ class GraphLoader(object):
                         self.result_2hop_q.put((node_2hop_t, time_slice))
                         with self.work_cnt.get_lock():
                             # print('phase 4 time: {}'.format(time.time()-t))
+                            print('worker time: {}'.format(time.time()-t))
                             self.work_cnt.value += 1
                             if self.work_cnt.value == self.pred_time - START_TIME:
                                 self.event.set()
@@ -225,6 +227,7 @@ class GraphLoader(object):
                         self.result_2hop_q.put((node_2hop_dummy, time_slice))
                         with self.work_cnt.get_lock():
                             # print('phase 4 time: {}'.format(time.time()-t))
+                            print('worker time: {}'.format(time.time()-t))
                             self.work_cnt.value += 1
                             if self.work_cnt.value == self.pred_time - START_TIME:
                                 self.event.set()
