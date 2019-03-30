@@ -88,7 +88,9 @@ class GraphLoader(object):
         self.user_feat_dict = None
         self.item_feat_dict = None
         
-        self.target_f = open(target_file, 'r')
+        with open(target_file, 'r') as f:
+            self.target_lines = f.readlines()
+
         # side information dict
         if user_feat_dict_file != None:
             with open(user_feat_dict_file, 'rb') as f:
@@ -361,31 +363,31 @@ class GraphLoader(object):
         return [user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch]
 
 if __name__ == "__main__":
-    graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
-                                'ccmr', 
-                                OBJ_PER_TIME_SLICE_CCMR,
-                                DATA_DIR_CCMR + 'target_train.txt',
-                                1,
-                                5,
-                                None,
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
-                                100, 
-                                39)
-    for i in range(400, 450):
-        t = time.time()
-        user_1hop, user_2hop = graph_loader.gen_user_history(i)
-        print('user gen time: {}'.format(time.time() - t))
+    # graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
+    #                             'ccmr', 
+    #                             OBJ_PER_TIME_SLICE_CCMR,
+    #                             DATA_DIR_CCMR + 'target_train.txt',
+    #                             1,
+    #                             5,
+    #                             None,
+    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
+    #                             100, 
+    #                             39)
+    # for i in range(400, 450):
+    #     t = time.time()
+    #     user_1hop, user_2hop = graph_loader.gen_user_history(i)
+    #     print('user gen time: {}'.format(time.time() - t))
     
-    for i in range(1 + USER_NUM_CCMR + 500, 1 + USER_NUM_CCMR + 550):
-        t = time.time()
-        item_1hop, item_2hop = graph_loader.gen_item_history(i)
-        print('item gen time: {}'.format(time.time() - t))
+    # for i in range(1 + USER_NUM_CCMR + 500, 1 + USER_NUM_CCMR + 550):
+    #     t = time.time()
+    #     item_1hop, item_2hop = graph_loader.gen_item_history(i)
+    #     print('item gen time: {}'.format(time.time() - t))
     
-    t = time.time()
-    for batch_data in graph_loader:
-        print('batch_time: {}'.format(time.time() - t))
-        t = time.time()
+    # t = time.time()
+    # for batch_data in graph_loader:
+    #     print('batch_time: {}'.format(time.time() - t))
+    #     t = time.time()
 
-    # tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr')
-    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 39)
-    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt', 40)
+    tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr')
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 39)
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt', 40)
