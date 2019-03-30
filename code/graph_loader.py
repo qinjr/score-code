@@ -239,6 +239,7 @@ class GraphLoader(object):
             self.work_q.put((start_uid, 'user', i))
         with self.work_cnt.get_lock():
             self.work_cnt.value = 0
+            self.event.clear()
         time.sleep(self.wait_time)
         # while True:
         self.event.wait()
