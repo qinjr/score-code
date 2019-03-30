@@ -360,16 +360,16 @@ class GraphLoader(object):
         return [user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch]
 
 if __name__ == "__main__":
-    # graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
-    #                             'ccmr', 
-    #                             OBJ_PER_TIME_SLICE_CCMR,
-    #                             DATA_DIR_CCMR + 'target_train.txt',
-    #                             1,
-    #                             5,
-    #                             None,
-    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
-    #                             100, 
-    #                             39)
+    graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
+                                'ccmr', 
+                                OBJ_PER_TIME_SLICE_CCMR,
+                                DATA_DIR_CCMR + 'target_train.txt',
+                                1,
+                                5,
+                                None,
+                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
+                                100, 
+                                39)
     # for i in range(1, 2):
     #     t = time.time()
     #     user_1hop, user_2hop = graph_loader.gen_user_history(i)
@@ -382,11 +382,11 @@ if __name__ == "__main__":
     #     print(item_1hop)
     #     print('item gen time: {}'.format(time.time() - t))
     
-    # t = time.time()
-    # for batch_data in graph_loader:
-    #     print('batch_time: {}'.format(time.time() - t))
-    #     t = time.time()
+    t = time.time()
+    for batch_data in graph_loader:
+        print('batch_time: {}'.format(time.time() - t))
+        t = time.time()
 
-    tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr')
+    # tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr')
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 39)
-    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt', 40)
+    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt', 40)
