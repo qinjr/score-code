@@ -334,28 +334,28 @@ class GraphLoader(object):
             user_1hop_batch += [user_1hop for i in range(1 + NEG_SAMPLE_NUM)]
             user_2hop_batch += [user_2hop for i in range(1 + NEG_SAMPLE_NUM)]
             target_user_batch += [uid] * 10
-            if curr_uid != uid:
-                for i in range(1 + NEG_SAMPLE_NUM):
-                    iid = int(line_list[1 + i])
-                    item_1hop, item_2hop = self.gen_item_history(iid)
-                    item_1hop_batch.append(item_1hop)
-                    item_2hop_batch.append(item_2hop)
-                    target_item_batch.append(iid)
-                    if i == 0:
-                        label_batch.append(1)
-                    else:
-                        label_batch.append(0)
-            else:
-                iid = int(line_list[1])
+            # if curr_uid != uid:
+            for i in range(1 + NEG_SAMPLE_NUM):
+                iid = int(line_list[1 + i])
                 item_1hop, item_2hop = self.gen_item_history(iid)
                 item_1hop_batch.append(item_1hop)
                 item_2hop_batch.append(item_2hop)
-                item_1hop_batch += item_1hop_batch[-(1 + NEG_SAMPLE_NUM):-1]
-                item_2hop_batch += item_2hop_batch[-(1 + NEG_SAMPLE_NUM):-1]
-                target_user_batch += [uid] * 10
                 target_item_batch.append(iid)
-                target_item_batch += target_item_batch[-(1 + NEG_SAMPLE_NUM):-1]
-                label_batch += label_batch[-(1 + NEG_SAMPLE_NUM):]
+                if i == 0:
+                    label_batch.append(1)
+                else:
+                    label_batch.append(0)
+            # else:
+            #     iid = int(line_list[1])
+            #     item_1hop, item_2hop = self.gen_item_history(iid)
+            #     item_1hop_batch.append(item_1hop)
+            #     item_2hop_batch.append(item_2hop)
+            #     item_1hop_batch += item_1hop_batch[-(1 + NEG_SAMPLE_NUM):-1]
+            #     item_2hop_batch += item_2hop_batch[-(1 + NEG_SAMPLE_NUM):-1]
+            #     target_user_batch += [uid] * 10
+            #     target_item_batch.append(iid)
+            #     target_item_batch += target_item_batch[-(1 + NEG_SAMPLE_NUM):-1]
+            #     label_batch += label_batch[-(1 + NEG_SAMPLE_NUM):]
 
         return [user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch]
 
@@ -370,17 +370,17 @@ if __name__ == "__main__":
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
                                 100, 
                                 39)
-    # for i in range(1, 2):
-    #     t = time.time()
-    #     user_1hop, user_2hop = graph_loader.gen_user_history(i)
-    #     print(user_1hop)
-    #     print('user gen time: {}'.format(time.time() - t))
+    for i in range(400, 450):
+        t = time.time()
+        user_1hop, user_2hop = graph_loader.gen_user_history(i)
+        print(user_1hop)
+        print('user gen time: {}'.format(time.time() - t))
     
-    # for i in range(1 + USER_NUM_CCMR, 2 + USER_NUM_CCMR):
-    #     t = time.time()
-    #     item_1hop, item_2hop = graph_loader.gen_item_history(i)
-    #     print(item_1hop)
-    #     print('item gen time: {}'.format(time.time() - t))
+    for i in range(1 + USER_NUM_CCMR + 500, 1 + USER_NUM_CCMR + 550):
+        t = time.time()
+        item_1hop, item_2hop = graph_loader.gen_item_history(i)
+        print(item_1hop)
+        print('item gen time: {}'.format(time.time() - t))
     
     t = time.time()
     for batch_data in graph_loader:
