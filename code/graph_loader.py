@@ -22,8 +22,8 @@ ITEM_PER_COLLECTION = 500
 
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):
-        with open(user_neg_dict_file, 'rb') as f:
-            self.user_neg_dict = pkl.load(f)  
+        # with open(user_neg_dict_file, 'rb') as f:
+        #     self.user_neg_dict = pkl.load(f)  
         
         url = "mongodb://localhost:27017/"
         client = pymongo.MongoClient(url)
@@ -65,9 +65,10 @@ class TargetGen(object):
                     pos_iids = user_doc['hist_%d'%(pred_time)]
                     # for pos_iid in pos_iids:
                     pos_iid = pos_iids[0]
-                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
-                    neg_iids = [str(neg_iid) for neg_iid in neg_iids]
-                    target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
+                    # neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
+                    # neg_iids = [str(neg_iid) for neg_iid in neg_iids]
+                    # target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
+                    target_lines.append(','.join([str(uid), str(pos_iid)]) + '\n')
         with open(target_file, 'w') as f:
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
