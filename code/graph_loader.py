@@ -17,8 +17,8 @@ OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
-USER_PER_COLLECTION = 100
-ITEM_PER_COLLECTION = 100
+USER_PER_COLLECTION = 1000
+ITEM_PER_COLLECTION = 1000
 
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):
@@ -97,7 +97,9 @@ class GraphLoader(object):
         self.result_1hop_q = multiprocessing.Queue()
         self.result_2hop_q = multiprocessing.Queue()
         self.work_cnt = multiprocessing.Value('d', self.pred_time - START_TIME)
-        self.event = multiprocessing.Event()
+        self.work_begin = multiprocessing.Event()
+        self.work_end = multiprocessing.Event()
+        self.complete = multiprocessing.Value('d', 0)
 
         for i in range(worker_n):
             process = multiprocessing.Process(target=self.gen_node_neighbor, args=[i])
@@ -121,117 +123,124 @@ class GraphLoader(object):
         item_colls = [db['item_%d'%(i)] for i in range(item_coll_num)]
         
         while True:
-            if self.work_cnt.value == self.pred_time - START_TIME:
-                time.sleep(self.wait_time)
+            if self.complete.value == 1:
+                return
+            self.work_begin.wait()
+            # if self.work_cnt.value == self.pred_time - START_TIME:
+            #     time.sleep(self.wait_time)
+            # else:
+            try:
+                start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
+            except:
+                continue
+            t=time.time()
+            if node_type == 'user':
+                # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
+                start_node_doc = user_colls[(start_node_id - 1) // USER_PER_COLLECTION].find({'uid': start_node_id})[0]#user_cursor[start_node_id - 1]
+                node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
+                node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
+                
+                node_1hop_nei_type = 'item'
+                node_1hop_nei_fnum = self.item_fnum
+                node_1hop_nei_feat_dict = self.item_feat_dict
+                node_2hop_nei_feat_dict = self.user_feat_dict
+
+            elif node_type == 'item':
+                # start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
+                start_node_doc = item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]#item_cursor[start_node_id - 1 - self.user_num]
+                node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
+                node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
+
+                node_1hop_nei_type = 'user'
+                node_1hop_nei_fnum = self.user_fnum
+                node_1hop_nei_feat_dict = self.user_feat_dict
+                node_2hop_nei_feat_dict = self.item_feat_dict
+            
+            node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
+            # print('phase1 time: {}'.format(time.time()-t))
+            
+            # gen node 2 hops history
+            if node_1hop_list == []:
+                self.result_1hop_q.put((node_1hop_dummy, time_slice))
+                self.result_2hop_q.put((node_2hop_dummy, time_slice))
+                with self.work_cnt.get_lock():
+                    print('worker time: {}'.format(time.time()-t))
+                    self.work_cnt.value += 1
+                    if self.work_cnt.value == self.pred_time - START_TIME:
+                        self.work_end.set()
+                        self.work_begin.clear()
+                # return node_1hop_dummy, node_2hop_dummy
             else:
-                try:
-                    start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
-                except:
-                    continue
-                t=time.time()
-                if node_type == 'user':
-                    # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
-                    start_node_doc = user_colls[(start_node_id - 1) // USER_PER_COLLECTION].find({'uid': start_node_id})[0]#user_cursor[start_node_id - 1]
-                    node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
-                    node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
-                    
-                    node_1hop_nei_type = 'item'
-                    node_1hop_nei_fnum = self.item_fnum
-                    node_1hop_nei_feat_dict = self.item_feat_dict
-                    node_2hop_nei_feat_dict = self.user_feat_dict
+                # t=time.time()
+                # deal with 1hop
+                if len(node_1hop_list) >= self.obj_per_time_slice:
+                    node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
+                    node_1hop_list_unique = node_1hop_list
+                else:
+                    node_1hop_list_unique = node_1hop_list
+                    node_1hop_list = node_1hop_list + np.random.choice(node_1hop_list, self.obj_per_time_slice - len(node_1hop_list)).tolist()
 
-                elif node_type == 'item':
-                    # start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
-                    start_node_doc = item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]#item_cursor[start_node_id - 1 - self.user_num]
-                    node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
-                    node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
-
-                    node_1hop_nei_type = 'user'
-                    node_1hop_nei_fnum = self.user_fnum
-                    node_1hop_nei_feat_dict = self.user_feat_dict
-                    node_2hop_nei_feat_dict = self.item_feat_dict
-                
-                node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
-                # print('phase1 time: {}'.format(time.time()-t))
-                
-                # gen node 2 hops history
-                if node_1hop_list == []:
-                    self.result_1hop_q.put((node_1hop_dummy, time_slice))
-                    self.result_2hop_q.put((node_2hop_dummy, time_slice))
+                node_1hop_t = []
+                for node_id in node_1hop_list:
+                    if node_1hop_nei_feat_dict != None:
+                        node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
+                    else:
+                        node_1hop_t.append([node_id])
+                # print('phase2 time: {}'.format(time.time()-t))
+                # st=time.time()
+                # deal with 2hop            
+                node_2hop_candi = []
+                p_distri = []
+                for node_id in node_1hop_list_unique:
+                    if node_1hop_nei_type == 'item':
+                        # t=time.time()
+                        node_1hop_nei_doc = item_colls[(node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':node_id})[0]#item_cursor[node_id - 1 - self.user_num]
+                        # print('find item time: {}'.format(time.time()-t))
+                        # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
+                    elif node_1hop_nei_type == 'user':
+                        # t=time.time()
+                        node_1hop_nei_doc = user_colls[(node_id - 1) // USER_PER_COLLECTION].find({'uid': node_id})[0]#user_cursor[node_id - 1]
+                        # print('find user time: {}'.format(time.time()-t))
+                        # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
+                    content = node_1hop_nei_doc['hist_%d'%(time_slice)]
+                    degree = len(content)
+                    if degree > 1:
+                        node_2hop_candi += content
+                        p_distri += [1/(degree - 1)] * degree
+                # print('phase3 time: {}'.format(time.time()-st))
+                # t=time.time()
+                if node_2hop_candi != []:
+                    p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
+                    node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+                    node_2hop_t = []
+                    for node_2hop_id in node_2hop_list:
+                        if node_2hop_nei_feat_dict != None:
+                            node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
+                        else:
+                            node_2hop_t.append([node_2hop_id])
+                    # print('phase4 time: {}'.format(time.time()-t))
+                    self.result_1hop_q.put((node_1hop_t, time_slice))
+                    self.result_2hop_q.put((node_2hop_t, time_slice))
                     with self.work_cnt.get_lock():
+                        # print('phase 4 time: {}'.format(time.time()-t))
                         print('worker time: {}'.format(time.time()-t))
                         self.work_cnt.value += 1
                         if self.work_cnt.value == self.pred_time - START_TIME:
-                            self.event.set()
-                    # return node_1hop_dummy, node_2hop_dummy
+                            self.work_end.set()
+                            self.work_begin.clear()
+                        
+                    # return node_1hop_t, node_2hop_t
                 else:
-                    # t=time.time()
-                    # deal with 1hop
-                    if len(node_1hop_list) >= self.obj_per_time_slice:
-                        node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
-                        node_1hop_list_unique = node_1hop_list
-                    else:
-                        node_1hop_list_unique = node_1hop_list
-                        node_1hop_list = node_1hop_list + np.random.choice(node_1hop_list, self.obj_per_time_slice - len(node_1hop_list)).tolist()
-
-                    node_1hop_t = []
-                    for node_id in node_1hop_list:
-                        if node_1hop_nei_feat_dict != None:
-                            node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
-                        else:
-                            node_1hop_t.append([node_id])
-                    # print('phase2 time: {}'.format(time.time()-t))
-                    # st=time.time()
-                    # deal with 2hop            
-                    node_2hop_candi = []
-                    p_distri = []
-                    for node_id in node_1hop_list_unique:
-                        if node_1hop_nei_type == 'item':
-                            # t=time.time()
-                            node_1hop_nei_doc = item_colls[(node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':node_id})[0]#item_cursor[node_id - 1 - self.user_num]
-                            # print('find item time: {}'.format(time.time()-t))
-                            # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
-                        elif node_1hop_nei_type == 'user':
-                            # t=time.time()
-                            node_1hop_nei_doc = user_colls[(node_id - 1) // USER_PER_COLLECTION].find({'uid': node_id})[0]#user_cursor[node_id - 1]
-                            # print('find user time: {}'.format(time.time()-t))
-                            # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
-                        degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
-                        if degree > 1:
-                            node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
-                            p_distri += [1/(degree - 1)] * degree
-                    # print('phase3 time: {}'.format(time.time()-st))
-                    # t=time.time()
-                    if node_2hop_candi != []:
-                        p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                        node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
-                        node_2hop_t = []
-                        for node_2hop_id in node_2hop_list:
-                            if node_2hop_nei_feat_dict != None:
-                                node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
-                            else:
-                                node_2hop_t.append([node_2hop_id])
-                        # print('phase4 time: {}'.format(time.time()-t))
-                        self.result_1hop_q.put((node_1hop_t, time_slice))
-                        self.result_2hop_q.put((node_2hop_t, time_slice))
-                        with self.work_cnt.get_lock():
-                            # print('phase 4 time: {}'.format(time.time()-t))
-                            print('worker time: {}'.format(time.time()-t))
-                            self.work_cnt.value += 1
-                            if self.work_cnt.value == self.pred_time - START_TIME:
-                                self.event.set()
-                            
-                        # return node_1hop_t, node_2hop_t
-                    else:
-                        self.result_1hop_q.put((node_1hop_t, time_slice))
-                        self.result_2hop_q.put((node_2hop_dummy, time_slice))
-                        with self.work_cnt.get_lock():
-                            # print('phase 4 time: {}'.format(time.time()-t))
-                            print('worker time: {}'.format(time.time()-t))
-                            self.work_cnt.value += 1
-                            if self.work_cnt.value == self.pred_time - START_TIME:
-                                self.event.set()
-                        # return node_1hop_t, node_2hop_dummy
+                    self.result_1hop_q.put((node_1hop_t, time_slice))
+                    self.result_2hop_q.put((node_2hop_dummy, time_slice))
+                    with self.work_cnt.get_lock():
+                        # print('phase 4 time: {}'.format(time.time()-t))
+                        print('worker time: {}'.format(time.time()-t))
+                        self.work_cnt.value += 1
+                        if self.work_cnt.value == self.pred_time - START_TIME:
+                            self.work_begin.clear()
+                            self.work_end.set()
+                    # return node_1hop_t, node_2hop_dummy
 
 
     def gen_user_history(self, start_uid):
@@ -239,10 +248,11 @@ class GraphLoader(object):
             self.work_q.put((start_uid, 'user', i))
         with self.work_cnt.get_lock():
             self.work_cnt.value = 0
-            self.event.clear()
+            self.work_end.clear()
+            self.work_begin.set()
         # time.sleep(self.wait_time)
         # while True:
-        self.event.wait()
+        self.work_end.wait()
         # if self.work_cnt.value == self.pred_time - START_TIME:
         user_1hop_list, user_2hop_list = [], []
         user_1hop, user_2hop = [], []
@@ -263,10 +273,11 @@ class GraphLoader(object):
             self.work_q.put((start_iid, 'item', i))
         with self.work_cnt.get_lock():
             self.work_cnt.value = 0
-            self.event.clear()
+            self.work_end.clear()
+            self.work_begin.set()
         # time.sleep(self.wait_time)
         # while True:
-        self.event.wait()
+        self.work_end.wait()
         # if self.work_cnt.value == self.pred_time - START_TIME:
         item_1hop_list, item_2hop_list = [], []
         item_1hop, item_2hop = [], []
