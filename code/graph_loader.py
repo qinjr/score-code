@@ -62,7 +62,7 @@ class TargetGen(object):
         print('generate {} completed'.format(target_file))
 
 class GraphLoader(object):
-    def __init__(self, time_slice_num, db_name, obj_per_time_slice,
+    def __init__(self, time_slice_num, db_name, obj_per_time_slice, target_file,
                  user_fnum, item_fnum, user_feat_dict_file, item_feat_dict_file,
                  batch_size, pred_time, worker_n=WORKER_N, wait_time=0.005):
         self.db_name = db_name
@@ -76,6 +76,7 @@ class GraphLoader(object):
         self.user_feat_dict = None
         self.item_feat_dict = None
         
+        self.target_f = open(target_file, 'r')
         # side information dict
         if user_feat_dict_file != None:
             with open(user_feat_dict_file, 'rb') as f:
@@ -352,23 +353,24 @@ if __name__ == "__main__":
     graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
                                 'ccmr', 
                                 OBJ_PER_TIME_SLICE_CCMR,
+                                DATA_DIR_CCMR + 'target_'
                                 1,
                                 5,
                                 None,
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
                                 100, 
-                                40)
-    for i in range(1, 2):
-        t = time.time()
-        user_1hop, user_2hop = graph_loader.gen_user_history(i)
-        print(user_1hop)
-        print('user gen time: {}'.format(time.time() - t))
+                                39)
+    # for i in range(1, 2):
+    #     t = time.time()
+    #     user_1hop, user_2hop = graph_loader.gen_user_history(i)
+    #     print(user_1hop)
+    #     print('user gen time: {}'.format(time.time() - t))
     
-    for i in range(1 + USER_NUM_CCMR, 2 + USER_NUM_CCMR):
-        t = time.time()
-        item_1hop, item_2hop = graph_loader.gen_item_history(i)
-        print(item_1hop)
-        print('item gen time: {}'.format(time.time() - t))
+    # for i in range(1 + USER_NUM_CCMR, 2 + USER_NUM_CCMR):
+    #     t = time.time()
+    #     item_1hop, item_2hop = graph_loader.gen_item_history(i)
+    #     print(item_1hop)
+    #     print('item gen time: {}'.format(time.time() - t))
     
     t = time.time()
     for batch_data in graph_loader:
