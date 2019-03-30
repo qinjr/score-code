@@ -64,7 +64,7 @@ class TargetGen(object):
 class GraphLoader(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice,
                  user_fnum, item_fnum, user_feat_dict_file, item_feat_dict_file,
-                 batch_size, pred_time, worker_n=WORKER_N, wait_time=0.001):
+                 batch_size, pred_time, worker_n=WORKER_N, wait_time=0.01):
         self.db_name = db_name
         self.user_num = USER_NUM_CCMR
         self.item_num = ITEM_NUM_CCMR
@@ -251,7 +251,6 @@ class GraphLoader(object):
         time.sleep(self.wait_time)
         while True:
             if self.work_cnt.value == self.pred_time - START_TIME:
-                t=time.time()
                 item_1hop_list, item_2hop_list = [], []
                 item_1hop, item_2hop = [], []
                 for i in range(self.pred_time - START_TIME):
@@ -262,7 +261,6 @@ class GraphLoader(object):
                 for i in range(self.pred_time - START_TIME):
                     item_1hop.append(item_1hop_list[i][0])
                     item_2hop.append(item_2hop_list[i][0])
-                print('return tinme: {}'.format(time.time()-t))
                 return item_1hop, item_2hop
             else:
                 time.sleep(self.wait_time)
@@ -279,12 +277,12 @@ if __name__ == "__main__":
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
                                 100, 
                                 40)
-    # for i in range(1, 100):
-    #     t = time.time()
-    #     graph_loader.gen_user_history(i)
-    #     print('user gen time: {}'.format(time.time() - t))
-    
-    for i in range(1 + USER_NUM_CCMR, 100 + USER_NUM_CCMR):
+    for i in range(1, 100):
         t = time.time()
-        graph_loader.gen_item_history(i)
-        print('item gen time: {}'.format(time.time() - t))
+        graph_loader.gen_user_history(i)
+        print('user gen time: {}'.format(time.time() - t))
+    
+    # for i in range(1 + USER_NUM_CCMR, 100 + USER_NUM_CCMR):
+    #     t = time.time()
+    #     graph_loader.gen_item_history(i)
+    #     print('item gen time: {}'.format(time.time() - t))
