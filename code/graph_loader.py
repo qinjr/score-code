@@ -388,5 +388,5 @@ if __name__ == "__main__":
     #     t = time.time()
 
     tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr')
-    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 39)
+    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 39)
     tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt', 40)
