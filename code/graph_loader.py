@@ -29,6 +29,9 @@ class TargetGen(object):
         client = pymongo.MongoClient(url)
         db = client[db_name]
         user_coll_num = self.user_num // USER_PER_COLLECTION
+        self.user_num = USER_NUM_CCMR
+        self.item_num = ITEM_NUM_CCMR
+        
         if self.user_num % USER_PER_COLLECTION != 0:
             user_coll_num += 1
         item_coll_num = self.item_num // ITEM_PER_COLLECTION
