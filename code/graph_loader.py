@@ -135,7 +135,7 @@ class GraphLoader(object):
         item_colls = [db['item_%d'%(i)] for i in range(item_coll_num)]
         item_docs = []
         for item_coll in item_colls:
-            for item_doc in item_coll.find({})
+            for item_doc in item_coll.find({}):
                 item_docs.append(item_doc)
 
         while True:
