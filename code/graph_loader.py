@@ -353,7 +353,7 @@ if __name__ == "__main__":
     graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
                                 'ccmr', 
                                 OBJ_PER_TIME_SLICE_CCMR,
-                                DATA_DIR_CCMR + 'target_'
+                                DATA_DIR_CCMR + 'target_train.txt',
                                 1,
                                 5,
                                 None,
