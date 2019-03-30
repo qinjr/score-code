@@ -133,11 +133,7 @@ class GraphLoader(object):
 
         user_colls = [db['user_%d'%(i)] for i in range(user_coll_num)]
         item_colls = [db['item_%d'%(i)] for i in range(item_coll_num)]
-        item_docs = []
-        for item_coll in item_colls:
-            for item_doc in item_coll.find({}):
-                item_docs.append(item_doc)
-
+        
         while True:
             if self.complete.value == 1:
                 return
@@ -163,7 +159,7 @@ class GraphLoader(object):
 
             elif node_type == 'item':
                 # start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
-                start_node_doc = item_docs[start_node_id - 1 - self.user_num]#item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]#item_cursor[start_node_id - 1 - self.user_num]
+                start_node_doc = item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]#item_cursor[start_node_id - 1 - self.user_num]
                 node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
                 node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
@@ -210,7 +206,7 @@ class GraphLoader(object):
                 for node_id in node_1hop_list_unique:
                     if node_1hop_nei_type == 'item':
                         # t=time.time()
-                        node_1hop_nei_doc = item_docs[node_id - 1 - self.user_num]#item_colls[(node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':node_id})[0]#item_cursor[node_id - 1 - self.user_num]
+                        node_1hop_nei_doc = item_colls[(node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':node_id})[0]#item_cursor[node_id - 1 - self.user_num]
                         # print('find item time: {}'.format(time.time()-t))
                         # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
                     elif node_1hop_nei_type == 'user':
