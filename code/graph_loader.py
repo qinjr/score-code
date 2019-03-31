@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 10
+WORKER_N = 8
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -141,14 +141,10 @@ class GraphLoader(object):
             if self.work_cnt.value == self.pred_time - START_TIME:
                 time.sleep(self.wait_time)
             else:
-                if not self.work_q.empty():
+                try:
                     start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
-                else:
-                    continue                    
-                # try:
-                #     start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
-                # except:
-                #     continue
+                except:
+                    continue
                 # t=time.time()
                 if node_type == 'user':
                     # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
