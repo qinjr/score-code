@@ -17,8 +17,8 @@ OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
-USER_PER_COLLECTION = 500
-ITEM_PER_COLLECTION = 500
+USER_PER_COLLECTION = 1000
+ITEM_PER_COLLECTION = 1000
 
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):
@@ -361,7 +361,7 @@ class GraphLoader(object):
 
 if __name__ == "__main__":
     graph_loader = GraphLoader(TIME_SLICE_NUM_CCMR, 
-                                'ccmr', 
+                                'ccmr_2hop', 
                                 OBJ_PER_TIME_SLICE_CCMR,
                                 DATA_DIR_CCMR + 'target_train.txt',
                                 1,
@@ -387,6 +387,6 @@ if __name__ == "__main__":
         t = time.time()
     print('total time: {}'.format(time.time() - t))
 
-    # tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr')
+    # tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr_1hop')
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 39)
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_test.txt', 40)
