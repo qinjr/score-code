@@ -122,12 +122,12 @@ class CCMRGraphStore(GraphStore):
                 old_user_doc = all_user_docs[uid - 1]
                 new_user_doc = {
                     'uid': uid,
-                    '1hop': old_user_doc['1hop'],
+                    # '1hop': old_user_doc['1hop'],
                     '2hop': [],
                     'degrees': []
                 }
                 for t in range(self.time_slice_num):
-                    iids = new_user_doc['1hop'][t]
+                    iids = old_user_doc['1hop'][t]
                     uids_2hop = []
                     degrees_2hop = []
                     for iid in iids:
@@ -151,12 +151,12 @@ class CCMRGraphStore(GraphStore):
                 old_item_doc = all_item_docs[iid - 1 - self.user_num]
                 new_item_doc = {
                     'iid': iid,
-                    '1hop': old_item_doc['1hop'],
+                    # '1hop': old_item_doc['1hop'],
                     '2hop': [],
                     'degrees': []
                 }
                 for t in range(self.time_slice_num):
-                    uids = new_item_doc['1hop'][t]
+                    uids = old_item_doc['1hop'][t]
                     iids_2hop = []
                     degrees_2hop = []
                     for uid in uids:
@@ -170,7 +170,7 @@ class CCMRGraphStore(GraphStore):
                 print('item 2hop gen time: {}'.format(time.time() - t))
             self.db_2hop['item_%d'%i].insert_many(item_docs_block)
         print('item 2 hop gen completed')
-                
+
 
     def cal_stat(self):
         # calculate user doc
@@ -214,6 +214,6 @@ class CCMRGraphStore(GraphStore):
 if __name__ == "__main__":
     # For CCMR
     gs = CCMRGraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    gs.construct_coll_1hop()
+    # gs.construct_coll_1hop()
     gs.construct_coll_2hop()
     # gs.cal_stat()
