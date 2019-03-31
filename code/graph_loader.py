@@ -77,7 +77,7 @@ class TargetGen(object):
 class GraphLoader(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice, target_file,
                  user_fnum, item_fnum, user_feat_dict_file, item_feat_dict_file,
-                 batch_size, pred_time, worker_n=WORKER_N, wait_time=0.001):
+                 batch_size, pred_time, worker_n=WORKER_N, wait_time=0.0001):
         self.db_name = db_name
         self.user_num = USER_NUM_CCMR
         self.item_num = ITEM_NUM_CCMR
@@ -375,16 +375,16 @@ if __name__ == "__main__":
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
                                 100, 
                                 39)
-    graph_loader2 = GraphLoader(TIME_SLICE_NUM_CCMR, 
-                                'ccmr_2hop', 
-                                OBJ_PER_TIME_SLICE_CCMR,
-                                DATA_DIR_CCMR + 'target_test.txt',
-                                1,
-                                5,
-                                None,
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
-                                100, 
-                                40)
+    # graph_loader2 = GraphLoader(TIME_SLICE_NUM_CCMR, 
+    #                             'ccmr_2hop', 
+    #                             OBJ_PER_TIME_SLICE_CCMR,
+    #                             DATA_DIR_CCMR + 'target_test.txt',
+    #                             1,
+    #                             5,
+    #                             None,
+    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
+    #                             100, 
+    #                             40)
     # for i in range(400, 450):
     #     t = time.time()
     #     user_1hop, user_2hop = graph_loader.gen_user_history(i)
@@ -404,7 +404,7 @@ if __name__ == "__main__":
         i += 1
         if i == 100:
             break
-    print('total time: {}'.format(time.time() - t))
+    print('total time: {}'.format(time.time() - st))
 
     t = time.time()
     st = time.time()
@@ -415,7 +415,7 @@ if __name__ == "__main__":
         i += 1
         if i == 100:
             break
-    print('total time: {}'.format(time.time() - t))
+    print('total time: {}'.format(time.time() - st))
 
     # tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr_1hop')
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_train.txt', 39)
