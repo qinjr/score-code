@@ -116,49 +116,49 @@ class CCMRGraphStore(GraphStore):
                 all_item_docs.append(item_doc)
         print('loading 1hop graph data completed')
         
-        # # gen user 2hop
-        # print('user 2 hop gen begin')
-        # for i in range(user_coll_num):
-        #     user_docs_block = []
-        #     st = time.time()
-        #     for uid in range(1 + i * USER_PER_COLLECTION, 1 + (i + 1) * USER_PER_COLLECTION):
-        #         old_user_doc = all_user_docs[uid - 1]
-        #         new_user_doc = {
-        #             'uid': uid,
-        #             '1hop': old_user_doc['1hop'],
-        #             '2hop': [],
-        #             'degrees': []
-        #         }
-        #         for t in range(START_TIME):
-        #             new_user_doc['2hop'].append([])
-        #             new_user_doc['degrees'].append([])
-        #         for t in range(START_TIME, self.time_slice_num):
-        #             iids = old_user_doc['1hop'][t]
-        #             if len(iids) > MAX_1HOP:
-        #                 iids = iids[:MAX_1HOP]
-        #             uids_2hop = []
-        #             degrees_2hop = []
-        #             for iid in iids:
-        #                 item_doc = all_item_docs[iid - 1 - self.user_num]
-        #                 degree = len(item_doc['1hop'][t])
-        #                 if degree > 1:
-        #                     uids_2hop += item_doc['1hop'][t]
-        #                     degrees_2hop += [degree] * degree
-        #                 if len(uids_2hop) > MAX_2HOP:
-        #                     uids_2hop = uids_2hop[:MAX_2HOP]
-        #                     degrees_2hop = degrees_2hop[:MAX_2HOP]
-        #             new_user_doc['2hop'].append(uids_2hop)
-        #             new_user_doc['degrees'].append(degrees_2hop)
-        #         user_docs_block.append(new_user_doc)
-        #     self.db_2hop['user_%d'%i].insert_many(user_docs_block)
-        #     print('user 2hop block gen time: {}'.format(time.time() - st))
-        # print('user 2 hop gen completed')
+        # gen user 2hop
+        print('user 2 hop gen begin')
+        for i in range(user_coll_num):
+            user_docs_block = []
+            st = time.time()
+            for uid in range(1 + i * USER_PER_COLLECTION, 1 + (i + 1) * USER_PER_COLLECTION):
+                old_user_doc = all_user_docs[uid - 1]
+                new_user_doc = {
+                    'uid': uid,
+                    '1hop': old_user_doc['1hop'],
+                    '2hop': [],
+                    'degrees': []
+                }
+                for t in range(START_TIME):
+                    new_user_doc['2hop'].append([])
+                    new_user_doc['degrees'].append([])
+                for t in range(START_TIME, self.time_slice_num):
+                    iids = old_user_doc['1hop'][t]
+                    if len(iids) > MAX_1HOP:
+                        iids = iids[:MAX_1HOP]
+                    uids_2hop = []
+                    degrees_2hop = []
+                    for iid in iids:
+                        item_doc = all_item_docs[iid - 1 - self.user_num]
+                        degree = len(item_doc['1hop'][t])
+                        if degree > 1:
+                            uids_2hop += item_doc['1hop'][t]
+                            degrees_2hop += [degree] * degree
+                        if len(uids_2hop) > MAX_2HOP:
+                            uids_2hop = uids_2hop[:MAX_2HOP]
+                            degrees_2hop = degrees_2hop[:MAX_2HOP]
+                    new_user_doc['2hop'].append(uids_2hop)
+                    new_user_doc['degrees'].append(degrees_2hop)
+                user_docs_block.append(new_user_doc)
+            self.db_2hop['user_%d'%i].insert_many(user_docs_block)
+            print('user 2hop block gen time: {}'.format(time.time() - st))
+        print('user 2 hop gen completed')
 
         # gen item 2hop
         print('item 2 hop gen begin')
         for i in range(item_coll_num):
             item_docs_block = []
-            st = time.time()
+            # st = time.time()
             for iid in range(1 + self.user_num + i * ITEM_PER_COLLECTION, 1 + self.user_num + (i + 1) * ITEM_PER_COLLECTION):
                 old_item_doc = all_item_docs[iid - 1 - self.user_num]
                 new_item_doc = {
@@ -188,7 +188,7 @@ class CCMRGraphStore(GraphStore):
                     new_item_doc['2hop'].append(iids_2hop)
                     new_item_doc['degrees'].append(degrees_2hop)
                 item_docs_block.append(new_item_doc)
-            print('item 2hop block gen time: {}'.format(time.time() - st))
+            # print('item 2hop block gen time: {}'.format(time.time() - st))
             self.db_2hop['item_%d'%i].insert_many(item_docs_block)
         print('item 2 hop gen completed')
 
