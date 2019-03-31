@@ -77,8 +77,8 @@ class CCMRGraphStore(GraphStore):
 
         for line in self.rating_file:
             uid, iid, _, t_idx = line[:-1].split(',')
-            list_of_user_doc_list[(int(uid) - 1) // USER_PER_COLLECTION][(int(uid) - 1) % USER_PER_COLLECTION][int(t_idx)].append(int(iid))
-            list_of_item_doc_list[(int(iid) - self.user_num - 1) // ITEM_PER_COLLECTION][(int(iid) - self.user_num - 1) % ITEM_PER_COLLECTION][int(t_idx)].append(int(uid))
+            list_of_user_doc_list[(int(uid) - 1) // USER_PER_COLLECTION][(int(uid) - 1) % USER_PER_COLLECTION]['1hop'][int(t_idx)].append(int(iid))
+            list_of_item_doc_list[(int(iid) - self.user_num - 1) // ITEM_PER_COLLECTION][(int(iid) - self.user_num - 1) % ITEM_PER_COLLECTION]['1hop'][int(t_idx)].append(int(uid))
             # user_doc_list[int(uid) - 1]['hist_%s'%(t_idx)].append(int(iid))
             # item_doc_list[int(iid) - self.user_num - 1]['hist_%s'%(t_idx)].append(int(uid))
         print('user and item doc list completed')

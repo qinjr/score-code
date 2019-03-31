@@ -173,6 +173,7 @@ class GraphLoader(object):
             # node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
             node_1hop_list = start_node_doc['1hop'][time_slice] #[iid1, iid2, ...]
             node_2hop_list = start_node_doc['2hop'][time_slice]
+            degree_list = start_node_doc['degrees'][time_slice]
             # print('phase1 time: {}'.format(time.time()-t))
             
             # gen node 2 hops history
@@ -205,24 +206,24 @@ class GraphLoader(object):
                 # print('phase2 time: {}'.format(time.time()-t))
                 # st=time.time()
                 # deal with 2hop            
-                node_2hop_candi = []
-                p_distri = []
-                for node_id in node_1hop_list_unique:
-                    if node_1hop_nei_type == 'item':
-                        # t=time.time()
-                        node_1hop_nei_doc = item_colls[(node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':node_id})[0]#item_cursor[node_id - 1 - self.user_num]
-                        # print('find item time: {}'.format(time.time()-t))
-                        # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
-                    elif node_1hop_nei_type == 'user':
-                        # t=time.time()
-                        node_1hop_nei_doc = user_colls[(node_id - 1) // USER_PER_COLLECTION].find({'uid': node_id})[0]#user_cursor[node_id - 1]
-                        # print('find user time: {}'.format(time.time()-t))
-                        # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
-                    content = node_1hop_nei_doc['hist_%d'%(time_slice)]
-                    degree = len(content)
-                    if degree > 1:
-                        node_2hop_candi += content
-                        p_distri += [1/(degree - 1)] * degree
+                node_2hop_candi = node_2hop_list#[]
+                p_distri = (1 / (np.array(degree_list) - 1)).tolist()#[]
+                # for node_id in node_1hop_list_unique:
+                #     if node_1hop_nei_type == 'item':
+                #         # t=time.time()
+                #         node_1hop_nei_doc = item_colls[(node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':node_id})[0]#item_cursor[node_id - 1 - self.user_num]
+                #         # print('find item time: {}'.format(time.time()-t))
+                #         # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
+                #     elif node_1hop_nei_type == 'user':
+                #         # t=time.time()
+                #         node_1hop_nei_doc = user_colls[(node_id - 1) // USER_PER_COLLECTION].find({'uid': node_id})[0]#user_cursor[node_id - 1]
+                #         # print('find user time: {}'.format(time.time()-t))
+                #         # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
+                #     content = node_1hop_nei_doc['hist_%d'%(time_slice)]
+                #     degree = len(content)
+                #     if degree > 1:
+                #         node_2hop_candi += content
+                #         p_distri += [1/(degree - 1)] * degree
                 # print('phase3 time: {}'.format(time.time()-st))
                 # t=time.time()
                 if node_2hop_candi != []:
