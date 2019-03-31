@@ -160,6 +160,9 @@ class CCMRGraphStore(GraphStore):
                     '2hop': [],
                     'degrees': []
                 }
+                for t in range(START_TIME):
+                    new_item_doc['2hop'].append([])
+                    new_item_doc['degrees'].append([])
                 for t in range(self.time_slice_num):
                     uids = old_item_doc['1hop'][t]
                     iids_2hop = []
