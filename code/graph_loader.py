@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 1
+WORKER_N = 10
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -375,6 +375,16 @@ if __name__ == "__main__":
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
                                 100, 
                                 39)
+    graph_loader2 = GraphLoader(TIME_SLICE_NUM_CCMR, 
+                                'ccmr_2hop', 
+                                OBJ_PER_TIME_SLICE_CCMR,
+                                DATA_DIR_CCMR + 'target_test.txt',
+                                1,
+                                5,
+                                None,
+                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
+                                100, 
+                                40)
     # for i in range(400, 450):
     #     t = time.time()
     #     user_1hop, user_2hop = graph_loader.gen_user_history(i)
@@ -387,9 +397,24 @@ if __name__ == "__main__":
     
     t = time.time()
     st = time.time()
+    i = 0
     for batch_data in graph_loader:
         print('batch_time: {}'.format(time.time() - t))
         t = time.time()
+        i += 1
+        if i == 100:
+            break
+    print('total time: {}'.format(time.time() - t))
+
+    t = time.time()
+    st = time.time()
+    i = 0
+    for batch_data in graph_loader2:
+        print('batch_time: {}'.format(time.time() - t))
+        t = time.time()
+        i += 1
+        if i == 100:
+            break
     print('total time: {}'.format(time.time() - t))
 
     # tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr_1hop')
