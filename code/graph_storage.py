@@ -115,43 +115,42 @@ class CCMRGraphStore(GraphStore):
                 all_item_docs.append(item_doc)
         print('loading 1hop graph data completed')
         
-        # gen user 2hop
-        print('user 2 hop gen begin')
-        for i in range(user_coll_num):
-            user_docs_block = []
-            st = time.time()
-            for uid in range(1 + i * USER_PER_COLLECTION, 1 + (i + 1) * USER_PER_COLLECTION):
-                old_user_doc = all_user_docs[uid - 1]
-                new_user_doc = {
-                    'uid': uid,
-                    '1hop': old_user_doc['1hop'],
-                    '2hop': [],
-                    'degrees': []
-                }
-                for t in range(START_TIME):
-                    new_user_doc['2hop'].append([])
-                    new_user_doc['degrees'].append([])
+        # # gen user 2hop
+        # print('user 2 hop gen begin')
+        # for i in range(user_coll_num):
+        #     user_docs_block = []
+        #     st = time.time()
+        #     for uid in range(1 + i * USER_PER_COLLECTION, 1 + (i + 1) * USER_PER_COLLECTION):
+        #         old_user_doc = all_user_docs[uid - 1]
+        #         new_user_doc = {
+        #             'uid': uid,
+        #             '1hop': old_user_doc['1hop'],
+        #             '2hop': [],
+        #             'degrees': []
+        #         }
+        #         for t in range(START_TIME):
+        #             new_user_doc['2hop'].append([])
+        #             new_user_doc['degrees'].append([])
                 
-                for t in range(START_TIME, self.time_slice_num):
-                    iids = old_user_doc['1hop'][t]
-                    uids_2hop = []
-                    degrees_2hop = []
-                    for iid in iids:
-                        item_doc = all_item_docs[iid - 1 - self.user_num]
-                        if len(item_doc['1hop'][t]) > 1:
-                            uids_2hop += item_doc['1hop'][t]
-                            degrees_2hop += [len(item_doc['1hop'][t])] * len(item_doc['1hop'][t])
-                        if len(uids_2hop) > MAX_2HOP:
-                            uids_2hop = uids_2hop[:MAX_2HOP]
-                            degrees_2hop = degrees_2hop[:MAX_2HOP]
-                    new_user_doc['2hop'].append(uids_2hop)
-                    new_user_doc['degrees'].append(degrees_2hop)
-                user_docs_block.append(new_user_doc)
-            et = time.time()
-            self.db_2hop['user_%d'%i].insert_many(user_docs_block)
-            print('write time: {}'.format(time.time()-et))
-            print('user 2hop block gen time: {}'.format(time.time() - st))
-        print('user 2 hop gen completed')
+        #         for t in range(START_TIME, self.time_slice_num):
+        #             iids = old_user_doc['1hop'][t]
+        #             uids_2hop = []
+        #             degrees_2hop = []
+        #             for iid in iids:
+        #                 item_doc = all_item_docs[iid - 1 - self.user_num]
+        #                 degree = len(item_doc['1hop'][t])
+        #                 if degree > 1:
+        #                     uids_2hop += item_doc['1hop'][t]
+        #                     degrees_2hop += [degree] * degree
+        #                 if len(uids_2hop) > MAX_2HOP:
+        #                     uids_2hop = uids_2hop[:MAX_2HOP]
+        #                     degrees_2hop = degrees_2hop[:MAX_2HOP]
+        #             new_user_doc['2hop'].append(uids_2hop)
+        #             new_user_doc['degrees'].append(degrees_2hop)
+        #         user_docs_block.append(new_user_doc)
+        #     self.db_2hop['user_%d'%i].insert_many(user_docs_block)
+        #     print('user 2hop block gen time: {}'.format(time.time() - st))
+        # print('user 2 hop gen completed')
 
         # gen item 2hop
         print('item 2 hop gen begin')
@@ -169,16 +168,17 @@ class CCMRGraphStore(GraphStore):
                 for t in range(START_TIME):
                     new_item_doc['2hop'].append([])
                     new_item_doc['degrees'].append([])
-                for t in range(self.time_slice_num):
+                for t in range(START_TIME, self.time_slice_num):
                     uids = old_item_doc['1hop'][t]
                     iids_2hop = []
                     degrees_2hop = []
                     for uid in uids:
                         user_doc = all_user_docs[uid - 1]
-                        if len(user_doc['1hop'][t]) > 1:
+                        degree = len(user_doc['1hop'][t])
+                        if degree > 1:
                             iids_2hop += user_doc['1hop'][t]
-                            degrees_2hop += [len(user_doc['1hop'][t])] * len(user_doc['1hop'][t])
-                    if len(iids_2hop) > MAX_2HOP:
+                            degrees_2hop += [degree] * degree
+                    if degree > MAX_2HOP:
                         iids_2hop = iids_2hop[:MAX_2HOP]
                         degrees_2hop = degrees_2hop[:MAX_2HOP]
                     new_item_doc['2hop'].append(iids_2hop)
