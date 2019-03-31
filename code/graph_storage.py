@@ -147,7 +147,7 @@ class CCMRGraphStore(GraphStore):
                         if degree > 1:
                             iids_2hop += user_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
-                    if degree > MAX_2HOP:
+                    if len(iids_2hop) > MAX_2HOP:
                         combined = list(zip(iids_2hop, degrees_2hop))
                         random.shuffle(combined)
                         iids_2hop[:], degrees_2hop[:] = zip(*combined)
@@ -190,12 +190,12 @@ class CCMRGraphStore(GraphStore):
                         if degree > 1:
                             uids_2hop += item_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
-                        if len(uids_2hop) > MAX_2HOP:
-                            combined = list(zip(uids_2hop, degrees_2hop))
-                            random.shuffle(combined)
-                            uids_2hop[:], degrees_2hop[:] = zip(*combined)
-                            uids_2hop = uids_2hop[:MAX_2HOP]
-                            degrees_2hop = degrees_2hop[:MAX_2HOP]
+                    if len(uids_2hop) > MAX_2HOP:
+                        combined = list(zip(uids_2hop, degrees_2hop))
+                        random.shuffle(combined)
+                        uids_2hop[:], degrees_2hop[:] = zip(*combined)
+                        uids_2hop = uids_2hop[:MAX_2HOP]
+                        degrees_2hop = degrees_2hop[:MAX_2HOP]
                     new_user_doc['2hop'].append(uids_2hop)
                     new_user_doc['degrees'].append(degrees_2hop)
                 user_docs_block.append(new_user_doc)
