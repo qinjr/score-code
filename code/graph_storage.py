@@ -173,7 +173,7 @@ class CCMRGraphStore(GraphStore):
                 for t in range(START_TIME, self.time_slice_num):
                     uids = old_item_doc['1hop'][t]
                     if len(uids) > MAX_1HOP:
-                        uids = iids[:MAX_1HOP]
+                        uids = uids[:MAX_1HOP]
                     iids_2hop = []
                     degrees_2hop = []
                     for uid in uids:
@@ -188,7 +188,7 @@ class CCMRGraphStore(GraphStore):
                     new_item_doc['2hop'].append(iids_2hop)
                     new_item_doc['degrees'].append(degrees_2hop)
                 item_docs_block.append(new_item_doc)
-            print('item 2hop block gen time: {}'.format(time.time() - såt))
+            print('item 2hop block gen time: {}'.format(time.time() - st))
             self.db_2hop['item_%d'%i].insert_many(item_docs_block)
         print('item 2 hop gen completed')
 
