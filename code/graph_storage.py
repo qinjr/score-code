@@ -12,6 +12,7 @@ DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION = 1000
 ITEM_PER_COLLECTION = 1000
 START_TIME = 30
+MAX_1HOP = 10
 MAX_2HOP = 30
 
 class GraphStore(object):
@@ -131,9 +132,10 @@ class CCMRGraphStore(GraphStore):
         #         for t in range(START_TIME):
         #             new_user_doc['2hop'].append([])
         #             new_user_doc['degrees'].append([])
-                
         #         for t in range(START_TIME, self.time_slice_num):
         #             iids = old_user_doc['1hop'][t]
+        #             if len(iids) > MAX_1HOP:
+        #                 iids = iids[:MAX_1HOP]
         #             uids_2hop = []
         #             degrees_2hop = []
         #             for iid in iids:
@@ -170,6 +172,8 @@ class CCMRGraphStore(GraphStore):
                     new_item_doc['degrees'].append([])
                 for t in range(START_TIME, self.time_slice_num):
                     uids = old_item_doc['1hop'][t]
+                    if len(uids) > MAX_1HOP:
+                        uids = iids[:MAX_1HOP]
                     iids_2hop = []
                     degrees_2hop = []
                     for uid in uids:
