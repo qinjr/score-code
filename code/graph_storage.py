@@ -11,6 +11,7 @@ SECONDS_PER_DAY = 24 * 3600
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION = 1000
 ITEM_PER_COLLECTION = 1000
+START_TIME = 30
 
 class GraphStore(object):
     def __init__(self):
@@ -126,7 +127,11 @@ class CCMRGraphStore(GraphStore):
                     '2hop': [],
                     'degrees': []
                 }
-                for t in range(self.time_slice_num):
+                for t in range(START_TIME):
+                    new_user_doc['2hop'].append([])
+                    new_user_doc['degrees'].append([])
+                
+                for t in range(START_TIME, self.time_slice_num):
                     iids = old_user_doc['1hop'][t]
                     uids_2hop = []
                     degrees_2hop = []
