@@ -12,6 +12,7 @@ DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION = 1000
 ITEM_PER_COLLECTION = 1000
 START_TIME = 30
+MAX_2HOP = 50
 
 class GraphStore(object):
     def __init__(self):
@@ -123,7 +124,7 @@ class CCMRGraphStore(GraphStore):
                 old_user_doc = all_user_docs[uid - 1]
                 new_user_doc = {
                     'uid': uid,
-                    # '1hop': old_user_doc['1hop'],
+                    '1hop': old_user_doc['1hop'],
                     '2hop': [],
                     'degrees': []
                 }
@@ -140,6 +141,9 @@ class CCMRGraphStore(GraphStore):
                         if len(item_doc['1hop'][t]) > 1:
                             uids_2hop += item_doc['1hop'][t]
                             degrees_2hop += [len(item_doc['1hop'][t])] * len(item_doc['1hop'][t])
+                        if len(uids_2hop) > MAX_2HOP:
+                            uids_2hop = uids_2hop[:MAX_2HOP]
+                            degrees_2hop = degrees_2hop[:MAX_2HOP]
                     new_user_doc['2hop'].append(uids_2hop)
                     new_user_doc['degrees'].append(degrees_2hop)
                 user_docs_block.append(new_user_doc)
@@ -156,7 +160,7 @@ class CCMRGraphStore(GraphStore):
                 old_item_doc = all_item_docs[iid - 1 - self.user_num]
                 new_item_doc = {
                     'iid': iid,
-                    # '1hop': old_item_doc['1hop'],
+                    '1hop': old_item_doc['1hop'],
                     '2hop': [],
                     'degrees': []
                 }
@@ -172,6 +176,9 @@ class CCMRGraphStore(GraphStore):
                         if len(user_doc['1hop'][t]) > 1:
                             iids_2hop += user_doc['1hop'][t]
                             degrees_2hop += [len(user_doc['1hop'][t])] * len(user_doc['1hop'][t])
+                    if len(iids_2hop) > MAX_2HOP:
+                        iids_2hop = iids_2hop[:MAX_2HOP]
+                        degrees_2hop = degrees_2hop[:MAX_2HOP]
                     new_item_doc['2hop'].append(iids_2hop)
                     new_item_doc['degrees'].append(degrees_2hop)
                 item_docs_block.append(new_item_doc)
