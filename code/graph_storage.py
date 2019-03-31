@@ -118,46 +118,49 @@ class CCMRGraphStore(GraphStore):
         print('loading 1hop graph data completed')
         
 
-        # # gen item 2hop
-        # print('item 2 hop gen begin')
-        # for i in range(item_coll_num):
-        #     item_docs_block = []
-        #     # st = time.time()
-        #     for iid in range(1 + self.user_num + i * ITEM_PER_COLLECTION, 1 + self.user_num + (i + 1) * ITEM_PER_COLLECTION):
-        #         old_item_doc = all_item_docs[iid - 1 - self.user_num]
-        #         new_item_doc = {
-        #             'iid': iid,
-        #             '1hop': old_item_doc['1hop'],
-        #             '2hop': [],
-        #             'degrees': []
-        #         }
-        #         for t in range(START_TIME):
-        #             new_item_doc['2hop'].append([])
-        #             new_item_doc['degrees'].append([])
-        #         for t in range(START_TIME, self.time_slice_num):
-        #             uids = old_item_doc['1hop'][t]
-        #             if len(uids) > MAX_1HOP:
-        #                 random.shuffle(uids)
-        #                 uids = uids[:MAX_1HOP]
-        #             iids_2hop = []
-        #             degrees_2hop = []
-        #             for uid in uids:
-        #                 user_doc = all_user_docs[uid - 1]
-        #                 degree = len(user_doc['1hop'][t])
-        #                 if degree > 1:
-        #                     iids_2hop += user_doc['1hop'][t]
-        #                     degrees_2hop += [degree] * degree
-        #             if len(iids_2hop) > MAX_2HOP:
-        #                 idx = np.random.choice(np.arange(len(iids_2hop)), len(iids_2hop), replace=False)
-        #                 iids_2hop = np.array(iids_2hop)[idx].tolist()[:MAX_2HOP]
-        #                 degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:MAX_2HOP]
-        #             new_item_doc['2hop'].append(iids_2hop)
-        #             new_item_doc['degrees'].append(degrees_2hop)
-        #         item_docs_block.append(new_item_doc)
-        #     # print('item 2hop block gen time: {}'.format(time.time() - st))
-        #     self.db_2hop['item_%d'%i].insert_many(item_docs_block)
-        #     print('item block-{} completed'.format(i))
-        # print('item 2 hop gen completed')
+        # gen item 2hop
+        print('item 2 hop gen begin')
+        for i in range(item_coll_num):
+            item_docs_block = []
+            # st = time.time()
+            for iid in range(1 + self.user_num + i * ITEM_PER_COLLECTION, 1 + self.user_num + (i + 1) * ITEM_PER_COLLECTION):
+                old_item_doc = all_item_docs[iid - 1 - self.user_num]
+                new_item_doc = {
+                    'iid': iid,
+                    '1hop': old_item_doc['1hop'],
+                    '2hop': [],
+                    'degrees': []
+                }
+                for t in range(START_TIME):
+                    new_item_doc['2hop'].append([])
+                    new_item_doc['degrees'].append([])
+                for t in range(START_TIME, self.time_slice_num):
+                    uids = old_item_doc['1hop'][t]
+                    if len(uids) > MAX_1HOP:
+                        random.shuffle(uids)
+                        uids = uids[:MAX_1HOP]
+                    iids_2hop = []
+                    degrees_2hop = []
+                    for uid in uids:
+                        user_doc = all_user_docs[uid - 1]
+                        degree = len(user_doc['1hop'][t])
+                        if degree > 1 and degree < MAX_2HOP:
+                            iids_2hop += user_doc['1hop'][t]
+                            degrees_2hop += [degree] * degree
+                        else:
+                            iids_2hop += user_doc['1hop'][t][:5]
+                            degrees_2hop += [degree] * 5
+                    if len(iids_2hop) > MAX_2HOP:
+                        idx = np.random.choice(np.arange(len(iids_2hop)), len(iids_2hop), replace=False)
+                        iids_2hop = np.array(iids_2hop)[idx].tolist()[:MAX_2HOP]
+                        degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:MAX_2HOP]
+                    new_item_doc['2hop'].append(iids_2hop)
+                    new_item_doc['degrees'].append(degrees_2hop)
+                item_docs_block.append(new_item_doc)
+            # print('item 2hop block gen time: {}'.format(time.time() - st))
+            self.db_2hop['item_%d'%i].insert_many(item_docs_block)
+            print('item block-{} completed'.format(i))
+        print('item 2 hop gen completed')
 
         # gen user 2hop
         print('user 2 hop gen begin')
@@ -185,9 +188,12 @@ class CCMRGraphStore(GraphStore):
                     for iid in iids:
                         item_doc = all_item_docs[iid - 1 - self.user_num]
                         degree = len(item_doc['1hop'][t])
-                        if degree > 1:
+                        if degree > 1 and degree <= MAX_2HOP:
                             uids_2hop += item_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
+                        else:
+                            uids_2hop += item_doc['1hop'][t][:5]
+                            degrees_2hop += [degree] * 5
                     if len(uids_2hop) > MAX_2HOP:
                         idx = np.random.choice(np.arange(len(uids_2hop)), len(uids_2hop), replace=False)
                         uids_2hop = np.array(uids_2hop)[idx].tolist()[:MAX_2HOP]
