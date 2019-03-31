@@ -141,11 +141,14 @@ class GraphLoader(object):
             if self.work_cnt.value == self.pred_time - START_TIME:
                 time.sleep(self.wait_time)
             else:
-                try:
+                if not self.work_q.empty():
                     start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
-                except:
-                    print('continue')
-                    continue
+                else:
+                    continue                    
+                # try:
+                #     start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
+                # except:
+                #     continue
                 # t=time.time()
                 if node_type == 'user':
                     # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
