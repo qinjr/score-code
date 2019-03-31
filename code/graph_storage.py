@@ -147,7 +147,7 @@ class CCMRGraphStore(GraphStore):
                         if degree > 1 and degree < MAX_2HOP:
                             iids_2hop += user_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
-                        else:
+                        elif degree > MAX_2HOP:
                             iids_2hop += user_doc['1hop'][t][:5]
                             degrees_2hop += [degree] * 5
                     if len(iids_2hop) > MAX_2HOP:
@@ -191,7 +191,7 @@ class CCMRGraphStore(GraphStore):
                         if degree > 1 and degree <= MAX_2HOP:
                             uids_2hop += item_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
-                        else:
+                        elif degree > MAX_2HOP:
                             uids_2hop += item_doc['1hop'][t][:5]
                             degrees_2hop += [degree] * 5
                     if len(uids_2hop) > MAX_2HOP:

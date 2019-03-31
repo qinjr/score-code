@@ -227,8 +227,6 @@ class GraphLoader(object):
                 # print('phase3 time: {}'.format(time.time()-st))
                 # t=time.time()
                 if node_2hop_candi != []:
-                    print(node_2hop_candi)
-                    print(p_distri)
                     p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                     node_2hop_list_choice= np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
                     node_2hop_t = []
