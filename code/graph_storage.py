@@ -13,7 +13,7 @@ DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION = 1000
 ITEM_PER_COLLECTION = 1000
 START_TIME = 30
-MAX_1HOP = 10
+MAX_1HOP = 30
 MAX_2HOP = 30
 
 class GraphStore(object):
