@@ -140,6 +140,7 @@ class GraphLoader(object):
             if self.complete.value == 1:
                 return
             self.work_begin.wait()
+            print('process-{} start'.format(name))
             # if self.work_cnt.value == self.pred_time - START_TIME:
             #     time.sleep(self.wait_time)
             # else:
@@ -331,6 +332,7 @@ class GraphLoader(object):
             if line == '':
                 with self.complete.get_lock():
                     self.complete.value = 1
+                print('stop iteration')
                 raise StopIteration
             line_list = line[:-1].split(',')
             uid = int(line_list[0])
