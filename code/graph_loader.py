@@ -228,9 +228,9 @@ class GraphLoader(object):
                 # t=time.time()
                 if node_2hop_candi != []:
                     p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                    node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+                    node_2hop_list_choice= np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
                     node_2hop_t = []
-                    for node_2hop_id in node_2hop_list:
+                    for node_2hop_id in node_2hop_list_choice:
                         if node_2hop_nei_feat_dict != None:
                             node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                         else:
