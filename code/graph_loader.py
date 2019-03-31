@@ -144,6 +144,7 @@ class GraphLoader(object):
                 try:
                     start_node_id, node_type, time_slice = self.work_q.get(timeout=self.wait_time)
                 except:
+                    print('continue')
                     continue
                 # t=time.time()
                 if node_type == 'user':
