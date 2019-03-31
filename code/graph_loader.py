@@ -77,7 +77,7 @@ class TargetGen(object):
 class GraphLoader(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice, target_file,
                  user_fnum, item_fnum, user_feat_dict_file, item_feat_dict_file,
-                 batch_size, pred_time, worker_n=WORKER_N, wait_time=0.0001):
+                 batch_size, pred_time, worker_n=WORKER_N, wait_time=0.001):
         self.db_name = db_name
         self.user_num = USER_NUM_CCMR
         self.item_num = ITEM_NUM_CCMR
@@ -184,8 +184,8 @@ class GraphLoader(object):
                     # print('worker time: {}'.format(time.time()-t))
                     self.work_cnt.value += 1
                     if self.work_cnt.value == self.pred_time - START_TIME:
-                        self.work_end.set()
                         self.work_begin.clear()
+                        self.work_end.set()
                 # return node_1hop_dummy, node_2hop_dummy
             else:
                 # t=time.time()
@@ -243,9 +243,8 @@ class GraphLoader(object):
                         # print('worker time: {}'.format(time.time()-t))
                         self.work_cnt.value += 1
                         if self.work_cnt.value == self.pred_time - START_TIME:
-                            self.work_end.set()
                             self.work_begin.clear()
-                        
+                            self.work_end.set()
                     # return node_1hop_t, node_2hop_t
                 else:
                     self.result_1hop_q.put((node_1hop_t, time_slice))
