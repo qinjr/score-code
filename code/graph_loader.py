@@ -60,9 +60,11 @@ class TargetGen(object):
         for user_coll in self.user_colls:
             cursor = user_coll.find({})
             for user_doc in cursor:
-                if user_doc['hist_%d'%(pred_time)] != []:
+                # if user_doc['hist_%d'%(pred_time)] != []:
+                if user_doc['1hop'][pred_time] != []:
                     uid = user_doc['uid']
-                    pos_iids = user_doc['hist_%d'%(pred_time)]
+                    # pos_iids = user_doc['hist_%d'%(pred_time)]
+                    pos_iids = user_doc['1hop'][pred_time]
                     # for pos_iid in pos_iids:
                     pos_iid = pos_iids[0]
                     neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
@@ -168,7 +170,9 @@ class GraphLoader(object):
                 node_1hop_nei_feat_dict = self.user_feat_dict
                 node_2hop_nei_feat_dict = self.item_feat_dict
             
-            node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
+            # node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
+            node_1hop_list = start_node_doc['1hop'][time_slice] #[iid1, iid2, ...]
+            node_2hop_list = start_node_doc['2hop'][time_slice]
             # print('phase1 time: {}'.format(time.time()-t))
             
             # gen node 2 hops history

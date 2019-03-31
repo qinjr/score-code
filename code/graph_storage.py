@@ -46,7 +46,7 @@ class CCMRGraphStore(GraphStore):
     def gen_item_doc(self, iid):
         item_doc = {}
         item_doc['iid'] = iid
-        user_doc['1hop'] = [[] for i in range(self.time_slice_num)]
+        item_doc['1hop'] = [[] for i in range(self.time_slice_num)]
         # item_doc['did'], item_doc['aid'], item_doc['gid'], item_doc['nid'] = self.movie_info_dict[str(iid)]
         # for t in range(self.time_slice_num):
         #     item_doc['hist_%d'%t] = []
