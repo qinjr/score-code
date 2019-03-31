@@ -153,8 +153,9 @@ class CCMRGraphStore(GraphStore):
                 item_docs_block.append(new_item_doc)
             # print('item 2hop block gen time: {}'.format(time.time() - st))
             self.db_2hop['item_%d'%i].insert_many(item_docs_block)
+            print('item block-{} completed'.format(i))
         print('item 2 hop gen completed')
-        
+
         # gen user 2hop
         print('user 2 hop gen begin')
         for i in range(user_coll_num):
@@ -191,6 +192,7 @@ class CCMRGraphStore(GraphStore):
                 user_docs_block.append(new_user_doc)
             self.db_2hop['user_%d'%i].insert_many(user_docs_block)
             # print('user 2hop block gen time: {}'.format(time.time() - st))
+            print('user block-{} completed'.format(i))
         print('user 2 hop gen completed')
 
 
