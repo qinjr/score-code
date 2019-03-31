@@ -147,7 +147,9 @@ class CCMRGraphStore(GraphStore):
                     new_user_doc['2hop'].append(uids_2hop)
                     new_user_doc['degrees'].append(degrees_2hop)
                 user_docs_block.append(new_user_doc)
+            time = time.time()
             self.db_2hop['user_%d'%i].insert_many(user_docs_block)
+            print('write time: {}'.format(time.time()-time))
             print('user 2hop block gen time: {}'.format(time.time() - st))
         print('user 2 hop gen completed')
 
