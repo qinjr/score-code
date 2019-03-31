@@ -6,6 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 SECONDS_PER_DAY = 24 * 3600
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
@@ -136,6 +137,7 @@ class CCMRGraphStore(GraphStore):
                 for t in range(START_TIME, self.time_slice_num):
                     uids = old_item_doc['1hop'][t]
                     if len(uids) > MAX_1HOP:
+                        random.shuffle(uids)
                         uids = uids[:MAX_1HOP]
                     iids_2hop = []
                     degrees_2hop = []
@@ -146,6 +148,9 @@ class CCMRGraphStore(GraphStore):
                             iids_2hop += user_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
                     if degree > MAX_2HOP:
+                        combined = list(zip(iids_2hop, degrees_2hop))
+                        random.shuffle(combined)
+                        iids_2hop[:], degrees_2hop[:] = zip(*combined)
                         iids_2hop = iids_2hop[:MAX_2HOP]
                         degrees_2hop = degrees_2hop[:MAX_2HOP]
                     new_item_doc['2hop'].append(iids_2hop)
@@ -175,6 +180,7 @@ class CCMRGraphStore(GraphStore):
                 for t in range(START_TIME, self.time_slice_num):
                     iids = old_user_doc['1hop'][t]
                     if len(iids) > MAX_1HOP:
+                        random.shuffle(iids)
                         iids = iids[:MAX_1HOP]
                     uids_2hop = []
                     degrees_2hop = []
@@ -185,6 +191,9 @@ class CCMRGraphStore(GraphStore):
                             uids_2hop += item_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
                         if len(uids_2hop) > MAX_2HOP:
+                            combined = list(zip(uids_2hop, degrees_2hop))
+                            random.shuffle(combined)
+                            uids_2hop[:], degrees_2hop[:] = zip(*combined)
                             uids_2hop = uids_2hop[:MAX_2HOP]
                             degrees_2hop = degrees_2hop[:MAX_2HOP]
                     new_user_doc['2hop'].append(uids_2hop)
