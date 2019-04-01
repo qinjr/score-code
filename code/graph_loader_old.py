@@ -177,24 +177,24 @@ class GraphHandler(object):
 
     def gen_user_history(self, start_uid, pred_time):
         user_1hop, user_2hop = [], []
-        t = time.time()
+        # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // USER_PER_COLLECTION].find({'uid': start_uid})[0]
         for i in range(START_TIME, pred_time):
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_node_doc, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
-        print('gen_user_history time: {}'.format(time.time() - t))
+        # print('gen_user_history time: {}'.format(time.time() - t))
         return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid, pred_time):
         item_1hop, item_2hop = [], []
-        t = time.time()
+        # t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_iid})[0]
         for i in range(START_TIME, pred_time):
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_node_doc, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
-        print('gen_item_history time: {}'.format(time.time() - t))
+        # print('gen_item_history time: {}'.format(time.time() - t))
         return item_1hop, item_2hop
 
 
@@ -317,20 +317,20 @@ if __name__ == "__main__":
                                 5,
                                 None, 
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    for i in range(1, 100):
-        graph_handler.gen_user_history(i, 40)
-    for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
-        graph_handler.gen_item_history(i, 40)
+    # for i in range(1, 100):
+    #     graph_handler.gen_user_history(i, 40)
+    # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
+    #     graph_handler.gen_item_history(i, 40)
     # graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 40)
     
-    # t = time.time()
-    # st = time.time()
-    # i = 0
-    # for batch_data in graph_loader:
-    #     # print(batch_data[-3:])
-    #     print('batch time: {}'.format(time.time() - t))
-    #     t = time.time()
-    #     i += 1
-    #     if i == 100:
-    #         break
-    #         print('average time:{}'.format((time.time() - st)/100))
+    t = time.time()
+    st = time.time()
+    i = 0
+    for batch_data in graph_loader:
+        # print(batch_data[-3:])
+        print('batch time: {}'.format(time.time() - t))
+        t = time.time()
+        i += 1
+        if i == 100:
+            break
+            print('average time:{}'.format((time.time() - st)/100))
