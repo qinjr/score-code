@@ -28,8 +28,18 @@ class TargetGen(object):
         url = "mongodb://localhost:27017/"
         client = pymongo.MongoClient(url)
         db = client[db_name]
-        self.user_coll = db.user
-        self.item_coll = db.item
+        self.user_num = USER_NUM_CCMR
+        self.item_num = ITEM_NUM_CCMR
+        
+        user_coll_num = self.user_num // USER_PER_COLLECTION
+        if self.user_num % USER_PER_COLLECTION != 0:
+            user_coll_num += 1
+        item_coll_num = self.item_num // ITEM_PER_COLLECTION
+        if self.item_num % ITEM_PER_COLLECTION != 0:
+            item_coll_num += 1
+
+        self.user_colls = [db['user_%d'%(i)] for i in range(user_coll_num)]
+        self.item_colls = [db['item_%d'%(i)] for i in range(item_coll_num)]
         
     def gen_user_neg_items(self, uid, neg_sample_num, iid_start, iid_end):
             if str(uid) in self.user_neg_dict:
@@ -47,16 +57,19 @@ class TargetGen(object):
 
     def gen_target_file(self, neg_sample_num, target_file, pred_time):
         target_lines = []
-        cursor = self.user_coll.find({})
-        for user_doc in cursor:
-            if user_doc['hist_%d'%(pred_time)] != []:
-                uid = user_doc['uid']
-                pos_iids = user_doc['hist_%d'%(pred_time)]
-                # for pos_iid in pos_iids:
-                pos_iid = pos_iids[0]
-                neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
-                neg_iids = [str(neg_iid) for neg_iid in neg_iids]
-                target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
+        for user_coll in self.user_colls:
+            cursor = user_coll.find({})
+            for user_doc in cursor:
+                # if user_doc['hist_%d'%(pred_time)] != []:
+                if user_doc['1hop'][pred_time] != []:
+                    uid = user_doc['uid']
+                    # pos_iids = user_doc['hist_%d'%(pred_time)]
+                    pos_iids = user_doc['1hop'][pred_time]
+                    # for pos_iid in pos_iids:
+                    pos_iid = pos_iids[0]
+                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
+                    neg_iids = [str(neg_iid) for neg_iid in neg_iids]
+                    target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
         with open(target_file, 'w') as f:
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
