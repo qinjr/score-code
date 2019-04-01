@@ -287,11 +287,11 @@ class GraphLoader(object):
                     if self.user_feat_dict == None:
                         target_user_batch.append([uids[i]])
                     else:
-                        target_user_batch.append([uids[i]] + self.user_feat_dict[uids[i]])
+                        target_user_batch.append([uids[i]] + self.user_feat_dict[str(uids[i])])
                     if self.item_feat_dict == None:
                         target_item_batch.append([iids[j]])
                     else:
-                        target_item_batch.append([iids[j]] + self.item_feat_dict[iids[j]])
+                        target_item_batch.append([iids[j]] + self.item_feat_dict[str(iids[j])])
                     if j % (NEG_SAMPLE_NUM + 1) == 0:
                         label_batch.append(1)
                     else:
