@@ -233,9 +233,9 @@ class GCMC(SliceBaseModel):
         # RNN
         with tf.name_scope('rnn'):
             _, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_1hop_seq, 
-                                                        sequence_length=self.user_1hop_len_ph, dtype=tf.float32, scope='gru1')
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru1')
             _, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_1hop_seq, 
-                                                        sequence_length=self.item_1hop_len_ph, dtype=tf.float32, scope='gru2')
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru2')
         
         # inp = tf.concat([item_seq_final_state, user_seq_final_state, self.target_user, , self.target_item], axis=1) #, self.target_user
 
