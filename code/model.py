@@ -14,7 +14,7 @@ Slice Based Models: SCORE, RRN, GCN
 '''
 class SliceBaseModel(object):
     def __init__(self, feature_size, eb_dim, hidden_size, time_len, 
-                obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
+                obj_per_time_slice, user_fnum, item_fnum, neg_sample_num):
         # reset graph
         tf.reset_default_graph()
 
