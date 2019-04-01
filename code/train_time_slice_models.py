@@ -149,7 +149,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params,
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
-                            os.mkdir('save_model_{}/{}/'.format(data_set, model_name))
+                            os.makedirs('save_model_{}/{}/'.format(data_set, model_name))
                         save_path = 'save_model_{}/{}/ckpt'.format(data_set, model_name)
                         model.save(sess, save_path)
 
@@ -158,6 +158,8 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params,
                         early_stop = True
 
         # generate log
+        if not os.path.exists('logs_{}/'.format(data_set)):
+            os.makedirs('logs_{}/'.format(data_set))
         logname = '{}_{}_{}.pkl'.format(model_type, lr, reg_lambda)
 
         with open('logs_{}/{}'.format(data_set, logname), 'wb') as f:
