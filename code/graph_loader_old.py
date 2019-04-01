@@ -304,7 +304,6 @@ class GraphLoader(object):
                 thread.terminate()
             raise StopIteration
         re = self.results.get()
-        print('batch done')
         return re
 
 if __name__ == "__main__":
