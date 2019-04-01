@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 16
+WORKER_N = 8
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -67,12 +67,8 @@ class GraphHandler(object):
                  item_feat_dict_file = None):
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.db = self.client[db_name]
-        # self.user_coll = self.client[db_name].user
-        # self.item_coll = self.client[db_name].item
-        # self.user_cursor = self.user_coll.find({})
-        # self.item_cursor = self.item_coll.find({})
-        self.user_num = USER_NUM_CCMR#self.user_coll.find().count()
-        self.item_num = ITEM_NUM_CCMR#self.item_coll.find().count()
+        self.user_num = USER_NUM_CCMR
+        self.item_num = ITEM_NUM_CCMR
         
         self.obj_per_time_slice = obj_per_time_slice
         self.time_slice_num = time_slice_num
@@ -89,9 +85,7 @@ class GraphHandler(object):
         if item_feat_dict_file != None:
             with open(item_feat_dict_file, 'rb') as f:
                 self.item_feat_dict = pkl.load(f)
-        print('graph loader initial completed')
-
-    def gen_node_neighbor(self, start_node_id, node_type, time_slice):
+        
         user_coll_num = self.user_num // USER_PER_COLLECTION
         if self.user_num % USER_PER_COLLECTION != 0:
             user_coll_num += 1
@@ -99,12 +93,16 @@ class GraphHandler(object):
         if self.item_num % ITEM_PER_COLLECTION != 0:
             item_coll_num += 1
 
-        user_colls = [self.db['user_%d'%(i)] for i in range(user_coll_num)]
-        item_colls = [self.db['item_%d'%(i)] for i in range(item_coll_num)]
-        
+        self.user_colls = [self.db['user_%d'%(i)] for i in range(user_coll_num)]
+        self.item_colls = [self.db['item_%d'%(i)] for i in range(item_coll_num)]
+
+        print('graph loader initial completed')
+
+    def gen_node_neighbor(self, start_node_id, node_type, time_slice):
         if node_type == 'user':
-            # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
-            start_node_doc = user_colls[(start_node_id - 1) // USER_PER_COLLECTION].find({'uid': start_node_id})[0]#user_cursor[start_node_id - 1]
+            t = time.time()
+            start_node_doc = self.user_colls[(start_node_id - 1) // USER_PER_COLLECTION].find({'uid': start_node_id})[0]
+            print('find time: {}'.format(time.time()-t))
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             
@@ -114,8 +112,9 @@ class GraphHandler(object):
             node_2hop_nei_feat_dict = self.user_feat_dict
 
         elif node_type == 'item':
-            # start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
-            start_node_doc = item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]#item_cursor[start_node_id - 1 - self.user_num]
+            t = time.time()
+            start_node_doc = self.item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]
+            print('find time: {}'.format(time.time()-t))
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
@@ -124,17 +123,14 @@ class GraphHandler(object):
             node_1hop_nei_feat_dict = self.user_feat_dict
             node_2hop_nei_feat_dict = self.item_feat_dict
         
-        # node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
         node_1hop_list = start_node_doc['1hop'][time_slice] #[iid1, iid2, ...]
         node_2hop_list = start_node_doc['2hop'][time_slice]
         degree_list = start_node_doc['degrees'][time_slice]
-        # print('phase1 time: {}'.format(time.time()-t))
         
         # gen node 2 hops history
         if node_1hop_list == []:
             return node_1hop_dummy, node_2hop_dummy
         else:
-            # t=time.time()
             # deal with 1hop
             if len(node_1hop_list) >= self.obj_per_time_slice:
                 node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
@@ -149,11 +145,9 @@ class GraphHandler(object):
                     node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
                 else:
                     node_1hop_t.append([node_id])
-            # print('phase2 time: {}'.format(time.time()-t))
-            # st=time.time()
             # deal with 2hop            
-            node_2hop_candi = node_2hop_list#[]
-            p_distri = (1 / (np.array(degree_list) - 1)).tolist()#[]
+            node_2hop_candi = node_2hop_list
+            p_distri = (1 / (np.array(degree_list) - 1)).tolist()
             if node_2hop_candi != []:
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
                 node_2hop_list_choice= np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
@@ -163,7 +157,6 @@ class GraphHandler(object):
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
                         node_2hop_t.append([node_2hop_id])
-                # print('phase4 time: {}'.format(time.time()-t))
                 return node_1hop_t, node_2hop_t
             else:
                 return node_1hop_t, node_2hop_dummy
@@ -300,7 +293,7 @@ class GraphLoader(object):
         return re
 
 if __name__ == "__main__":
-    graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr', OBJ_PER_TIME_SLICE_CCMR, \
+    graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                             1, 5, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
     graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
                                 'ccmr_2hop',
