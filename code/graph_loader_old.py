@@ -63,12 +63,13 @@ class GraphHandler(object):
                  user_fnum, item_fnum, user_feat_dict_file = None, 
                  item_feat_dict_file = None):
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
-        self.user_coll = self.client[db_name].user
-        self.item_coll = self.client[db_name].item
-        self.user_cursor = self.user_coll.find({})
-        self.item_cursor = self.item_coll.find({})
-        self.user_num = self.user_coll.find().count()
-        self.item_num = self.item_coll.find().count()
+        self.db = self.client[db_name]
+        # self.user_coll = self.client[db_name].user
+        # self.item_coll = self.client[db_name].item
+        # self.user_cursor = self.user_coll.find({})
+        # self.item_cursor = self.item_coll.find({})
+        self.user_num = USER_NUM_CCMR#self.user_coll.find().count()
+        self.item_num = ITEM_NUM_CCMR#self.item_coll.find().count()
         
         self.obj_per_time_slice = obj_per_time_slice
         self.time_slice_num = time_slice_num
@@ -88,10 +89,19 @@ class GraphHandler(object):
         print('graph loader initial completed')
 
     def gen_node_neighbor(self, start_node_id, node_type, time_slice):
-        # t=time.time()
+        user_coll_num = self.user_num // USER_PER_COLLECTION
+        if self.user_num % USER_PER_COLLECTION != 0:
+            user_coll_num += 1
+        item_coll_num = self.item_num // ITEM_PER_COLLECTION
+        if self.item_num % ITEM_PER_COLLECTION != 0:
+            item_coll_num += 1
+
+        user_colls = [db['user_%d'%(i)] for i in range(user_coll_num)]
+        item_colls = [db['item_%d'%(i)] for i in range(item_coll_num)]
+        
         if node_type == 'user':
             # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
-            start_node_doc = self.user_cursor[start_node_id - 1]
+            start_node_doc = user_colls[(start_node_id - 1) // USER_PER_COLLECTION].find({'uid': start_node_id})[0]#user_cursor[start_node_id - 1]
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             
@@ -102,7 +112,7 @@ class GraphHandler(object):
 
         elif node_type == 'item':
             # start_node_doc = self.item_coll.find({'iid': start_node_id})[0]
-            start_node_doc = self.item_cursor[start_node_id - 1 - self.user_num]
+            start_node_doc = item_colls[(start_node_id - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_node_id})[0]#item_cursor[start_node_id - 1 - self.user_num]
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
 
@@ -111,7 +121,10 @@ class GraphHandler(object):
             node_1hop_nei_feat_dict = self.user_feat_dict
             node_2hop_nei_feat_dict = self.item_feat_dict
         
-        node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
+        # node_1hop_list = start_node_doc['hist_%d'%(time_slice)] #[iid1, iid2, ...]
+        node_1hop_list = start_node_doc['1hop'][time_slice] #[iid1, iid2, ...]
+        node_2hop_list = start_node_doc['2hop'][time_slice]
+        degree_list = start_node_doc['degrees'][time_slice]
         # print('phase1 time: {}'.format(time.time()-t))
         
         # gen node 2 hops history
@@ -136,30 +149,13 @@ class GraphHandler(object):
             # print('phase2 time: {}'.format(time.time()-t))
             # st=time.time()
             # deal with 2hop            
-            node_2hop_candi = []
-            p_distri = []
-            for node_id in node_1hop_list_unique:
-                if node_1hop_nei_type == 'item':
-                    # t=time.time()
-                    node_1hop_nei_doc = self.item_cursor[node_id - 1 - self.user_num]
-                    # print('find item time: {}'.format(time.time()-t))
-                    # node_1hop_nei_doc = self.item_coll.find_one({'iid': node_id})
-                elif node_1hop_nei_type == 'user':
-                    # t=time.time()
-                    node_1hop_nei_doc = self.user_cursor[node_id - 1]
-                    # print('find user time: {}'.format(time.time()-t))
-                    # node_1hop_nei_doc = self.user_coll.find_one({'uid': node_id})
-                    degree = len(node_1hop_nei_doc['hist_%d'%(time_slice)])
-                    if degree > 1:
-                        node_2hop_candi += node_1hop_nei_doc['hist_%d'%(time_slice)]
-                        p_distri += [1/(degree - 1)] * degree
-            # print('phase3 time: {}'.format(time.time()-st))
-            # t=time.time()
+            node_2hop_candi = node_2hop_list#[]
+            p_distri = (1 / (np.array(degree_list) - 1)).tolist()#[]
             if node_2hop_candi != []:
                 p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-                node_2hop_list = np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
+                node_2hop_list_choice= np.random.choice(node_2hop_candi, self.obj_per_time_slice, p=p_distri).tolist()
                 node_2hop_t = []
-                for node_2hop_id in node_2hop_list:
+                for node_2hop_id in node_2hop_list_choice:
                     if node_2hop_nei_feat_dict != None:
                         node_2hop_t.append([node_2hop_id] + node_2hop_nei_feat_dict[str(node_2hop_id)])
                     else:
