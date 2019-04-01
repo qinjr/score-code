@@ -195,7 +195,7 @@ class SCORE(SliceBaseModel):
 class RRN(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, time_len, 
                 obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
+        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
         user_side = tf.reduce_sum(self.user_1hop, axis=2)
         item_side = tf.reduce_sum(self.item_1hop, axis=2)
 
