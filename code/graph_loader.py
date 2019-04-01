@@ -18,7 +18,7 @@ USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
 USER_PER_COLLECTION = 1000
-ITEM_PER_COLLECTION = 1000
+ITEM_PER_COLLECTION = 100
 
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):

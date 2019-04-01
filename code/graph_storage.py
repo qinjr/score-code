@@ -11,7 +11,7 @@ import random
 SECONDS_PER_DAY = 24 * 3600
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION = 1000
-ITEM_PER_COLLECTION = 1000
+ITEM_PER_COLLECTION = 100
 START_TIME = 30
 MAX_1HOP = 30
 MAX_2HOP = 30
@@ -87,9 +87,9 @@ class CCMRGraphStore(GraphStore):
             # item_doc_list[int(iid) - self.user_num - 1]['hist_%s'%(t_idx)].append(int(uid))
         print('user and item doc list completed')
 
-        for i in range(len(list_of_user_doc_list)):
-            self.db_1hop['user_%d'%(i)].insert_many(list_of_user_doc_list[i])
-        print('user collection completed')
+        # for i in range(len(list_of_user_doc_list)):
+        #     self.db_1hop['user_%d'%(i)].insert_many(list_of_user_doc_list[i])
+        # print('user collection completed')
         for i in range(len(list_of_item_doc_list)):
             self.db_1hop['item_%d'%(i)].insert_many(list_of_item_doc_list[i])
         print('item collection completed')
@@ -163,48 +163,48 @@ class CCMRGraphStore(GraphStore):
         print('item 2 hop gen completed')
 
         # gen user 2hop
-        print('user 2 hop gen begin')
-        for i in range(user_coll_num):
-            user_docs_block = []
-            # st = time.time()
-            for uid in range(1 + i * USER_PER_COLLECTION, 1 + (i + 1) * USER_PER_COLLECTION):
-                old_user_doc = all_user_docs[uid - 1]
-                new_user_doc = {
-                    'uid': uid,
-                    '1hop': old_user_doc['1hop'],
-                    '2hop': [],
-                    'degrees': []
-                }
-                for t in range(START_TIME):
-                    new_user_doc['2hop'].append([])
-                    new_user_doc['degrees'].append([])
-                for t in range(START_TIME, self.time_slice_num):
-                    iids = old_user_doc['1hop'][t]
-                    if len(iids) > MAX_1HOP:
-                        random.shuffle(iids)
-                        iids = iids[:MAX_1HOP]
-                    uids_2hop = []
-                    degrees_2hop = []
-                    for iid in iids:
-                        item_doc = all_item_docs[iid - 1 - self.user_num]
-                        degree = len(item_doc['1hop'][t])
-                        if degree > 1 and degree <= MAX_2HOP:
-                            uids_2hop += item_doc['1hop'][t]
-                            degrees_2hop += [degree] * degree
-                        elif degree > MAX_2HOP:
-                            uids_2hop += item_doc['1hop'][t][:5]
-                            degrees_2hop += [degree] * 5
-                    if len(uids_2hop) > MAX_2HOP:
-                        idx = np.random.choice(np.arange(len(uids_2hop)), len(uids_2hop), replace=False)
-                        uids_2hop = np.array(uids_2hop)[idx].tolist()[:MAX_2HOP]
-                        degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:MAX_2HOP]
-                    new_user_doc['2hop'].append(uids_2hop)
-                    new_user_doc['degrees'].append(degrees_2hop)
-                user_docs_block.append(new_user_doc)
-            self.db_2hop['user_%d'%i].insert_many(user_docs_block)
-            # print('user 2hop block gen time: {}'.format(time.time() - st))
-            print('user block-{} completed'.format(i))
-        print('user 2 hop gen completed')
+        # print('user 2 hop gen begin')
+        # for i in range(user_coll_num):
+        #     user_docs_block = []
+        #     # st = time.time()
+        #     for uid in range(1 + i * USER_PER_COLLECTION, 1 + (i + 1) * USER_PER_COLLECTION):
+        #         old_user_doc = all_user_docs[uid - 1]
+        #         new_user_doc = {
+        #             'uid': uid,
+        #             '1hop': old_user_doc['1hop'],
+        #             '2hop': [],
+        #             'degrees': []
+        #         }
+        #         for t in range(START_TIME):
+        #             new_user_doc['2hop'].append([])
+        #             new_user_doc['degrees'].append([])
+        #         for t in range(START_TIME, self.time_slice_num):
+        #             iids = old_user_doc['1hop'][t]
+        #             if len(iids) > MAX_1HOP:
+        #                 random.shuffle(iids)
+        #                 iids = iids[:MAX_1HOP]
+        #             uids_2hop = []
+        #             degrees_2hop = []
+        #             for iid in iids:
+        #                 item_doc = all_item_docs[iid - 1 - self.user_num]
+        #                 degree = len(item_doc['1hop'][t])
+        #                 if degree > 1 and degree <= MAX_2HOP:
+        #                     uids_2hop += item_doc['1hop'][t]
+        #                     degrees_2hop += [degree] * degree
+        #                 elif degree > MAX_2HOP:
+        #                     uids_2hop += item_doc['1hop'][t][:5]
+        #                     degrees_2hop += [degree] * 5
+        #             if len(uids_2hop) > MAX_2HOP:
+        #                 idx = np.random.choice(np.arange(len(uids_2hop)), len(uids_2hop), replace=False)
+        #                 uids_2hop = np.array(uids_2hop)[idx].tolist()[:MAX_2HOP]
+        #                 degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:MAX_2HOP]
+        #             new_user_doc['2hop'].append(uids_2hop)
+        #             new_user_doc['degrees'].append(degrees_2hop)
+        #         user_docs_block.append(new_user_doc)
+        #     self.db_2hop['user_%d'%i].insert_many(user_docs_block)
+        #     # print('user 2hop block gen time: {}'.format(time.time() - st))
+        #     print('user block-{} completed'.format(i))
+        # print('user 2 hop gen completed')
 
 
     def cal_stat(self):
