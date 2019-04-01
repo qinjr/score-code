@@ -6,7 +6,6 @@ import numpy as np
 import multiprocessing
 
 NEG_SAMPLE_NUM = 9
-MAX_LEN = 80
 WORKER_N = 5
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
@@ -192,7 +191,8 @@ class GraphHandler(object):
 
 class GraphLoader(object):
     def __init__(self, graph_handler_params, batch_size, target_file, pred_time, 
-                worker_n = WORKER_N, max_q_size = 10, wait_time = 0.05):
+                user_feat_dict_file, item_feat_dict_file, worker_n = WORKER_N, 
+                max_q_size = 10, wait_time = 0.05):
         self.batch_size = batch_size
         self.max_q_size = max_q_size
         self.wait_time = wait_time
@@ -208,6 +208,16 @@ class GraphLoader(object):
         self.num_of_batch = len(self.target_lines) // self.batch_size2line_num
         if self.num_of_batch * self.batch_size2line_num < len(self.target_lines):
             self.num_of_batch += 1
+
+        # side information dict
+        self.user_feat_dict = None
+        self.item_feat_dict = None
+        if user_feat_dict_file != None:
+            with open(user_feat_dict_file, 'rb') as f:
+                self.user_feat_dict = pkl.load(f)
+        if item_feat_dict_file != None:
+            with open(item_feat_dict_file, 'rb') as f:
+                self.item_feat_dict = pkl.load(f)
 
         # multiprocessing
         self.prod_batch_num = 0 # for producer
@@ -274,8 +284,14 @@ class GraphLoader(object):
                     user_2hop_batch.append(user_2hop)
                     item_1hop_batch.append(item_1hop)
                     item_2hop_batch.append(item_2hop)
-                    target_user_batch.append(uids[i])
-                    target_item_batch.append(iids[j])
+                    if self.user_feat_dict == None:
+                        target_user_batch.append([uids[i]])
+                    else:
+                        target_user_batch.append([uids[i]] + self.user_feat_dict[uids[i]])
+                    if self.item_feat_dict == None:
+                        target_item_batch.append([iids[j]])
+                    else:
+                        target_item_batch.append([iids[j]] + self.item_feat_dict[iids[j]])
                     if j % (NEG_SAMPLE_NUM + 1) == 0:
                         label_batch.append(1)
                     else:
@@ -311,22 +327,12 @@ if __name__ == "__main__":
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
     #     graph_handler.gen_item_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 39)
-    graph_loader2 = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_test.txt', 40)
+    graph_loader = GraphLoader(graph_handler_params, 200, DATA_DIR_CCMR + 'target_train.txt', 39, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     
     t = time.time()
     st = time.time()
     i = 1
     for batch_data in graph_loader:
-        print('batch time of batch-{}: {}'.format(i, (time.time() - t)))
-        i += 1
-        t = time.time()
-    print('total time:{}'.format(time.time() - st))
-
-    t = time.time()
-    st = time.time()
-    i = 1
-    for batch_data in graph_loader2:
         print('batch time of batch-{}: {}'.format(i, (time.time() - t)))
         i += 1
         t = time.time()
