@@ -99,8 +99,8 @@ class GraphHandler(object):
         if self.item_num % ITEM_PER_COLLECTION != 0:
             item_coll_num += 1
 
-        user_colls = [db['user_%d'%(i)] for i in range(user_coll_num)]
-        item_colls = [db['item_%d'%(i)] for i in range(item_coll_num)]
+        user_colls = [self.db['user_%d'%(i)] for i in range(user_coll_num)]
+        item_colls = [self.db['item_%d'%(i)] for i in range(item_coll_num)]
         
         if node_type == 'user':
             # start_node_doc = self.user_coll.find({'uid': start_node_id})[0]
