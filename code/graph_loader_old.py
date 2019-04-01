@@ -191,7 +191,7 @@ class GraphHandler(object):
         t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_iid})[0]
         for i in range(START_TIME, pred_time):
-            item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_iid, 'item', i)
+            item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_node_doc, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
         print('gen_item_history time: {}'.format(time.time() - t))
