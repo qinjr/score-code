@@ -327,7 +327,7 @@ if __name__ == "__main__":
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
     #     graph_handler.gen_item_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 200, DATA_DIR_CCMR + 'target_train.txt', 39, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 39, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     
     t = time.time()
     st = time.time()

@@ -178,7 +178,7 @@ if __name__ == '__main__':
         graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                                 1, 5, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
         target_file_train = DATA_DIR_CCMR + 'target_train.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_test.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_test_sample.txt'
         pred_time_train = 39
         pred_time_test = 40
         user_feat_dict_file = None
