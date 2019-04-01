@@ -7,7 +7,7 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 MAX_LEN = 80
-WORKER_N = 8
+WORKER_N = 5
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 START_TIME = 30
 
@@ -317,18 +317,23 @@ if __name__ == "__main__":
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
     #     graph_handler.gen_item_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 40)
+    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 39)
+    graph_loader2 = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_test.txt', 40)
     
     t = time.time()
     st = time.time()
-    i = 0
+    i = 1
     for batch_data in graph_loader:
-        # print(batch_data[-3:])
-        print(np.array(batch_data[0]).shape, np.array(batch_data[1]).shape, np.array(batch_data[2]).shape, np.array(batch_data[3]).shape, np.array(batch_data[4]).shape, np.array(batch_data[5]).shape, np.array(batch_data[6]).shape)
-        print(np.array(batch_data[6]))
-        print('batch time: {}'.format(time.time() - t))
-        t = time.time()
+        print('batch time of batch-{}: {}'.format(i, (time.time() - t)))
         i += 1
-        if i == 100:
-            break
-            print('average time:{}'.format((time.time() - st)/100))
+        t = time.time()
+    print('total time:{}'.format(time.time() - st))
+
+    t = time.time()
+    st = time.time()
+    i = 1
+    for batch_data in graph_loader2:
+        print('batch time of batch-{}: {}'.format(i, (time.time() - t)))
+        i += 1
+        t = time.time()
+    print('total time:{}'.format(time.time() - st))
