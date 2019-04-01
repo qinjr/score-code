@@ -174,6 +174,9 @@ class GraphHandler(object):
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_node_doc, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
+        for i in range(TIME_SLICE_NUM_CCMR - pred_time - 1):
+            user_1hop.append(user_1hop[-1])
+            user_2hop.append(user_2hop[-1])
         # print('gen_user_history time: {}'.format(time.time() - t))
         return user_1hop, user_2hop
 
@@ -185,6 +188,9 @@ class GraphHandler(object):
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_node_doc, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
+        for i in range(TIME_SLICE_NUM_CCMR - pred_time - 1):
+            item_1hop.append(item_1hop[-1])
+            item_2hop.append(item_2hop[-1])
         # print('gen_item_history time: {}'.format(time.time() - t))
         return item_1hop, item_2hop
 
