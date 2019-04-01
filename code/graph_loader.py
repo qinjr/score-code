@@ -275,6 +275,7 @@ class GraphLoader(object):
             target_user_batch = []
             target_item_batch = []
             label_batch = []
+            length_batch = []
 
             for i in range(len(uids)):
                 user_1hop, user_2hop = graph_handler.gen_user_history(uids[i], self.pred_time)
@@ -296,7 +297,8 @@ class GraphLoader(object):
                         label_batch.append(1)
                     else:
                         label_batch.append(0)
-            self.results.put((user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch))
+                    length_batch.append(self.pred_time - START_TIME)
+            self.results.put((user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch, length_batch))
         with self.worker_stop.get_lock():
             self.worker_stop.value += 1
 

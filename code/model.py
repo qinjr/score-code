@@ -13,7 +13,7 @@ FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + 
 Slice Based Models: SCORE, RRN, GCN
 '''
 class SliceBaseModel(object):
-    def __init__(self, feature_size, eb_dim, hidden_size, time_len, 
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice, user_fnum, item_fnum, neg_sample_num):
         # reset graph
         tf.reset_default_graph()
@@ -23,14 +23,15 @@ class SliceBaseModel(object):
 
         # input placeholders
         with tf.name_scope('inputs'):
-            self.user_1hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_slice, item_fnum], name='user_1hop_ph')
-            self.user_2hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_slice, user_fnum], name='user_2hop_ph')
-            self.item_1hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_slice, user_fnum], name='item_1hop_ph')
-            self.item_2hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_slice, item_fnum], name='item_2hop_ph')
+            self.user_1hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice, item_fnum], name='user_1hop_ph')
+            self.user_2hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice, user_fnum], name='user_2hop_ph')
+            self.item_1hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice, user_fnum], name='item_1hop_ph')
+            self.item_2hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice, item_fnum], name='item_2hop_ph')
 
             self.target_user_ph = tf.placeholder(tf.int32, [None, user_fnum], name='target_user_ph')
             self.target_item_ph = tf.placeholder(tf.int32, [None, item_fnum], name='target_item_ph')
             self.label_ph = tf.placeholder(tf.int32, [None,], name='label_ph')
+            self.length_ph = tf.placeholder(tf.int32, [None,], name='length_ph')
 
             # lr
             self.lr = tf.placeholder(tf.float32, [])
@@ -123,6 +124,7 @@ class SliceBaseModel(object):
                 self.target_user_ph : batch_data[4],
                 self.target_item_ph : batch_data[5],
                 self.label_ph : batch_data[6],
+                self.length_ph : batch_data[7],
                 self.lr : lr,
                 self.reg_lambda : reg_lambda,
                 self.keep_prob : 0.8
@@ -138,6 +140,7 @@ class SliceBaseModel(object):
                 self.target_user_ph : batch_data[4],
                 self.target_item_ph : batch_data[5],
                 self.label_ph : batch_data[6],
+                self.length_ph : batch_data[7],
                 self.keep_prob : 1.
             })
         
@@ -153,9 +156,9 @@ class SliceBaseModel(object):
         print('model restored from {}'.format(path))
 
 class SCORE(SliceBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, time_len, 
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
+        super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
         user_1hop_seq, item_2hop_seq = self.co_attention_v1(self.user_1hop, self.item_2hop)
         user_2hop_seq, item_1hop_seq = self.co_attention_v1(self.user_2hop, self.item_1hop)
 
@@ -167,9 +170,9 @@ class SCORE(SliceBaseModel):
         # RNN
         with tf.name_scope('rnn'):
             _, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
-                                                        dtype=tf.float32, scope='gru_user_side')
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
             _, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
-                                                        dtype=tf.float32, scope='gru_item_side')
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
         inp = tf.concat([user_side_final_state, item_side_final_state, self.target_item, self.target_user], axis=1)
 
@@ -193,18 +196,18 @@ class SCORE(SliceBaseModel):
         return seq1_result, seq2_result
 
 class RRN(SliceBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, time_len, 
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
+        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
         user_side = tf.reduce_sum(self.user_1hop, axis=2)
         item_side = tf.reduce_sum(self.item_1hop, axis=2)
 
         # RNN
         with tf.name_scope('rnn'):
             _, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
-                                                        dtype=tf.float32, scope='gru_user_side')
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
             _, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
-                                                        dtype=tf.float32, scope='gru_item_side')
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
         inp = tf.concat([user_side_final_state, item_side_final_state, self.target_item, self.target_user], axis=1)
 

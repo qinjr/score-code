@@ -19,19 +19,20 @@ NEG_SAMPLE_NUM = 9
 
 # for CCMR
 OBJ_PER_TIME_SLICE_CCMR = 10
-TIME_LEN_CCMR = 10
+TIME_SLICE_NUM_CCMR = 41
+START_TIME_CCMR = 30
 FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 def restore(data_set, target_file_test, graph_handler_params, 
         pred_time_test, user_feat_dict_file, item_feat_dict_file,
-        model_type, train_batch_size, feature_size, eb_dim, hidden_size, time_len, 
+        model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
         obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda):
     print('restore begin')
     if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, time_len, obj_per_time_slice, user_fnum, item_fnum)
+        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     elif model_type == 'RRN': 
-        model = RRN(feature_size, eb_dim, hidden_size, time_len, obj_per_time_slice, user_fnum, item_fnum)
+        model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -81,12 +82,12 @@ def eval(model, sess, graph_handler_params, target_file, pred_time,
 
 def train(data_set, target_file_train, target_file_test, graph_handler_params, 
         pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-        model_type, train_batch_size, feature_size, eb_dim, hidden_size, time_len, 
+        model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
         obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num):
     if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, time_len, obj_per_time_slice, user_fnum, item_fnum)
+        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     elif model_type == 'RRN': 
-        model = RRN(feature_size, eb_dim, hidden_size, time_len, obj_per_time_slice, user_fnum, item_fnum)
+        model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -185,7 +186,7 @@ if __name__ == '__main__':
         item_feat_dict_file = DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
-        time_len = TIME_LEN_CCMR
+        max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
         user_fnum = 1 
         item_fnum = 5
@@ -204,10 +205,10 @@ if __name__ == '__main__':
             for reg_lambda in reg_lambdas:
                 test_auc, test_logloss, test_ndcg = train(data_set, target_file_train, target_file_test, graph_handler_params, 
                                                 pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                                                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, time_len, 
+                                                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
                                                 obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
                 
                 restore(data_set, target_file_test, graph_handler_params, 
                         pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                        model_type, train_batch_size, feature_size, eb_dim, hidden_size, time_len, 
+                        model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
                         obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda)
