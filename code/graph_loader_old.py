@@ -109,8 +109,6 @@ class GraphHandler(object):
         self.user_colls = [self.db['user_%d'%(i)] for i in range(user_coll_num)]
         self.item_colls = [self.db['item_%d'%(i)] for i in range(item_coll_num)]
 
-        print('graph loader initial completed')
-
     def gen_node_neighbor(self, start_node_doc, node_type, time_slice):
         if node_type == 'user':
             # t = time.time()
@@ -288,7 +286,6 @@ class GraphLoader(object):
                         label_batch.append(1)
                     else:
                         label_batch.append(0)
-            print('gen result')
             self.results.put((user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch))
         with self.worker_stop.get_lock():
             self.worker_stop.value += 1
@@ -309,13 +306,13 @@ class GraphLoader(object):
 if __name__ == "__main__":
     graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                             1, 5, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
-    graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
-                                'ccmr_2hop',
-                                OBJ_PER_TIME_SLICE_CCMR,
-                                1,
-                                5,
-                                None, 
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
+    #                             'ccmr_2hop',
+    #                             OBJ_PER_TIME_SLICE_CCMR,
+    #                             1,
+    #                             5,
+    #                             None, 
+    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     # for i in range(1, 100):
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
@@ -327,6 +324,7 @@ if __name__ == "__main__":
     i = 0
     for batch_data in graph_loader:
         # print(batch_data[-3:])
+        print(np.array(batch_data[0]).shape, np.array(batch_data[1]).shape, np.array(batch_data[2]).shape, np.array(batch_data[3]).shape, np.array(batch_data[4]).shape, np.array(batch_data[5]).shape, np.array(batch_data[6]).shape)
         print('batch time: {}'.format(time.time() - t))
         t = time.time()
         i += 1
