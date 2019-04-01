@@ -22,7 +22,7 @@ class GraphStore(object):
         self.client = pymongo.MongoClient(self.url)
      
 class CCMRGraphStore(GraphStore):
-    def __init__(self, rating_file, movie_info_dict):
+    def __init__(self, rating_file):
         super(CCMRGraphStore, self).__init__()
         self.db_1hop = self.client['ccmr_1hop']
         self.db_2hop = self.client['ccmr_2hop']
