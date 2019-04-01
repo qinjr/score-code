@@ -24,7 +24,7 @@ class SliceBaseModel(object):
         # input placeholders
         with tf.name_scope('inputs'):
             self.user_1hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_slice, item_fnum], name='user_1hop_ph')
-            self.user_2hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_sliceK, user_fnum], name='user_2hop_ph')
+            self.user_2hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_slice, user_fnum], name='user_2hop_ph')
             self.item_1hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_slice, user_fnum], name='item_1hop_ph')
             self.item_2hop_ph = tf.placeholder(tf.int32, [None, time_len, self.obj_per_time_slice, item_fnum], name='item_2hop_ph')
 
