@@ -166,7 +166,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params,
         return max(test_aucs), test_losses[np.argmax(test_aucs)], test_ndcgs[np.argmax(test_aucs)]
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 4:
         print("PLEASE INPUT [MODEL TYPE] [GPU] [DATASET]")
         sys.exit(0)
     model_type = sys.argv[1]
