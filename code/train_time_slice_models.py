@@ -33,6 +33,8 @@ def restore(data_set, target_file_test, graph_handler_params,
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     elif model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'GCMC': 
+        model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -88,6 +90,8 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params,
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     elif model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'GCMC': 
+        model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)

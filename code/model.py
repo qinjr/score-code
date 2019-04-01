@@ -10,7 +10,7 @@ FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + 
 
 
 '''
-Slice Based Models: SCORE, RRN, GCN
+Slice Based Models: SCORE, RRN, GCMC
 '''
 class SliceBaseModel(object):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
@@ -213,4 +213,35 @@ class RRN(SliceBaseModel):
 
         # fc layer
         self.build_fc_net(inp)
+        self.build_logloss()
+
+class GCMC(SliceBaseModel):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+                obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
+        super(GCMC, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
+
+        user_1hop_li = tf.layers.dense(self.user_1hop, self.user_1hop.get_shape().as_list()[-1], activation=None, use_bias=False)
+        item_1hop_li = tf.layers.dense(self.item_1hop, self.item_1hop.get_shape().as_list()[-1], activation=None, use_bias=False)
+
+        # sum pooling
+        user_1hop_seq_sum = tf.nn.relu(tf.reduce_sum(user_1hop_li, axis=2))
+        item_1hop_seq_sum = tf.nn.relu(tf.reduce_sum(item_1hop_li, axis=2))
+
+        user_1hop_seq = tf.layers.dense(user_1hop_seq_sum, user_1hop_seq_sum.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False)
+        item_1hop_seq = tf.layers.dense(item_1hop_seq_sum, item_1hop_seq_sum.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False)
+
+        # RNN
+        with tf.name_scope('rnn'):
+            _, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_1hop_seq, 
+                                                        sequence_length=self.user_1hop_len_ph, dtype=tf.float32, scope='gru1')
+            _, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_1hop_seq, 
+                                                        sequence_length=self.item_1hop_len_ph, dtype=tf.float32, scope='gru2')
+        
+        # inp = tf.concat([item_seq_final_state, user_seq_final_state, self.target_user, , self.target_item], axis=1) #, self.target_user
+
+        # pred
+        self.y_pred_pos = tf.exp(tf.reduce_sum(tf.layers.dense(item_side_final_state, hidden_size, use_bias=False) * user_side_final_state, axis=1))
+        self.y_pred_neg = tf.exp(tf.reduce_sum(tf.layers.dense(item_side_final_state, hidden_size, use_bias=False) * user_side_final_state, axis=1))
+        self.y_pred = self.y_pred_pos / (self.y_pred_pos + self.y_pred_neg)
+
         self.build_logloss()
