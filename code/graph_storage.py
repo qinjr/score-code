@@ -249,6 +249,6 @@ class CCMRGraphStore(GraphStore):
 if __name__ == "__main__":
     # For CCMR
     gs = CCMRGraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
-    # gs.construct_coll_1hop()
+    gs.construct_coll_1hop()
     gs.construct_coll_2hop()
     # gs.cal_stat()
