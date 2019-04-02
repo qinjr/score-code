@@ -63,7 +63,7 @@ def get_ndcg(preds, target_iids):
         ndcg_val.append(getNDCG(ranklist, pos_iids[i]))
     return np.mean(ndcg_val)
 
-def eval(model, sess, graph_handler_params, target_file, pred_time, reg_lambda
+def eval(model, sess, graph_handler_params, target_file, pred_time, reg_lambda,
         user_feat_dict_file, item_feat_dict_file):
     preds = []
     labels = []
