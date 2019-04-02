@@ -8,16 +8,15 @@ import multiprocessing
 NEG_SAMPLE_NUM = 9
 WORKER_N = 5
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
-START_TIME = 30
 
 # CCMR dataset parameters
 TIME_SLICE_NUM_CCMR = 41
 OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
-
 USER_PER_COLLECTION = 1000
 ITEM_PER_COLLECTION = 100
+START_TIME_CCMR = 30
 
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name):
@@ -75,13 +74,13 @@ class TargetGen(object):
 
 class GraphHandler(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice,
-                 user_fnum, item_fnum, user_feat_dict_file = None, 
-                 item_feat_dict_file = None):
+                 user_num, item_num, user_fnum, item_fnum, start_time
+                 user_feat_dict_file, item_feat_dict_file):
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.db = self.client[db_name]
         self.user_num = USER_NUM_CCMR
         self.item_num = ITEM_NUM_CCMR
-        
+        self.start_time = start_time
         self.obj_per_time_slice = obj_per_time_slice
         self.time_slice_num = time_slice_num
 
@@ -170,11 +169,11 @@ class GraphHandler(object):
         user_1hop, user_2hop = [], []
         # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // USER_PER_COLLECTION].find({'uid': start_uid})[0]
-        for i in range(START_TIME, pred_time):
+        for i in range(self.start_time, pred_time):
             user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_node_doc, 'user', i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
-        for i in range(TIME_SLICE_NUM_CCMR - pred_time - 1):
+        for i in range(self.time_slice_num - pred_time - 1):
             user_1hop.append(user_1hop[-1])
             user_2hop.append(user_2hop[-1])
         # print('gen_user_history time: {}'.format(time.time() - t))
@@ -184,11 +183,11 @@ class GraphHandler(object):
         item_1hop, item_2hop = [], []
         # t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_iid})[0]
-        for i in range(START_TIME, pred_time):
+        for i in range(self.start_time, pred_time):
             item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_node_doc, 'item', i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
-        for i in range(TIME_SLICE_NUM_CCMR - pred_time - 1):
+        for i in range(self.time_slice_num - pred_time - 1):
             item_1hop.append(item_1hop[-1])
             item_2hop.append(item_2hop[-1])
         # print('gen_item_history time: {}'.format(time.time() - t))
@@ -197,14 +196,14 @@ class GraphHandler(object):
 
 class GraphLoader(object):
     def __init__(self, graph_handler_params, batch_size, target_file, pred_time, 
-                user_feat_dict_file, item_feat_dict_file, worker_n = WORKER_N, 
+                start_time, user_feat_dict_file, item_feat_dict_file, worker_n = WORKER_N, 
                 max_q_size = 10, wait_time = 0.05):
         self.batch_size = batch_size
         self.max_q_size = max_q_size
         self.wait_time = wait_time
         self.worker_n = worker_n
         self.pred_time = pred_time
-
+        self.start_time = start_time
         if self.batch_size % 10 != 0:
             print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
             exit(1)
@@ -267,7 +266,7 @@ class GraphLoader(object):
                     break
     
     def worker(self, params):
-        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6])
+        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9])
 
         while not (self.work.qsize() == 0 and self.producer_stop.value == 1):
             try:
@@ -303,7 +302,7 @@ class GraphLoader(object):
                         label_batch.append(1)
                     else:
                         label_batch.append(0)
-                    length_batch.append(self.pred_time - START_TIME)
+                    length_batch.append(self.pred_time - self.start_time)
             self.results.put((user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch, length_batch))
         with self.worker_stop.get_lock():
             self.worker_stop.value += 1
@@ -322,8 +321,9 @@ class GraphLoader(object):
         return re
 
 if __name__ == "__main__":
-    graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
-                            1, 5, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
+    graph_handler_params = graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
+                                USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
+                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
     # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
     #                             'ccmr_2hop',
     #                             OBJ_PER_TIME_SLICE_CCMR,
@@ -335,7 +335,7 @@ if __name__ == "__main__":
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
     #     graph_handler.gen_item_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', 39, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_train.txt', START_TIME_CCMR, 39, None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     
     t = time.time()
     st = time.time()
