@@ -70,7 +70,7 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
     target_iids = []
     losses = []
 
-    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, pred_time, start_time, user_feat_dict_file, item_feat_dict_file)
+    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file)
     t = time.time()
     for batch_data in graph_loader:
         pred, label, loss = model.eval(sess, batch_data, reg_lambda)
