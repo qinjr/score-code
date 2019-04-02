@@ -44,8 +44,8 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        logloss, auc, ndcg = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, user_feat_dict_file, item_feat_dict_file)
-        print('RESTORE, LOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f' % (logloss, auc, ndcg))
+        logloss, auc, ndcg, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST  AUC TEST: %.4f  NDCG@10 TEST: %.4f' % (loss, logloss, auc, ndcg))
 
 def getNDCG(ranklist, target_item):
     for i in range(len(ranklist)):
@@ -68,19 +68,22 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time,
     preds = []
     labels = []
     target_iids = []
-    
+    losses = []
+
     graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, pred_time, start_time, user_feat_dict_file, item_feat_dict_file)
     t = time.time()
     for batch_data in graph_loader:
-        pred, label = model.eval(sess, batch_data)
+        pred, label, loss = model.eval(sess, batch_data, reg_lambda)
         preds += pred
         labels += label
+        losses.append(loss)
         target_iids += np.array(batch_data[5])[:,0].tolist()
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     ndcg = get_ndcg(preds, target_iids)
+    loss = sum(losses) / len(losses)
     print("EVAL TIME: %.4fs" % (time.time() - t))
-    return logloss, auc, ndcg
+    return logloss, auc, ndcg, loss
 
 def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
         pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
@@ -107,18 +110,20 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         train_losses_step = []
         
         train_losses = []
-        test_losses = []
+        test_loglosses = []
         test_aucs = []
         test_ndcgs = []
+        test_losses = []
 
         # before training process
         step = 0
-        test_loss, test_auc, test_ndcg = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, user_feat_dict_file, item_feat_dict_file)
-        test_losses.append(test_loss)
+        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+        test_loglosses.append(test_logloss)
         test_aucs.append(test_auc)
         test_ndcgs.append(test_ndcg)
+        test_losses.append(test_loss)
 
-        print("STEP %d LOSS_TRAIN: NaN  LOSS_TEST: %.4f  AUC_TEST: %.4f  NDCG_TEST: %.4f" % (step, test_loss, test_auc, test_ndcg))
+        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
         early_stop = False
 
         # begin training process
@@ -138,13 +143,14 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     train_loss = sum(train_losses_step) / len(train_losses_step)
                     train_losses.append(train_loss)
                     train_losses_step = []
-                    test_loss, test_auc, test_ndcg = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, user_feat_dict_file, item_feat_dict_file)
+                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
 
-                    test_losses.append(test_loss)
+                    test_loglosses.append(test_logloss)
                     test_aucs.append(test_auc)
                     test_ndcgs.append(test_ndcg)
+                    test_losses.append(test_loss)
 
-                    print("STEP %d  LOSS_TRAIN: %.4f  LOSS_TEST: %.4f  AUC_TEST: %.4f  NDCG_TEST: %.4f" % (step, train_loss, test_loss, test_auc, test_ndcg))
+                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
                     if test_aucs[-1] > max(test_aucs[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
@@ -163,14 +169,14 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         logname = '{}_{}_{}.pkl'.format(model_type, lr, reg_lambda)
 
         with open('logs_{}/{}'.format(data_set, logname), 'wb') as f:
-            dump_tuple = (train_losses, test_losses, test_aucs, test_ndcgs)
+            dump_tuple = (train_losses, test_losses, test_loglosses, test_aucs, test_ndcgs)
             pkl.dump(dump_tuple, f)
         with open('logs_{}/{}.result'.format(data_set, logname), 'w') as f:
             f.write('Result Test AUC: {}\n'.format(max(test_aucs)))
-            f.write('Result Test Logloss: {}\n'.format(test_losses[np.argmax(test_aucs)]))
-            f.write('Result Test NDCG: {}\n'.format(test_ndcgs[np.argmax(test_aucs)]))
+            f.write('Result Test Logloss: {}\n'.format(test_loglosses[np.argmax(test_aucs)]))
+            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs[np.argmax(test_aucs)]))
 
-        return max(test_aucs), test_losses[np.argmax(test_aucs)], test_ndcgs[np.argmax(test_aucs)]
+        return max(test_aucs), test_loglosses[np.argmax(test_aucs)], test_ndcgs[np.argmax(test_aucs)]
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
@@ -218,5 +224,5 @@ if __name__ == '__main__':
                 
                 restore(data_set, target_file_test, graph_handler_params, start_time,
                         pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                        model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
+                        model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
                         obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda)

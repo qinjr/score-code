@@ -131,8 +131,8 @@ class SliceBaseModel(object):
             })
         return loss
     
-    def eval(self, sess, batch_data):
-        pred, label = sess.run([self.y_pred, self.label_ph], feed_dict = {
+    def eval(self, sess, batch_data, reg_lambda):
+        pred, label, loss = sess.run([self.y_pred, self.label_ph, self.loss], feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
                 self.item_1hop_ph : batch_data[2],
@@ -141,10 +141,11 @@ class SliceBaseModel(object):
                 self.target_item_ph : batch_data[5],
                 self.label_ph : batch_data[6],
                 self.length_ph : batch_data[7],
+                self.reg_lambda : reg_lambda,
                 self.keep_prob : 1.
             })
         
-        return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist()
+        return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss
     
     def save(self, sess, path):
         saver = tf.train.Saver()
