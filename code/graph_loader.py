@@ -74,7 +74,7 @@ class TargetGen(object):
 
 class GraphHandler(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice,
-                 user_num, item_num, user_fnum, item_fnum, start_time
+                 user_num, item_num, user_fnum, item_fnum, start_time,
                  user_feat_dict_file, item_feat_dict_file):
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.db = self.client[db_name]
