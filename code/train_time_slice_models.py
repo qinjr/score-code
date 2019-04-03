@@ -217,10 +217,10 @@ if __name__ == '__main__':
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
             for reg_lambda in reg_lambdas:
-                test_auc, test_logloss, test_ndcg = train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-                                                pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                                                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                                                obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
+                # test_auc, test_logloss, test_ndcg = train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
+                #                                 pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
+                #                                 model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
+                #                                 obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
                 
                 restore(data_set, target_file_test, graph_handler_params, start_time,
                         pred_time_test, user_feat_dict_file, item_feat_dict_file,
