@@ -29,12 +29,16 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
         obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda):
     print('restore begin')
+    graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('sample')
     elif model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('fix')
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('fix')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -89,12 +93,16 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
         obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num):
+    graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('sample')
     elif model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('fix')
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('fix')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
