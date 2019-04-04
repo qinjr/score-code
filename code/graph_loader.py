@@ -75,7 +75,8 @@ class TargetGen(object):
 class GraphHandler(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice,
                  user_num, item_num, user_fnum, item_fnum, start_time,
-                 user_feat_dict_file, item_feat_dict_file):
+                 user_feat_dict_file, item_feat_dict_file, mode):
+        self.mode = mode
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.db = self.client[db_name]
         self.user_num = USER_NUM_CCMR
@@ -107,7 +108,7 @@ class GraphHandler(object):
         self.user_colls = [self.db['user_%d'%(i)] for i in range(user_coll_num)]
         self.item_colls = [self.db['item_%d'%(i)] for i in range(item_coll_num)]
 
-    def gen_node_neighbor(self, start_node_doc, node_type, time_slice):
+    def gen_node_neighbor_sample(self, start_node_doc, node_type, time_slice):
         if node_type == 'user':
             node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
             node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
@@ -137,11 +138,9 @@ class GraphHandler(object):
             # deal with 1hop
             if len(node_1hop_list) >= self.obj_per_time_slice:
                 node_1hop_list = np.random.choice(node_1hop_list, self.obj_per_time_slice, replace = False).tolist()
-                node_1hop_list_unique = node_1hop_list
             else:
-                node_1hop_list_unique = node_1hop_list
                 node_1hop_list = node_1hop_list + np.random.choice(node_1hop_list, self.obj_per_time_slice - len(node_1hop_list)).tolist()
-
+               
             node_1hop_t = []
             for node_id in node_1hop_list:
                 if node_1hop_nei_feat_dict != None:
@@ -163,6 +162,49 @@ class GraphHandler(object):
                 return node_1hop_t, node_2hop_t
             else:
                 return node_1hop_t, node_2hop_dummy
+    
+    def gen_node_neighbor_fix(self, start_node_doc, node_type, time_slice):
+        if node_type == 'user':
+            node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
+            node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
+            
+            node_1hop_nei_type = 'item'
+            node_1hop_nei_fnum = self.item_fnum
+            node_1hop_nei_feat_dict = self.item_feat_dict
+            node_2hop_nei_feat_dict = self.user_feat_dict
+
+        elif node_type == 'item':
+            node_1hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.user_fnum), dtype=np.int).tolist()
+            node_2hop_dummy = np.zeros(shape=(self.obj_per_time_slice, self.item_fnum), dtype=np.int).tolist()
+
+            node_1hop_nei_type = 'user'
+            node_1hop_nei_fnum = self.user_fnum
+            node_1hop_nei_feat_dict = self.user_feat_dict
+            node_2hop_nei_feat_dict = self.item_feat_dict
+        
+        node_1hop_list = start_node_doc['1hop'][time_slice]
+        node_2hop_list = start_node_doc['2hop'][time_slice]
+        degree_list = start_node_doc['degrees'][time_slice]
+        
+        # gen node 2 hops history
+        if node_1hop_list == []:
+            return node_1hop_dummy, node_2hop_dummy
+        else:
+            # deal with 1hop
+            if len(node_1hop_list) >= self.obj_per_time_slice:
+                node_1hop_list = node_1hop_list[:self.obj_per_time_slice]
+            else:
+                for i in range(self.obj_per_time_slice - len(node_1hop_list)):
+                    node_1hop_list.append(node_1hop_list[i % len(node_1hop_list)])
+
+            node_1hop_t = []
+            for node_id in node_1hop_list:
+                if node_1hop_nei_feat_dict != None:
+                    node_1hop_t.append([node_id] + node_1hop_nei_feat_dict[str(node_id)])
+                else:
+                    node_1hop_t.append([node_id])
+            # no need for 2hop for all model that is fixed model
+            return node_1hop_t, node_2hop_dummy
 
 
     def gen_user_history(self, start_uid, pred_time):
@@ -170,7 +212,12 @@ class GraphHandler(object):
         # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // USER_PER_COLLECTION].find({'uid': start_uid})[0]
         for i in range(self.start_time, pred_time):
-            user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_node_doc, 'user', i)
+            if self.mode == 'sample':
+                user_1hop_t, user_2hop_t = self.gen_node_neighbor_sample(start_node_doc, 'user', i)
+            elif self.mode == 'fix':
+                user_1hop_t, user_2hop_t = self.gen_node_neighbor_fix(start_node_doc, 'user', i)
+            else:
+                print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
         for i in range(self.time_slice_num - pred_time - 1):
@@ -184,7 +231,12 @@ class GraphHandler(object):
         # t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_iid})[0]
         for i in range(self.start_time, pred_time):
-            item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_node_doc, 'item', i)
+            if self.mode == 'sample':
+                item_1hop_t, item_2hop_t = self.gen_node_neighbor_sample(start_node_doc, 'item', i)
+            elif self.mode == 'fix':
+                item_1hop_t, item_2hop_t = self.gen_node_neighbor_fix(start_node_doc, 'item', i)
+            else:
+                print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
         for i in range(self.time_slice_num - pred_time - 1):
@@ -266,7 +318,7 @@ class GraphLoader(object):
                     break
     
     def worker(self, params):
-        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9])
+        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9], params[10])
 
         while not (self.work.qsize() == 0 and self.producer_stop.value == 1):
             try:
@@ -323,7 +375,7 @@ class GraphLoader(object):
 if __name__ == "__main__":
     graph_handler_params = graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
+                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 'sample']
     # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
     #                             'ccmr_2hop',
     #                             OBJ_PER_TIME_SLICE_CCMR,
