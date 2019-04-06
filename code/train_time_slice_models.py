@@ -199,10 +199,10 @@ if __name__ == '__main__':
         graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
-        target_file_train = DATA_DIR_CCMR + 'target_train.txt'#'target_train_splitbyuser_41.txt'#
-        target_file_test = DATA_DIR_CCMR + 'target_test_sample.txt'#'target_test_splitbyuser_41.txt'#
+        target_file_train = DATA_DIR_CCMR + 'target_train_splitbyuser_40.txt'##'target_train.txt'#
+        target_file_test = DATA_DIR_CCMR + 'target_test_splitbyuser_40.txt'##'target_test_sample.txt'#
         start_time = START_TIME_CCMR
-        pred_time_train = 39
+        pred_time_train = 40#39
         pred_time_test = 40
         user_feat_dict_file = None
         item_feat_dict_file = DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
@@ -212,7 +212,7 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
         user_fnum = 1 
         item_fnum = 5
-        eval_iter_num = 6500#4000
+        eval_iter_num = 4000
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
