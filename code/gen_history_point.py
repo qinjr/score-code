@@ -12,7 +12,7 @@ START_TIME_CCMR = 1116432000
 START_TIME_IDX_CCMR = 30
 TIME_DELTA_CCMR = 90
 
-def gen_user_item_hist_dict_ccmr(hist_file, user_hist_dict_file, item_hist_dict_file):
+def gen_user_item_hist_dict_ccmr(hist_file, user_hist_dict_file, item_hist_dict_file, pred_time=40):
     user_hist_dict = {}
     item_hist_dict = {}
 
@@ -23,6 +23,8 @@ def gen_user_item_hist_dict_ccmr(hist_file, user_hist_dict_file, item_hist_dict_
             time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
             time_idx = int((time_int - START_TIME_CCMR) / (SECONDS_PER_DAY * TIME_DELTA_CCMR))
             if time_idx < START_TIME_IDX_CCMR:
+                continue
+            if time_idx >= pred_time:
                 continue
             if uid not in user_hist_dict:
                 user_hist_dict[uid] = [(iid, time_int)]
