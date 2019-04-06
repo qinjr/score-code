@@ -212,7 +212,7 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
         user_fnum = 1 
         item_fnum = 5
-        eval_iter_num = 4000
+        eval_iter_num = 3300
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
