@@ -12,6 +12,8 @@ START_TIME_CCMR = 1116432000
 START_TIME_IDX_CCMR = 30
 TIME_DELTA_CCMR = 90
 MAX_LEN_CCMR = 100
+USER_NUM_CCMR = 4920695
+ITEM_NUM_CCMR = 190129
 
 def gen_user_item_hist_dict_ccmr(hist_file, user_hist_dict_file, item_hist_dict_file, pred_time=40):
     user_hist_dict = {}
@@ -21,6 +23,8 @@ def gen_user_item_hist_dict_ccmr(hist_file, user_hist_dict_file, item_hist_dict_
     with open(hist_file, 'r') as f:
         for line in f:
             uid, iid, _, time_str = line[:-1].split(',')
+            uid += 1
+            iid = iid + 1 + USER_NUM_CCMR
             time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
             time_idx = int((time_int - START_TIME_CCMR) / (SECONDS_PER_DAY * TIME_DELTA_CCMR))
             if time_idx < START_TIME_IDX_CCMR:
