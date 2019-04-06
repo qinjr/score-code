@@ -45,9 +45,9 @@ def gen_user_item_hist_dict_ccmr(hist_file, user_hist_dict_file, item_hist_dict_
     user_hist_dict_sort = {}
     item_hist_dict_sort = {}
     for uid in user_hist_dict.keys():
-        user_hist_dict[uid] = [tup[0] for tup in user_hist_dict[uid]]
+        user_hist_dict_sort[uid] = [tup[0] for tup in user_hist_dict[uid]]
     for iid in item_hist_dict.keys():
-        item_hist_dict[iid] = [tup[0] for tup in item_hist_dict[iid]]
+        item_hist_dict_sort[iid] = [tup[0] for tup in item_hist_dict[iid]]
     print('new dict completed')
 
     # dump
