@@ -43,24 +43,25 @@ def gen_item_hist_seq_file(in_file, out_file, item_hist_dict_file):
     empty_item = []
     with open(in_file, 'r') as f:
         for line in f:
-            iid = line[:-1].split(',')[1]
-            if iid in item_hist_dict:
-                item_hist_list = item_hist_dict[iid]
-                if len(item_hist_list) > MAX_LEN_CCMR:
-                    item_hist_list = item_hist_list[-MAX_LEN_CCMR:]
-            else:
-                item_hist_list = ['0']
-                empty_item.append(iid)
-            newlines.append(','.join(item_hist_list) + '\n')
+            iids = line[:-1].split(',')[1:]
+            for iid in iids:
+                if iid in item_hist_dict:
+                    item_hist_list = item_hist_dict[iid]
+                    if len(item_hist_list) > MAX_LEN_CCMR:
+                        item_hist_list = item_hist_list[-MAX_LEN_CCMR:]
+                else:
+                    item_hist_list = ['0']
+                    empty_item.append(iid)
+                newlines.append(','.join(item_hist_list) + '\n')
     with open(out_file, 'w') as f:
         f.writelines(newlines)
     print(len(empty_item))
 
 
 if __name__ == "__main__":
-    gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_train_splitbyuser_40.txt', DATA_DIR_CCMR + 'train_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
-    gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_test_splitbyuser_40.txt', DATA_DIR_CCMR + 'test_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
+    gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot_train.txt', DATA_DIR_CCMR + 'train_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
+    gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot_test.txt', DATA_DIR_CCMR + 'test_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
 
-    gen_item_hist_seq_file(DATA_DIR_CCMR + 'target_train_splitbyuser_40.txt', DATA_DIR_CCMR + 'train_item_hist_seq.txt', DATA_DIR_CCMR + 'item_hist_dict.pkl')
-    gen_item_hist_seq_file(DATA_DIR_CCMR + 'target_test_splitbyuser_40.txt', DATA_DIR_CCMR + 'test_item_hist_seq.txt', DATA_DIR_CCMR + 'item_hist_dict.pkl')
+    gen_item_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot_train.txt', DATA_DIR_CCMR + 'train_item_hist_seq.txt', DATA_DIR_CCMR + 'item_hist_dict.pkl')
+    gen_item_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot_test.txt', DATA_DIR_CCMR + 'test_item_hist_seq.txt', DATA_DIR_CCMR + 'item_hist_dict.pkl')
 
