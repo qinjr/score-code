@@ -104,7 +104,7 @@ def gen_item_hist_seq_file(in_file, out_file, item_hist_dict_file):
     print(len(empty_item))
 
 if __name__ == "__main__":
-    # gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict.pkl', DATA_DIR_CCMR + 'item_hist_dict.pkl')
+    gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict.pkl', DATA_DIR_CCMR + 'item_hist_dict.pkl')
     gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_train_splitbyuser_40.txt', DATA_DIR_CCMR + 'train_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
     gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_test_splitbyuser_40.txt', DATA_DIR_CCMR + 'test_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
 
