@@ -54,13 +54,12 @@ class DataLoaderUserSeq(object):
                 for iid in user_seq_list:
                     user_seq_one.append([int(iid)] + self.item_feat_dict[iid])
                 for p in range(MAX_LEN - len(user_seq_one)):
-                    user_seq_one.append([0] * (1 + self.item_fnum))
+                    user_seq_one.append([0] * (self.item_fnum))
             else:
                 for iid in user_seq_list:
                     user_seq_one.append([int(iid)])
                 for p in range(MAX_LEN - len(user_seq_one)):
                     user_seq_one.append([0])
-            print(user_seq_one)
             for j in range(len(iids)):
                 if j == 0:
                     label_batch.append(1)
