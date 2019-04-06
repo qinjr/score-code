@@ -47,6 +47,20 @@ class DataLoaderUserSeq(object):
             user_seq_line = self.user_seq_f.readline()
             target_line_split_list = target_line[:-1].split(',')
             uid, iids = target_line_split_list[0], target_line_split_list[1:]
+            
+            user_seq_list = [iid for iid in user_seq_line[:-1].split(',')]
+            user_seq_one = []
+            if self.item_feat_dict != None:
+                for iid in user_seq_list:
+                    user_seq_one.append([int(iid)] + self.item_feat_dict[iid])
+                for p in range(MAX_LEN - len(user_seq_one)):
+                    user_seq_one.append([0] * (1 + self.item_fnum))
+            else:
+                for iid in user_seq_list:
+                    user_seq_one.append([int(iid)])
+                for p in range(MAX_LEN - len(user_seq_one)):
+                    user_seq_one.append([0])
+            print(user_seq_one)
             for j in range(len(iids)):
                 if j == 0:
                     label_batch.append(1)
@@ -56,23 +70,13 @@ class DataLoaderUserSeq(object):
                     target_user_batch.append([int(uid)] + self.user_feat_dict[uid])
                 else:
                     target_user_batch.append([int(uid)])
-                user_seq_list = [iid for iid in user_seq_line[:-1].split(',')]
-                user_seq_len_batch.append(len(user_seq_list))
-                user_seq_one = []
                 if self.item_feat_dict != None:
                     target_item_batch.append([int(iids[j])] + self.item_feat_dict[iids[j]])
-                    for iid in user_seq_list:
-                        user_seq_one.append([int(iid)] + self.item_feat_dict[iid])
-                    for p in range(MAX_LEN - len(user_seq_one)):
-                        user_seq_one.append([0] * (1 + self.item_fnum))
-                    user_seq_batch.append(user_seq_one)
                 else:
                     target_item_batch.append([int(iids[j])])
-                    for iid in user_seq_list:
-                        user_seq_one.append([int(iid)])
-                    for p in range(MAX_LEN - len(user_seq_one)):
-                        user_seq_one.append([0])
-                    user_seq_batch.append(user_seq_one)
+                user_seq_len_batch.append(len(user_seq_list))
+                user_seq_batch.append(user_seq_one)
+                
         return user_seq_batch, user_seq_len_batch, target_user_batch, target_item_batch, label_batch
 
 
