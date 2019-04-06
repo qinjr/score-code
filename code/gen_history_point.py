@@ -65,15 +65,16 @@ def gen_user_hist_seq_file(in_file, out_file, user_hist_dict_file):
     newlines = []
     empty_user = []
     with open(in_file, 'r') as f:
-        uid = line[:-1].split(',')[0]
-        if uid in user_hist_dict:
-            user_hist_list = user_hist_dict[uid]
-            if len(user_hist_list) > MAX_LEN_CCMR:
-                user_hist_list = user_hist_list[-MAX_LEN_CCMR:]
-        else:
-            user_hist_list = ['0']
-            empty_user.append(uid)
-        newlines.append(','.join(user_hist_list) + '\n')
+        for line in f:
+            uid = line[:-1].split(',')[0]
+            if uid in user_hist_dict:
+                user_hist_list = user_hist_dict[uid]
+                if len(user_hist_list) > MAX_LEN_CCMR:
+                    user_hist_list = user_hist_list[-MAX_LEN_CCMR:]
+            else:
+                user_hist_list = ['0']
+                empty_user.append(uid)
+            newlines.append(','.join(user_hist_list) + '\n')
     with open(out_file, 'w') as f:
         f.writelines(newlines)
     print(len(empty_user))
@@ -84,15 +85,16 @@ def gen_item_hist_seq_file(in_file, out_file, item_hist_dict_file):
     newlines = []
     empty_item = []
     with open(in_file, 'r') as f:
-        iid = line[:-1].split(',')[1]
-        if iid in item_hist_dict:
-            item_hist_list = item_hist_dict[iid]
-            if len(item_hist_list) > MAX_LEN_CCMR:
-                item_hist_list = item_hist_list[-MAX_LEN_CCMR:]
-        else:
-            item_hist_list = ['0']
-            empty_item.append(iid)
-        newlines.append(','.join(item_hist_list) + '\n')
+        for line in f:
+            iid = line[:-1].split(',')[1]
+            if iid in item_hist_dict:
+                item_hist_list = item_hist_dict[iid]
+                if len(item_hist_list) > MAX_LEN_CCMR:
+                    item_hist_list = item_hist_list[-MAX_LEN_CCMR:]
+            else:
+                item_hist_list = ['0']
+                empty_item.append(iid)
+            newlines.append(','.join(item_hist_list) + '\n')
     with open(out_file, 'w') as f:
         f.writelines(newlines)
     print(len(empty_item))
