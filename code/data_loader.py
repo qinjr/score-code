@@ -82,8 +82,9 @@ if __name__ == "__main__":
                                     DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
     for batch_data in data_loader:
         print(np.array(batch_data[0]).shape)
-        print(batch_data[1])
-        print(batch_data[2])
-        print(batch_data[3])
-        print(batch_data[4])
+        print(np.array(batch_data[1]).shape)
+        print(np.array(batch_data[2]).shape)
+        print(np.array(batch_data[3]).shape)
+        print(np.array(batch_data[4]).shape)
+        break
         
