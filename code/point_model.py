@@ -250,5 +250,5 @@ class SVDpp(PointBaseModel):
         self.average = tf.get_variable('average', [], initializer=tf.truncated_normal_initializer)
         self.y_pred = tf.nn.sigmoid(self.average + self.user_bias + self.item_bias + self.latent_score)
         
-        self.build_logloss()
+        self.build_mseloss()
     
