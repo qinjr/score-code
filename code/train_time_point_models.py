@@ -1,8 +1,8 @@
 import os
 import tensorflow as tf
 import sys
-from graph_loader import *
-from slice_model import *
+from data_loader import *
+from point_model import *
 from sklearn.metrics import *
 import random
 import time
@@ -14,31 +14,22 @@ random.seed(1111)
 
 EMBEDDING_SIZE = 16
 HIDDEN_SIZE = 16 * 2
-EVAL_BATCH_SIZE = 100
+EVAL_BATCH_SIZE = 1000
 NEG_SAMPLE_NUM = 9
 
 # for CCMR
-OBJ_PER_TIME_SLICE_CCMR = 10
-TIME_SLICE_NUM_CCMR = 41
-START_TIME_CCMR = 30
 FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
+MAX_LEN_CCMR = 100
 
-def restore(data_set, target_file_test, graph_handler_params, start_time,
-        pred_time_test, user_feat_dict_file, item_feat_dict_file,
+def restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file, item_feat_dict_file,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
-        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda):
+        user_fnum, item_fnum, lr, reg_lambda):
     print('restore begin')
-    graph_handler_params = graph_handler_params
-    if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('sample')
-    elif model_type == 'RRN': 
-        model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
-    elif model_type == 'GCMC': 
-        model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
+    if model_type == 'GRU4Rec':
+        model = GRU4Rec(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
+    elif model_type == 'Caser': 
+        model = Caser(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -48,7 +39,7 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        logloss, auc, ndcg, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+        logloss, auc, ndcg, loss = eval(model, sess, target_file_test, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file_test, user_feat_dict_file, item_feat_dict_file)
         print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f' % (loss, logloss, auc, ndcg))
 
 def getNDCG(ranklist, target_item):
@@ -67,14 +58,13 @@ def get_ndcg(preds, target_iids):
         ndcg_val.append(getNDCG(ranklist, pos_iids[i]))
     return np.mean(ndcg_val)
 
-def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
-        user_feat_dict_file, item_feat_dict_file):
+def eval(model, sess, target_file, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file, user_feat_dict_file, item_feat_dict_file):
     preds = []
     labels = []
     target_iids = []
     losses = []
 
-    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file)
+    data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, user_fnum, item_fnum, target_file, user_seq_file, user_feat_dict_file, item_feat_dict_file)
     t = time.time()
     for batch_data in graph_loader:
         pred, label, loss = model.eval(sess, batch_data, reg_lambda)
@@ -89,20 +79,13 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
     print("EVAL TIME: %.4fs" % (time.time() - t))
     return logloss, auc, ndcg, loss
 
-def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-        pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-        model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
-        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num):
-    graph_handler_params = graph_handler_params
-    if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('sample')
-    elif model_type == 'RRN': 
-        model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
-    elif model_type == 'GCMC': 
-        model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
+def train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
+        user_feat_dict_file, item_feat_dict_file, model_type, train_batch_size, feature_size, 
+        eb_dim, hidden_size, max_time_len, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num):
+    if model_type == 'GRU4Rec':
+        model = GRU4Rec(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
+    elif model_type == 'Caser': 
+        model = Caser(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -125,7 +108,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
-        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, target_file_test, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file_test, user_feat_dict_file, item_feat_dict_file)
         test_loglosses.append(test_logloss)
         test_aucs.append(test_auc)
         test_ndcgs.append(test_ndcg)
@@ -138,7 +121,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         for epoch in range(3):
             if early_stop:
                 break
-            graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, user_feat_dict_file, item_feat_dict_file)
+            data_loader = DataLoaderUserSeq(train_batch_size, max_time_len, user_fnum, item_fnum, target_file_train, user_seq_file_train, user_feat_dict_file, item_feat_dict_file)
             for batch_data in graph_loader:
                 if early_stop:
                     break
@@ -151,7 +134,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     train_loss = sum(train_losses_step) / len(train_losses_step)
                     train_losses.append(train_loss)
                     train_losses_step = []
-                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, target_file_test, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file_test, user_feat_dict_file, item_feat_dict_file)
 
                     test_loglosses.append(test_logloss)
                     test_aucs.append(test_auc)
@@ -195,21 +178,15 @@ if __name__ == '__main__':
     data_set = sys.argv[3]
 
     if data_set == 'ccmr':
-        # graph loader
-        graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
-                                USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
         target_file_train = DATA_DIR_CCMR + 'target_40_hot_train.txt'##'target_train.txt'#
         target_file_test = DATA_DIR_CCMR + 'target_40_hot_test.txt'##'target_test_sample.txt'#
-        start_time = START_TIME_CCMR
-        pred_time_train = 40#39
-        pred_time_test = 40
+        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq.txt'
+        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq.txt'
         user_feat_dict_file = None
         item_feat_dict_file = DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
-        max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
-        obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
+        max_time_len = MAX_LEN_CCMR
         user_fnum = 1 
         item_fnum = 5
         eval_iter_num = 3300
@@ -225,12 +202,10 @@ if __name__ == '__main__':
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
             for reg_lambda in reg_lambdas:
-                test_auc, test_logloss, test_ndcg = train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-                                                pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                                                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                                                obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
+                test_auc, test_logloss, test_ndcg = train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
+                                                        user_feat_dict_file, item_feat_dict_file, model_type, train_batch_size, feature_size, 
+                                                        EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
                 
-                restore(data_set, target_file_test, graph_handler_params, start_time,
-                        pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                        model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda)
+                restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file, item_feat_dict_file,
+                    model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
+                    user_fnum, item_fnum, lr, reg_lambda)

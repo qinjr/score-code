@@ -246,3 +246,5 @@ class GCMC(SliceBaseModel):
         self.y_pred = self.y_pred_pos / (self.y_pred_pos + self.y_pred_neg)
 
         self.build_logloss()
+
+
