@@ -209,4 +209,46 @@ class ARNN(PointBaseModel):
         atten_output_sum = tf.reduce_sum(atten_output, axis=1)
 
         return atten_output_sum, atten_output, score
+
+class SVDpp(PointBaseModel):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+                        user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
+        super(SVDpp, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, 
+                                    user_fnum, item_fnum, neg_sample_num)
+        # SVDFeature
+        with tf.name_scope('user_feature_rep'):
+            self.user_feat_w_list = []
+            for i in range(user_fnum):
+                self.user_feat_w_list.append(tf.get_variable('user_feat_w_%'%i, [], initializer=tf.truncated_normal_initializer))
+            self.target_user_rep = self.target_user[:, :eb_dim] * self.user_feat_w_list[0]
+            for i in range(1, user_fnum):
+                self.target_user_rep += self.target_user[:,i*eb_dim:(i+1)*eb_dim] * self.user_feat_w_list[i]
+
+        with tf.name_scope('item_feature_rep'):
+            self.item_feat_w_list = []
+            for i in range(item_fnum):
+                self.item_feat_w_list.append(tf.get_variable('item_feat_w_%'%i, [], initializer=tf.truncated_normal_initializer))
+            self.target_item_rep = self.target_item[:, :eb_dim] * self.item_feat_w_list[0]
+            self.user_seq_rep = self.user_seq[:, :, :eb_dim] * self.item_feat_w_list[0]
+            for i in range(1, item_fnum):
+                self.target_item_rep += self.target_item[:,i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
+                self.user_seq_rep += self.user_seq[:, :, i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
+        
+        # user and item bias
+        with tf.name_scope('b'):
+            self.item_user_bias = tf.get_variable('item_b', [feature_size, 1], initializer=tf.truncated_normal_initializer)
+        
+        # prediction
+        self.user_seq_mask = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph, max_time_len, dtype=tf.float32), 2)
+        self.user_seq_rep = self.user_seq_rep * self.user_seq_mask
+        self.neighbor = tf.reduce_sum(self.user_seq_rep, axis=1)
+        self.norm_neighbor = self.neighbor / tf.sqrt(tf.expand_dims(tf.norm(self.user_seq_rep, 1, (1, 2)), 1))
+
+        self.latent_score = tf.reduce_sum(self.target_item_rep * (self.target_user_rep + self.norm_neighbor), 1)
+        self.user_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_user_ph[:,0]), [-1,])
+        self.item_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_item_ph[:,0]), [-1,])
+        self.average = tf.get_variable('average', [], initializer=tf.truncated_normal_initializer)
+        self.y_pred = tf.nn.sigmoid(self.average + self.user_bias + self.item_bias + self.latent_score)
+        
+        self.build_logloss()
     

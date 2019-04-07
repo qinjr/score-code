@@ -32,6 +32,8 @@ def restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file,
         model = Caser(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     elif model_type == 'ARNN': 
         model = ARNN(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
+    elif model_type == 'SVD++': 
+        model = SVDpp(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -90,6 +92,8 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         model = Caser(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     elif model_type == 'ARNN': 
         model = ARNN(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
+    elif model_type == 'SVD++': 
+        model = SVDpp(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
