@@ -129,9 +129,9 @@ class PointBaseModel(object):
         print('model restored from {}'.format(path))
 
 class GRU4Rec(PointBaseModel):
-    def __init____init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                         user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(GRU4Rec, self).__init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+        super(GRU4Rec, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, 
                                     user_fnum, item_fnum, neg_sample_num)
 
         # GRU
@@ -146,9 +146,9 @@ class GRU4Rec(PointBaseModel):
         self.build_logloss()
 
 class Caser(PointBaseModel):
-    def __init____init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                         user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(Caser, self).__init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+        super(Caser, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, 
                                     user_fnum, item_fnum, neg_sample_num)
         
         with tf.name_scope('user_seq_cnn'):
