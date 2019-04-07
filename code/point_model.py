@@ -235,8 +235,8 @@ class SVDpp(PointBaseModel):
                 self.user_seq_rep += self.user_seq[:, :, i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
         
         # user and item bias
-        # with tf.name_scope('b'):
-        #     self.item_user_bias = tf.get_variable('item_b', [feature_size, 1], initializer=tf.truncated_normal_initializer)
+        with tf.name_scope('b'):
+            self.item_user_bias = tf.get_variable('item_b', [feature_size, 1], initializer=tf.truncated_normal_initializer)
         
         # prediction
         self.user_seq_mask = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph, max_time_len, dtype=tf.float32), 2)
@@ -245,10 +245,10 @@ class SVDpp(PointBaseModel):
         self.norm_neighbor = self.neighbor / tf.sqrt(tf.expand_dims(tf.norm(self.user_seq_rep, 1, (1, 2)), 1))
 
         self.latent_score = tf.reduce_sum(self.target_item_rep * (self.target_user_rep + self.norm_neighbor), 1)
-        # self.user_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_user_ph[:,0]), [-1,])
-        # self.item_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_item_ph[:,0]), [-1,])
+        self.user_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_user_ph[:,0]), [-1,])
+        self.item_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_item_ph[:,0]), [-1,])
         self.average = 0.2
-        self.y_pred = tf.nn.sigmoid(self.average + self.latent_score)
+        self.y_pred = tf.nn.sigmoid(self.average + self.user_bias + self.item_bias + self.latent_score)
         
         self.build_logloss()
     
