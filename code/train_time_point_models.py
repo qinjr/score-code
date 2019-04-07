@@ -71,7 +71,7 @@ def eval(model, sess, target_file, max_time_len, user_fnum, item_fnum, reg_lambd
         preds += pred
         labels += label
         losses.append(loss)
-        target_iids += np.array(batch_data[5])[:,0].tolist()
+        target_iids += np.array(batch_data[3])[:,0].tolist()
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     ndcg = get_ndcg(preds, target_iids)
