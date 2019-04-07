@@ -236,7 +236,7 @@ class SVDpp(PointBaseModel):
         
         # user and item bias
         with tf.name_scope('b'):
-            self.item_user_bias = tf.get_variable('item_b', [feature_size, 1], initializer=tf.truncated_normal_initializer)
+            self.item_user_bias = tf.get_variable('item_b', [feature_size, 1])
         
         # prediction
         self.user_seq_mask = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph, max_time_len, dtype=tf.float32), 2)
