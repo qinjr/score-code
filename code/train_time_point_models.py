@@ -133,8 +133,9 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
             for batch_data in data_loader:
                 if early_stop:
                     break
-
+                t=time.time()
                 loss = model.train(sess, batch_data, lr, reg_lambda)
+                print('training time: {}'.format(time.time()-t))
                 step += 1
                 train_losses_step.append(loss)
 
