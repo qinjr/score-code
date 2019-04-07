@@ -219,7 +219,7 @@ class SVDpp(PointBaseModel):
         with tf.name_scope('user_feature_rep'):
             self.user_feat_w_list = []
             for i in range(user_fnum):
-                self.user_feat_w_list.append(tf.get_variable('user_feat_w_%'%i, [], initializer=tf.truncated_normal_initializer))
+                self.user_feat_w_list.append(tf.get_variable('user_feat_w_%d'%i, [], initializer=tf.truncated_normal_initializer))
             self.target_user_rep = self.target_user[:, :eb_dim] * self.user_feat_w_list[0]
             for i in range(1, user_fnum):
                 self.target_user_rep += self.target_user[:,i*eb_dim:(i+1)*eb_dim] * self.user_feat_w_list[i]
@@ -227,7 +227,7 @@ class SVDpp(PointBaseModel):
         with tf.name_scope('item_feature_rep'):
             self.item_feat_w_list = []
             for i in range(item_fnum):
-                self.item_feat_w_list.append(tf.get_variable('item_feat_w_%'%i, [], initializer=tf.truncated_normal_initializer))
+                self.item_feat_w_list.append(tf.get_variable('item_feat_w_%d'%i, [], initializer=tf.truncated_normal_initializer))
             self.target_item_rep = self.target_item[:, :eb_dim] * self.item_feat_w_list[0]
             self.user_seq_rep = self.user_seq[:, :, :eb_dim] * self.item_feat_w_list[0]
             for i in range(1, item_fnum):
