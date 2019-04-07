@@ -66,7 +66,7 @@ def eval(model, sess, target_file, max_time_len, user_fnum, item_fnum, reg_lambd
 
     data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, user_fnum, item_fnum, target_file, user_seq_file, user_feat_dict_file, item_feat_dict_file)
     t = time.time()
-    for batch_data in graph_loader:
+    for batch_data in data_loader:
         pred, label, loss = model.eval(sess, batch_data, reg_lambda)
         preds += pred
         labels += label
@@ -122,7 +122,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
             if early_stop:
                 break
             data_loader = DataLoaderUserSeq(train_batch_size, max_time_len, user_fnum, item_fnum, target_file_train, user_seq_file_train, user_feat_dict_file, item_feat_dict_file)
-            for batch_data in graph_loader:
+            for batch_data in data_loader:
                 if early_stop:
                     break
 
