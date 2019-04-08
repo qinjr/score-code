@@ -22,6 +22,11 @@ FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + 
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 MAX_LEN_CCMR = 100
 
+# for Taobao
+FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+MAX_LEN_Taobao = 100
+
 def restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file, item_feat_dict_file,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
         user_fnum, item_fnum, lr, reg_lambda):
@@ -199,6 +204,19 @@ if __name__ == '__main__':
         user_fnum = 1 
         item_fnum = 5
         eval_iter_num = 3300
+    if data_set == 'taobao':
+        target_file_train = DATA_DIR_Taobao + 'target_8_hot_train.txt'##'target_train.txt'#
+        target_file_test = DATA_DIR_Taobao + 'target_8_hot_test.txt'##'target_test_sample.txt'#
+        user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq.txt'
+        user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq.txt'
+        user_feat_dict_file = None
+        item_feat_dict_file = DATA_DIR_Taobao + 'item_feat_dict.pkl'
+        # model parameter
+        feature_size = FEAT_SIZE_Taobao
+        max_time_len = MAX_LEN_Taobao
+        user_fnum = 1 
+        item_fnum = 2
+        eval_iter_num = 7000
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
