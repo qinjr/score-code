@@ -168,14 +168,21 @@ class TargetGen(object):
                     item_hist_dict[iid].append((uid, time_int))
             print('dicts construct completed')
 
-    def gen_user_item_hist_dict_taobao(self, hist_file, user_hist_dict_file, item_hist_dict_file, remap_dict, pred_time=8):
+    def gen_user_item_hist_dict_taobao(self, hist_file, user_hist_dict_file, item_hist_dict_file, remap_dict_file, pred_time=8):
         user_hist_dict = {}
         item_hist_dict = {}
+        
+        with open(remap_dict_file, 'rb') as f:
+            uid_remap_dict = pkl.load(f)
+            iid_remap_dict = pkl.load(f)
 
         # load and construct dicts
         with open(hist_file, 'r') as f:
             for line in f:
                 uid, iid, _, timestamp_str = line[:-1].split(',')
+                uid = uid_remap_dict[uid]
+                iid = iid_remap_dict[iid]
+                
                 timestamp = int(timestamp_str)
                 time_idx = int((timestamp - self.start_time) / (SECONDS_PER_DAY * self.time_delta))
                 if int(time_idx) < self.start_time_idx:
@@ -248,7 +255,7 @@ if __name__ == '__main__':
                 item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
                 start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8)
-    tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'remaped_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl', DATA_DIR_Taobao + 'item_hist_dict.pkl', 8)
+    tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl', DATA_DIR_Taobao + 'item_hist_dict.pkl', DATA_DIR_Taobao + 'remap_dict.pkl')
     tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl')
 
     
