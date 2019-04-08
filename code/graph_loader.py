@@ -18,6 +18,17 @@ USER_PER_COLLECTION_CCMR = 1000
 ITEM_PER_COLLECTION_CCMR = 100
 START_TIME_CCMR = 30
 
+
+# Taobao dataset parameters
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+TIME_SLICE_NUM_Taobao = 9
+OBJ_PER_TIME_SLICE_Taobao = 10
+USER_NUM_Taobao = 984105
+ITEM_NUM_Taobao = 4067842
+USER_PER_COLLECTION_Taobao = 500
+ITEM_PER_COLLECTION_Taobao = 1000
+START_TIME_Taobao = 0
+
 class GraphHandler(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice,
                  user_num, item_num, user_fnum, item_fnum, start_time,
@@ -322,7 +333,11 @@ class GraphLoader(object):
         return re
 
 if __name__ == "__main__":
-    graph_handler_params = graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
+    # graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
+    #                             USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
+    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR,
+    #                             'sample']
+    graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR,
                                 'sample']
