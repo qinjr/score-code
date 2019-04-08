@@ -91,4 +91,6 @@ def preprocess_raw_data(in_file, out_file, plt_file, remap_dict_file, item_feat_
 
 
 if __name__ == "__main__":
-    preprocess_raw_data(RAW_DIR + 'UserBehavior.csv', FEATENG_DIR + 'remaped_user_behavior.txt', FEATENG_DIR + 'time_idx_distri.png', FEATENG_DIR + 'remap_dict.pkl')
+    preprocess_raw_data(RAW_DIR + 'UserBehavior.csv', FEATENG_DIR + 'remaped_user_behavior.txt', 
+                        FEATENG_DIR + 'time_idx_distri.png', FEATENG_DIR + 'remap_dict.pkl',
+                        FEATENG_DIR + 'item_feat_dict.pkl')
