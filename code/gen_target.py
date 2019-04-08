@@ -96,14 +96,15 @@ class TargetGen(object):
             f.writelines(target_lines)
         print('generate {} completed'.format(target_file))
 
-    def gen_user_item_hist_dict(self, hist_file, user_hist_dict_file, item_hist_dict_file, pred_time):
+    def gen_user_item_hist_dict(self, hist_file, user_hist_dict_file, item_hist_dict_file, pred_time, remap_file = None):
         user_hist_dict = {}
         item_hist_dict = {}
 
         # load and construct dicts
         with open(hist_file, 'r') as f:
             for line in f:
-                uid, iid, _, time_idx = line[:-1].split(',')
+                uid, iid, _, time_str = line[:-1].split(',')
+                
                 if int(time_idx) < self.start_time_idx:
                     continue
                 if int(time_idx) >= pred_time:
@@ -165,7 +166,7 @@ if __name__ == '__main__':
     #             item_per_collection = ITEM_PER_COLLECTION_CCMR, start_time = START_TIME_CCMR, 
     #             start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40)
-    # tg.gen_user_item_hist_dict(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', DATA_DIR_CCMR + 'user_hist_dict.pkl', DATA_DIR_CCMR + 'item_hist_dict.pkl', 40)
+    # tg.gen_user_item_hist_dict(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict.pkl', DATA_DIR_CCMR + 'item_hist_dict.pkl', 40)
     # tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
     
     # Taobao
