@@ -7,6 +7,7 @@ import multiprocessing
 import datetime
 
 NEG_SAMPLE_NUM = 9
+SECONDS_PER_DAY = 24*3600
 # CCMR dataset parameters
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 TIME_SLICE_NUM_CCMR = 41
@@ -140,6 +141,78 @@ class TargetGen(object):
             pkl.dump(user_hist_dict_sort, f)
         with open(item_hist_dict_file, 'wb') as f:
             pkl.dump(item_hist_dict_sort, f)
+
+    def gen_user_item_hist_dict_ccmr(self, hist_file, user_hist_dict_file, item_hist_dict_file, pred_time=40):
+        user_hist_dict = {}
+        item_hist_dict = {}
+
+        # load and construct dicts
+        with open(hist_file, 'r') as f:
+            for line in f:
+                uid, iid, _, time_str = line[:-1].split(',')
+                uid = str(int(uid) + 1)
+                iid = str(int(iid) + 1 + self.user_num)
+                time_int = int(time.mktime(datetime.datetime.strptime(time_str, "%Y-%m-%d").timetuple()))
+                time_idx = int((time_int - self.start_time) / (SECONDS_PER_DAY * self.time_delta))
+                if time_idx < self.start_time_idx:
+                    continue
+                if time_idx >= pred_time:
+                    continue
+                if uid not in user_hist_dict:
+                    user_hist_dict[uid] = [(iid, time_int)]
+                else:
+                    user_hist_dict[uid].append((iid, time_int))
+                if iid not in item_hist_dict:
+                    item_hist_dict[iid] = [(uid, time_int)]
+                else:
+                    item_hist_dict[iid].append((uid, time_int))
+            print('dicts construct completed')
+
+    def gen_user_item_hist_dict_taobao(self, hist_file, user_hist_dict_file, item_hist_dict_file, remap_dict, pred_time=8):
+        user_hist_dict = {}
+        item_hist_dict = {}
+
+        # load and construct dicts
+        with open(hist_file, 'r') as f:
+            for line in f:
+                uid, iid, _, timestamp_str = line[:-1].split(',')
+                timestamp = int(timestamp_str)
+                time_idx = int((timestamp - self.start_time) / (SECONDS_PER_DAY * self.time_delta))
+                if int(time_idx) < self.start_time_idx:
+                    continue
+                if int(time_idx) >= pred_time:
+                    continue
+                if uid not in user_hist_dict:
+                    user_hist_dict[uid] = [(iid, timestamp)]
+                else:
+                    user_hist_dict[uid].append((iid, timestamp))
+                if iid not in item_hist_dict:
+                    item_hist_dict[iid] = [(uid, timestamp)]
+                else:
+                    item_hist_dict[iid].append((uid, timestamp))
+            print('dicts construct completed')
+
+        # sort by time
+        for uid in user_hist_dict.keys():
+            user_hist_dict[uid] = sorted(user_hist_dict[uid], key=lambda tup:tup[1])
+        for iid in item_hist_dict.keys():
+            item_hist_dict[iid] = sorted(item_hist_dict[iid], key=lambda tup:tup[1])
+        print('sort completed')
+
+        # new dict
+        user_hist_dict_sort = {}
+        item_hist_dict_sort = {}
+        for uid in user_hist_dict.keys():
+            user_hist_dict_sort[uid] = [tup[0] for tup in user_hist_dict[uid]]
+        for iid in item_hist_dict.keys():
+            item_hist_dict_sort[iid] = [tup[0] for tup in item_hist_dict[iid]]
+        print('new dict completed')
+
+        # dump
+        with open(user_hist_dict_file, 'wb') as f:
+            pkl.dump(user_hist_dict_sort, f)
+        with open(item_hist_dict_file, 'wb') as f:
+            pkl.dump(item_hist_dict_sort, f)
     
     def filter_target_file(self, target_file, target_file_hot, target_file_cold, user_hist_dict_file):
         with open(user_hist_dict_file, 'rb') as f:
@@ -166,7 +239,7 @@ if __name__ == '__main__':
     #             item_per_collection = ITEM_PER_COLLECTION_CCMR, start_time = START_TIME_CCMR, 
     #             start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40)
-    # tg.gen_user_item_hist_dict(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict.pkl', DATA_DIR_CCMR + 'item_hist_dict.pkl', 40)
+    # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict.pkl', DATA_DIR_CCMR + 'item_hist_dict.pkl', 40)
     # tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
     
     # Taobao
@@ -175,7 +248,7 @@ if __name__ == '__main__':
                 item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
                 start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8)
-    tg.gen_user_item_hist_dict(DATA_DIR_Taobao + 'remaped_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl', DATA_DIR_Taobao + 'item_hist_dict.pkl', 8)
+    tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'remaped_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl', DATA_DIR_Taobao + 'item_hist_dict.pkl', 8)
     tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl')
 
     
