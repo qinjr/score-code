@@ -34,7 +34,7 @@ TIME_DELTA_Taobao = 1
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name, user_num, item_num, user_per_collection,
                 item_per_collection, start_time, start_time_idx, time_delta):
-        if user_neg_dict_file != None
+        if user_neg_dict_file != None:
             with open(user_neg_dict_file, 'rb') as f:
                 self.user_neg_dict = pkl.load(f)  
         else:
