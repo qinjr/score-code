@@ -267,7 +267,6 @@ class GraphStore(object):
         arr = np.sum(arr, axis=0)
         print(arr)
 
-class CCMRGraphStore(GraphStore):
 
 if __name__ == "__main__":
     # # For CCMR
