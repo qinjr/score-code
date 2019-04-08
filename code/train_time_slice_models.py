@@ -23,6 +23,8 @@ TIME_SLICE_NUM_CCMR = 41
 START_TIME_CCMR = 30
 FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
+USER_PER_COLLECTION_CCMR = 1000
+ITEM_PER_COLLECTION_CCMR = 100
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, user_feat_dict_file, item_feat_dict_file,
@@ -200,7 +202,8 @@ if __name__ == '__main__':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl']
+                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR,
+                                ITEM_PER_COLLECTION_CCMR]
         target_file_train = DATA_DIR_CCMR + 'target_40_hot_train.txt'##'target_train.txt'#
         target_file_test = DATA_DIR_CCMR + 'target_40_hot_test.txt'##'target_test_sample.txt'#
         start_time = START_TIME_CCMR

@@ -251,7 +251,6 @@ class GraphStore(object):
         print('-------------------------------------')
         # calculate item doc
         hist_len_item = []
-        cursor = self.item_coll.find({})
         for item_coll in item_colls:
             for item_doc in item_coll.find({}):
                 for t in range(self.time_slice_num):

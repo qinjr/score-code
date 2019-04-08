@@ -7,26 +7,27 @@ import multiprocessing
 
 NEG_SAMPLE_NUM = 9
 WORKER_N = 5
-DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 
 # CCMR dataset parameters
+DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 TIME_SLICE_NUM_CCMR = 41
 OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
-USER_PER_COLLECTION = 1000
-ITEM_PER_COLLECTION = 100
+USER_PER_COLLECTION_CCMR = 1000
+ITEM_PER_COLLECTION_CCMR = 100
 START_TIME_CCMR = 30
 
 class GraphHandler(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice,
                  user_num, item_num, user_fnum, item_fnum, start_time,
-                 user_feat_dict_file, item_feat_dict_file, mode):
+                 user_feat_dict_file, item_feat_dict_file, user_per_collection,
+                 item_per_collection, mode):
         self.mode = mode
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.db = self.client[db_name]
-        self.user_num = USER_NUM_CCMR
-        self.item_num = ITEM_NUM_CCMR
+        self.user_num = user_num
+        self.item_num = item_num
         self.start_time = start_time
         self.obj_per_time_slice = obj_per_time_slice
         self.time_slice_num = time_slice_num
@@ -44,11 +45,13 @@ class GraphHandler(object):
             with open(item_feat_dict_file, 'rb') as f:
                 self.item_feat_dict = pkl.load(f)
         
-        user_coll_num = self.user_num // USER_PER_COLLECTION
-        if self.user_num % USER_PER_COLLECTION != 0:
+        self.user_per_collection = user_per_collection
+        self.item_per_collection = item_per_collection
+        user_coll_num = self.user_num // self.user_per_collection
+        if self.user_num % self.user_per_collection != 0:
             user_coll_num += 1
-        item_coll_num = self.item_num // ITEM_PER_COLLECTION
-        if self.item_num % ITEM_PER_COLLECTION != 0:
+        item_coll_num = self.item_num // self.item_per_collection
+        if self.item_num % self.item_per_collection != 0:
             item_coll_num += 1
 
         self.user_colls = [self.db['user_%d'%(i)] for i in range(user_coll_num)]
@@ -156,7 +159,7 @@ class GraphHandler(object):
     def gen_user_history(self, start_uid, pred_time):
         user_1hop, user_2hop = [], []
         # t = time.time()
-        start_node_doc = self.user_colls[(start_uid - 1) // USER_PER_COLLECTION].find({'uid': start_uid})[0]
+        start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
         for i in range(self.start_time, pred_time):
             if self.mode == 'sample':
                 user_1hop_t, user_2hop_t = self.gen_node_neighbor_sample(start_node_doc, 'user', i)
@@ -175,7 +178,7 @@ class GraphHandler(object):
     def gen_item_history(self, start_iid, pred_time):
         item_1hop, item_2hop = [], []
         # t = time.time()
-        start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // ITEM_PER_COLLECTION].find({'iid':start_iid})[0]
+        start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // self.item_per_collection].find({'iid':start_iid})[0]
         for i in range(self.start_time, pred_time):
             if self.mode == 'sample':
                 item_1hop_t, item_2hop_t = self.gen_node_neighbor_sample(start_node_doc, 'item', i)
@@ -264,7 +267,7 @@ class GraphLoader(object):
                     break
     
     def worker(self, params):
-        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9], params[10])
+        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9], params[10], params[11], params[12])
 
         while not (self.work.qsize() == 0 and self.producer_stop.value == 1):
             try:
@@ -321,7 +324,8 @@ class GraphLoader(object):
 if __name__ == "__main__":
     graph_handler_params = graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 'sample']
+                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR,
+                                'sample']
     # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
     #                             'ccmr_2hop',
     #                             OBJ_PER_TIME_SLICE_CCMR,
