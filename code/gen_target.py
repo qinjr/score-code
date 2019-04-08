@@ -4,6 +4,7 @@ import pickle as pkl
 import time
 import numpy as np
 import multiprocessing
+import datetime
 
 NEG_SAMPLE_NUM = 9
 
