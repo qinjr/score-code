@@ -9,32 +9,57 @@ import numpy as np
 import random
 
 SECONDS_PER_DAY = 24 * 3600
+
+# CCMR parameters
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
-USER_PER_COLLECTION = 1000
-ITEM_PER_COLLECTION = 100
-START_TIME = 30
-MAX_1HOP = 30
-MAX_2HOP = 30
+USER_PER_COLLECTION_CCMR = 1000
+ITEM_PER_COLLECTION_CCMR = 100
+START_TIME_CCMR = 30
+MAX_1HOP_CCMR = 30
+MAX_2HOP_CCMR = 30
+USER_NUM_CCMR = 4920695
+ITEM_NUM_CCMR = 190129
+TIME_SLICE_NUM_CCMR = 41
+
+# Taobao parameters
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+USER_PER_COLLECTION_Taobao = 500
+ITEM_PER_COLLECTION_Taobao = 1000
+START_TIME_Taobao = 0
+MAX_1HOP_Taobao = 30
+MAX_2HOP_Taobao = 30
+USER_NUM_Taobao = 984105
+ITEM_NUM_Taobao = 4067842
+TIME_SLICE_NUM_Taobao = 9
+
 
 class GraphStore(object):
-    def __init__(self):
+    def __init__(self, rating_file, user_per_collection = USER_PER_COLLECTION_CCMR, 
+                item_per_collection = ITEM_PER_COLLECTION_CCMR,  start_time = START_TIME_CCMR,   
+                max_1hop = MAX_1HOP_CCMR, max_2hop = MAX_2HOP_CCMR, user_num = USER_NUM_CCMR,
+                item_num = ITEM_NUM_CCMR, db_1hop = 'ccmr_1hop', db_2hop = 'ccmr_2hop',
+                time_slice_num = TIME_SLICE_NUM_CCMR):
         self.url = "mongodb://localhost:27017/"
         self.client = pymongo.MongoClient(self.url)
-     
-class CCMRGraphStore(GraphStore):
-    def __init__(self, rating_file):
-        super(CCMRGraphStore, self).__init__()
-        self.db_1hop = self.client['ccmr_1hop']
-        self.db_2hop = self.client['ccmr_2hop']
         
-        self.user_num = 4920695
-        self.item_num = 190129
+        self.db_1hop = self.client[db_1hop]
+        self.db_2hop = self.client[db_2hop]
+        
+        self.user_num = user_num
+        self.item_num = item_num
 
         # input files
         self.rating_file = open(rating_file, 'r')
 
         # about time index
-        self.time_slice_num = 41
+        self.time_slice_num = time_slice_num
+
+        self.user_per_collection = user_per_collection
+        self.item_per_collection = item_per_collection
+        self.start_time = start_time
+        self.max_1hop = max_1hop
+        self.max_2hop = max_2hop
+
 
     def gen_user_doc(self, uid):
         user_doc = {}
@@ -52,29 +77,29 @@ class CCMRGraphStore(GraphStore):
         list_of_user_doc_list = []
         list_of_item_doc_list = []
 
-        user_coll_num = self.user_num // USER_PER_COLLECTION
-        if self.user_num % USER_PER_COLLECTION != 0:
+        user_coll_num = self.user_num // self.user_per_collection
+        if self.user_num % self.user_per_collection != 0:
             user_coll_num += 1
-        item_coll_num = self.item_num // ITEM_PER_COLLECTION
-        if self.item_num % ITEM_PER_COLLECTION != 0:
+        item_coll_num = self.item_num // self.item_per_collection
+        if self.item_num % self.item_per_collection != 0:
             item_coll_num += 1
 
         for i in range(user_coll_num):
             user_doc_list = []
-            for uid in range(i * USER_PER_COLLECTION + 1, (i + 1) * USER_PER_COLLECTION + 1):
+            for uid in range(i * self.user_per_collection + 1, (i + 1) * self.user_per_collection + 1):
                 user_doc_list.append(self.gen_user_doc(uid))
             list_of_user_doc_list.append(user_doc_list)
 
         for i in range(item_coll_num):
             item_doc_list = []
-            for iid in range(i * ITEM_PER_COLLECTION + 1 + self.user_num, (i + 1) * ITEM_PER_COLLECTION + 1 + self.user_num):
+            for iid in range(i * self.item_per_collection + 1 + self.user_num, (i + 1) * self.item_per_collection + 1 + self.user_num):
                 item_doc_list.append(self.gen_item_doc(iid))
             list_of_item_doc_list.append(item_doc_list)
 
         for line in self.rating_file:
             uid, iid, _, t_idx = line[:-1].split(',')
-            list_of_user_doc_list[(int(uid) - 1) // USER_PER_COLLECTION][(int(uid) - 1) % USER_PER_COLLECTION]['1hop'][int(t_idx)].append(int(iid))
-            list_of_item_doc_list[(int(iid) - self.user_num - 1) // ITEM_PER_COLLECTION][(int(iid) - self.user_num - 1) % ITEM_PER_COLLECTION]['1hop'][int(t_idx)].append(int(uid))
+            list_of_user_doc_list[(int(uid) - 1) // self.user_per_collection][(int(uid) - 1) % self.user_per_collection]['1hop'][int(t_idx)].append(int(iid))
+            list_of_item_doc_list[(int(iid) - self.user_num - 1) // self.item_per_collection][(int(iid) - self.user_num - 1) % self.item_per_collection]['1hop'][int(t_idx)].append(int(uid))
         print('user and item doc list completed')
 
         for i in range(len(list_of_user_doc_list)):
@@ -85,11 +110,11 @@ class CCMRGraphStore(GraphStore):
         print('item collection completed')
     
     def construct_coll_2hop(self):
-        user_coll_num = self.user_num // USER_PER_COLLECTION
-        if self.user_num % USER_PER_COLLECTION != 0:
+        user_coll_num = self.user_num // self.user_per_collection
+        if self.user_num % self.user_per_collection != 0:
             user_coll_num += 1
-        item_coll_num = self.item_num // ITEM_PER_COLLECTION
-        if self.item_num % ITEM_PER_COLLECTION != 0:
+        item_coll_num = self.item_num // self.item_per_collection
+        if self.item_num % self.item_per_collection != 0:
             item_coll_num += 1
         
         user_colls = [self.db_1hop['user_%d'%i] for i in range(user_coll_num)]
@@ -112,7 +137,7 @@ class CCMRGraphStore(GraphStore):
         print('item 2 hop gen begin')
         for i in range(item_coll_num):
             item_docs_block = []
-            for iid in range(1 + self.user_num + i * ITEM_PER_COLLECTION, 1 + self.user_num + (i + 1) * ITEM_PER_COLLECTION):
+            for iid in range(1 + self.user_num + i * self.item_per_collection, 1 + self.user_num + (i + 1) * self.item_per_collection):
                 old_item_doc = all_item_docs[iid - 1 - self.user_num]
                 new_item_doc = {
                     'iid': iid,
@@ -120,29 +145,29 @@ class CCMRGraphStore(GraphStore):
                     '2hop': [],
                     'degrees': []
                 }
-                for t in range(START_TIME):
+                for t in range(self.start_time):
                     new_item_doc['2hop'].append([])
                     new_item_doc['degrees'].append([])
-                for t in range(START_TIME, self.time_slice_num):
+                for t in range(self.start_time, self.time_slice_num):
                     uids = old_item_doc['1hop'][t]
-                    if len(uids) > MAX_1HOP:
+                    if len(uids) > self.max_1hop:
                         random.shuffle(uids)
-                        uids = uids[:MAX_1HOP]
+                        uids = uids[:self.max_1hop]
                     iids_2hop = []
                     degrees_2hop = []
                     for uid in uids:
                         user_doc = all_user_docs[uid - 1]
                         degree = len(user_doc['1hop'][t])
-                        if degree > 1 and degree < MAX_2HOP:
+                        if degree > 1 and degree < self.max_2hop:
                             iids_2hop += user_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
-                        elif degree > MAX_2HOP:
+                        elif degree > self.max_2hop:
                             iids_2hop += user_doc['1hop'][t][:5]
                             degrees_2hop += [degree] * 5
-                    if len(iids_2hop) > MAX_2HOP:
+                    if len(iids_2hop) > self.max_2hop:
                         idx = np.random.choice(np.arange(len(iids_2hop)), len(iids_2hop), replace=False)
-                        iids_2hop = np.array(iids_2hop)[idx].tolist()[:MAX_2HOP]
-                        degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:MAX_2HOP]
+                        iids_2hop = np.array(iids_2hop)[idx].tolist()[:self.max_2hop]
+                        degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:self.max_2hop]
                     new_item_doc['2hop'].append(iids_2hop)
                     new_item_doc['degrees'].append(degrees_2hop)
                 item_docs_block.append(new_item_doc)
@@ -154,7 +179,7 @@ class CCMRGraphStore(GraphStore):
         print('user 2 hop gen begin')
         for i in range(user_coll_num):
             user_docs_block = []
-            for uid in range(1 + i * USER_PER_COLLECTION, 1 + (i + 1) * USER_PER_COLLECTION):
+            for uid in range(1 + i * self.user_per_collection, 1 + (i + 1) * self.user_per_collection):
                 old_user_doc = all_user_docs[uid - 1]
                 new_user_doc = {
                     'uid': uid,
@@ -162,29 +187,29 @@ class CCMRGraphStore(GraphStore):
                     '2hop': [],
                     'degrees': []
                 }
-                for t in range(START_TIME):
+                for t in range(self.start_time):
                     new_user_doc['2hop'].append([])
                     new_user_doc['degrees'].append([])
-                for t in range(START_TIME, self.time_slice_num):
+                for t in range(self.start_time, self.time_slice_num):
                     iids = old_user_doc['1hop'][t]
-                    if len(iids) > MAX_1HOP:
+                    if len(iids) > self.max_1hop:
                         random.shuffle(iids)
-                        iids = iids[:MAX_1HOP]
+                        iids = iids[:self.max_1hop]
                     uids_2hop = []
                     degrees_2hop = []
                     for iid in iids:
                         item_doc = all_item_docs[iid - 1 - self.user_num]
                         degree = len(item_doc['1hop'][t])
-                        if degree > 1 and degree <= MAX_2HOP:
+                        if degree > 1 and degree <= self.max_2hop:
                             uids_2hop += item_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
-                        elif degree > MAX_2HOP:
+                        elif degree > self.max_2hop:
                             uids_2hop += item_doc['1hop'][t][:5]
                             degrees_2hop += [degree] * 5
-                    if len(uids_2hop) > MAX_2HOP:
+                    if len(uids_2hop) > self.max_2hop:
                         idx = np.random.choice(np.arange(len(uids_2hop)), len(uids_2hop), replace=False)
-                        uids_2hop = np.array(uids_2hop)[idx].tolist()[:MAX_2HOP]
-                        degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:MAX_2HOP]
+                        uids_2hop = np.array(uids_2hop)[idx].tolist()[:self.max_2hop]
+                        degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:self.max_2hop]
                     new_user_doc['2hop'].append(uids_2hop)
                     new_user_doc['degrees'].append(degrees_2hop)
                 user_docs_block.append(new_user_doc)
@@ -194,11 +219,11 @@ class CCMRGraphStore(GraphStore):
 
 
     def cal_stat(self):
-        user_coll_num = self.user_num // USER_PER_COLLECTION
-        if self.user_num % USER_PER_COLLECTION != 0:
+        user_coll_num = self.user_num // self.user_per_collection
+        if self.user_num % self.user_per_collection != 0:
             user_coll_num += 1
-        item_coll_num = self.item_num // ITEM_PER_COLLECTION
-        if self.item_num % ITEM_PER_COLLECTION != 0:
+        item_coll_num = self.item_num // self.item_per_collection
+        if self.item_num % self.item_per_collection != 0:
             item_coll_num += 1
         
         user_colls = [self.db_1hop['user_%d'%i] for i in range(user_coll_num)]
@@ -242,10 +267,24 @@ class CCMRGraphStore(GraphStore):
         arr = np.sum(arr, axis=0)
         print(arr)
 
+class CCMRGraphStore(GraphStore):
 
 if __name__ == "__main__":
-    # For CCMR
-    gs = CCMRGraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv')
+    # # For CCMR
+    # gs = GraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', user_per_collection = USER_PER_COLLECTION_CCMR, 
+    #             item_per_collection = ITEM_PER_COLLECTION_CCMR,  start_time = START_TIME_CCMR,   
+    #             max_1hop = MAX_1HOP_CCMR, max_2hop = MAX_2HOP_CCMR, user_num = USER_NUM_CCMR,
+    #             item_num = ITEM_NUM_CCMR, db_1hop = 'ccmr_1hop', db_2hop = 'ccmr_2hop',
+    #             time_slice_num = TIME_SLICE_NUM_CCMR)
+    
+    # For Taobao
+    gs = GraphStore(DATA_DIR_Taobao + 'remaped_user_behavior.txt', user_per_collection = USER_PER_COLLECTION_Taobao, 
+                item_per_collection = ITEM_PER_COLLECTION_Taobao,  start_time = START_TIME_Taobao,   
+                max_1hop = MAX_1HOP_Taobao, max_2hop = MAX_2HOP_Taobao, user_num = USER_NUM_Taobao,
+                item_num = ITEM_NUM_Taobao, db_1hop = 'taobao_1hop', db_2hop = 'taobao_2hop',
+                time_slice_num = TIME_SLICE_NUM_Taobao)
     gs.construct_coll_1hop()
     gs.construct_coll_2hop()
-    # gs.cal_stat()
+    gs.cal_stat()
+
+    
