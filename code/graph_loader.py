@@ -358,16 +358,7 @@ if __name__ == "__main__":
     st = time.time()
     i = 1
     for batch_data in graph_loader:
-        print(np.array(batch_data[0]).shape)
-        print(np.array(batch_data[1]).shape)
-        print(np.array(batch_data[2]).shape)
-        print(np.array(batch_data[3]).shape)
-        print(np.array(batch_data[4]))
-        print(np.array(batch_data[5]))
-        print(np.array(batch_data[6]))
-        print(np.array(batch_data[7]))
         print('batch time of batch-{}: {}'.format(i, (time.time() - t)))
         i += 1
         t = time.time()
-        break
     print('total time:{}'.format(time.time() - st))

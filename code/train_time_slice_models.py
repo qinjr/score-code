@@ -26,6 +26,15 @@ DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION_CCMR = 1000
 ITEM_PER_COLLECTION_CCMR = 100
 
+# for Taobao
+OBJ_PER_TIME_SLICE_Taobao = 10
+TIME_SLICE_NUM_Taobao = 9
+START_TIME_Taobao = 0
+FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+USER_PER_COLLECTION_CCMR = 500
+ITEM_PER_COLLECTION_CCMR = 1000
+
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, user_feat_dict_file, item_feat_dict_file,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
@@ -218,6 +227,26 @@ if __name__ == '__main__':
         user_fnum = 1 
         item_fnum = 5
         eval_iter_num = 3300
+    if data_set == 'taobao':
+        # graph loader
+        graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
+                                USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
+                                DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, \
+                                ITEM_PER_COLLECTION_Taobao]
+        target_file_train = DATA_DIR_Taobao + 'target_8_hot_train.txt'##'target_train.txt'#
+        target_file_test = DATA_DIR_Taobao + 'target_8_hot_test.txt'##'target_test_sample.txt'#
+        start_time = START_TIME_Taobao
+        pred_time_train = 8
+        pred_time_test = 8
+        user_feat_dict_file = None
+        item_feat_dict_file = DATA_DIR_Taobao + 'item_feat_dict.pkl'
+        # model parameter
+        feature_size = FEAT_SIZE_Taobao
+        max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
+        obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
+        user_fnum = 1 
+        item_fnum = 2
+        eval_iter_num = 7000
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
