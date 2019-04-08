@@ -44,7 +44,9 @@ def restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file,
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
         logloss, auc, ndcg, loss = eval(model, sess, target_file_test, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file_test, user_feat_dict_file, item_feat_dict_file)
-        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f' % (loss, logloss, auc, ndcg))
+        p = 1. / (1 + NEG_SAMPLE_NUM)
+        rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
+        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f' % (loss, logloss, rig, auc, ndcg))
 
 def getNDCG(ranklist, target_item):
     for i in range(len(ranklist)):
