@@ -13,7 +13,7 @@ END_TIME = int(time.mktime(datetime.datetime.strptime('2017-12-04', "%Y-%m-%d").
 TIME_DELTA = 24 * 3600
 
 # filtering and time to index and remap ids and plot distribution
-def preprocess_raw_data(in_file, out_file, plt_file, remap_dict_file):
+def preprocess_raw_data(in_file, out_file, plt_file, remap_dict_file, item_feat_dict_file):
     newlines = []
     time_idxs = []
     uid_set = set()
@@ -62,6 +62,7 @@ def preprocess_raw_data(in_file, out_file, plt_file, remap_dict_file):
     print('remap ids completed')
     
     # remap file generate
+    item_feat_dict = {}
     with open(in_file, 'r') as f:
         for line in f:
             uid, iid, cid, btype, time = line[:-1].split(',')
@@ -73,12 +74,18 @@ def preprocess_raw_data(in_file, out_file, plt_file, remap_dict_file):
             iid_remap = iid_remap_dict[iid]
             cid_remap = cid_remap_dict[cid]
             time_idx = str((int(time) - START_TIME) // TIME_DELTA)
+            item_feat_dict[iid_remap] = [int(cid_remap)]
             newlines.append(','.join([uid_remap, iid_remap, cid_remap, time_idx]) + '\n')
     with open(out_file, 'w') as f:
         f.writelines(newlines)
     print('remaped file generated')
+    with open(item_feat_dict_file, 'wb') as f:
+        pkl.dump(item_feat_dict, f)
+    print('item feat dict dump completed')
 
     # plot distribution
+    print('max t_idx: {}'.format(max(time_idxs)))
+    print('min t_idx: {}'.format(min(time_idxs)))
     plt.hist(time_idxs, bins=range(max(time_idxs)+1))
     plt.savefig(plt_file)
 
