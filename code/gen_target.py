@@ -7,7 +7,6 @@ import multiprocessing
 import datetime
 
 NEG_SAMPLE_NUM = 9
-SECONDS_PER_DAY = 24 * 3600
 # CCMR dataset parameters
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 TIME_SLICE_NUM_CCMR = 41
@@ -104,12 +103,10 @@ class TargetGen(object):
         # load and construct dicts
         with open(hist_file, 'r') as f:
             for line in f:
-                uid, iid, _, time_str = line[:-1].split(',')
-                time_int = int(time_str)
-                time_idx = int((time_int - self.start_time) / (SECONDS_PER_DAY * self.time_delta))
-                if time_idx < self.start_time_idx:
+                uid, iid, _, time_idx = line[:-1].split(',')
+                if int(time_idx) < self.start_time_idx:
                     continue
-                if time_idx >= pred_time:
+                if int(time_idx) >= pred_time:
                     continue
                 if uid not in user_hist_dict:
                     user_hist_dict[uid] = [(iid, time_int)]
