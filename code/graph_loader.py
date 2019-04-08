@@ -369,4 +369,5 @@ if __name__ == "__main__":
         print('batch time of batch-{}: {}'.format(i, (time.time() - t)))
         i += 1
         t = time.time()
+        break
     print('total time:{}'.format(time.time() - st))
