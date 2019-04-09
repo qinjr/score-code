@@ -168,7 +168,7 @@ class GraphHandler(object):
 
 
     def gen_user_history(self, start_uid, pred_time):
-        print(start_iid)
+        print(start_uid)
         user_1hop, user_2hop = [], []
         # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
