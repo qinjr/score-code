@@ -25,7 +25,7 @@ MAX_LEN_CCMR = 100
 # for Taobao
 FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
-MAX_LEN_Taobao = 100
+MAX_LEN_Taobao = 300
 
 def restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file, item_feat_dict_file,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 

@@ -10,7 +10,7 @@ MAX_LEN_CCMR = 100
 
 # CCMR dataset parameters
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
-MAX_LEN_Taobao = 100
+MAX_LEN_Taobao = 300
 
 def gen_user_hist_seq_file(in_file, out_file, user_hist_dict_file, max_len):
     with open(user_hist_dict_file, 'rb') as f:
