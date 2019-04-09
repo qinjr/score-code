@@ -204,7 +204,7 @@ if __name__ == '__main__':
         user_fnum = 1 
         item_fnum = 5
         eval_iter_num = 3300
-    if data_set == 'taobao':
+    elif data_set == 'taobao':
         target_file_train = DATA_DIR_Taobao + 'target_8_hot_train.txt'##'target_train.txt'#
         target_file_test = DATA_DIR_Taobao + 'target_8_hot_test.txt'##'target_test_sample.txt'#
         user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq.txt'

@@ -245,7 +245,7 @@ if __name__ == '__main__':
         user_fnum = 1 
         item_fnum = 5
         eval_iter_num = 3300
-    if data_set == 'taobao':
+    elif data_set == 'taobao':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
