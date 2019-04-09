@@ -32,8 +32,8 @@ TIME_SLICE_NUM_Taobao = 9
 START_TIME_Taobao = 0
 FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
-USER_PER_COLLECTION_CCMR = 500
-ITEM_PER_COLLECTION_CCMR = 1000
+USER_PER_COLLECTION_Taobao = 500
+ITEM_PER_COLLECTION_Taobao = 1000
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, user_feat_dict_file, item_feat_dict_file,
