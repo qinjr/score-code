@@ -105,10 +105,11 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
 def write_summary(model, sess, writer, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
                 user_feat_dict_file, item_feat_dict_file):
     graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file)
+    i = 0
     for batch_data in graph_loader:
         summary = model.summary(sess, batch_data, reg_lambda)
-        writer.add_summary(summary, 0)
-        break
+        writer.add_summary(summary, i)
+        i += 1
 
 def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
         pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
@@ -154,8 +155,6 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
-        if model_type == 'SCORE':
-            write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
         test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
         test_loglosses.append(test_logloss)
         test_aucs.append(test_auc)
