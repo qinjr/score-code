@@ -2,15 +2,20 @@ import pickle as pkl
 import time
 import numpy as np
 
-DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 NEG_SAMPLE_NUM = 9
-MAX_LEN = 100
+
+DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
+MAX_LEN_CCMR = 100
+
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+MAX_LEN_Taobao = 100
 
 class DataLoaderUserSeq(object):
     def __init__(self, batch_size, max_len, user_fnum, item_fnum, 
                 target_file, user_seq_file, user_feat_dict_file, 
                 item_feat_dict_file):
         self.batch_size = batch_size
+        self.max_len = max_len
         if self.batch_size % 10 != 0:
             print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
             exit(1)
@@ -53,12 +58,12 @@ class DataLoaderUserSeq(object):
             if self.item_feat_dict != None:
                 for iid in user_seq_list:
                     user_seq_one.append([int(iid)] + self.item_feat_dict[iid])
-                for p in range(MAX_LEN - len(user_seq_one)):
+                for p in range(self.max_len - len(user_seq_one)):
                     user_seq_one.append([0] * (self.item_fnum))
             else:
                 for iid in user_seq_list:
                     user_seq_one.append([int(iid)])
-                for p in range(MAX_LEN - len(user_seq_one)):
+                for p in range(self.max_len - len(user_seq_one)):
                     user_seq_one.append([0])
             for j in range(len(iids)):
                 if j == 0:
