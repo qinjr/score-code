@@ -4,11 +4,6 @@ import numpy as np
 
 NEG_SAMPLE_NUM = 9
 
-OBJ_PER_TIME_SLICE_CCMR = 10
-TIME_LEN_CCMR = 10
-FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
-
-
 '''
 Slice Based Models: SCORE, RRN, GCMC
 '''

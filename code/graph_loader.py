@@ -168,27 +168,24 @@ class GraphHandler(object):
 
 
     def gen_user_history(self, start_uid, pred_time):
-        try:
-            user_1hop, user_2hop = [], []
-            # t = time.time()
-            start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
-            for i in range(self.start_time, pred_time):
-                if self.mode == 'sample':
-                    user_1hop_t, user_2hop_t = self.gen_node_neighbor_sample(start_node_doc, 'user', i)
-                elif self.mode == 'fix':
-                    user_1hop_t, user_2hop_t = self.gen_node_neighbor_fix(start_node_doc, 'user', i)
-                else:
-                    print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
-                user_1hop.append(user_1hop_t)
-                user_2hop.append(user_2hop_t)
-            for i in range(self.time_slice_num - pred_time - 1):
-                user_1hop.append(user_1hop[-1])
-                user_2hop.append(user_2hop[-1])
-            # print('gen_user_history time: {}'.format(time.time() - t))
-            return user_1hop, user_2hop
-        except:
-            print(start_uid)
-
+        user_1hop, user_2hop = [], []
+        # t = time.time()
+        start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
+        for i in range(self.start_time, pred_time):
+            if self.mode == 'sample':
+                user_1hop_t, user_2hop_t = self.gen_node_neighbor_sample(start_node_doc, 'user', i)
+            elif self.mode == 'fix':
+                user_1hop_t, user_2hop_t = self.gen_node_neighbor_fix(start_node_doc, 'user', i)
+            else:
+                print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
+            user_1hop.append(user_1hop_t)
+            user_2hop.append(user_2hop_t)
+        for i in range(self.time_slice_num - pred_time - 1):
+            user_1hop.append(user_1hop[-1])
+            user_2hop.append(user_2hop[-1])
+        # print('gen_user_history time: {}'.format(time.time() - t))
+        return user_1hop, user_2hop
+        
     def gen_item_history(self, start_iid, pred_time):
         item_1hop, item_2hop = [], []
         # t = time.time()

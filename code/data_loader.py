@@ -8,7 +8,7 @@ DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 MAX_LEN_CCMR = 100
 
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
-MAX_LEN_Taobao = 100
+MAX_LEN_Taobao = 300
 
 class DataLoaderUserSeq(object):
     def __init__(self, batch_size, max_len, user_fnum, item_fnum, 
