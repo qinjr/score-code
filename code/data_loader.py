@@ -80,11 +80,22 @@ class DataLoaderUserSeq(object):
 
 
 if __name__ == "__main__":
-    data_loader = DataLoaderUserSeq(100, MAX_LEN, 1, 5, DATA_DIR_CCMR + 'target_40_hot_train.txt',
-                                    DATA_DIR_CCMR + 'train_user_hist_seq.txt', None, 
-                                    DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    # data_loader = DataLoaderUserSeq(100, MAX_LEN, 1, 5, DATA_DIR_CCMR + 'target_40_hot_train.txt',
+    #                                 DATA_DIR_CCMR + 'train_user_hist_seq.txt', None, 
+    #                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl')
+    
+    data_loader = DataLoaderUserSeq(100, 300, 1, 2, DATA_DIR_Taobao + 'target_8_hot_train.txt',
+                                    DATA_DIR_Taobao + 'train_user_hist_seq.txt', None, 
+                                    DATA_DIR_Taobao + 'item_feat_dict.pkl')
+    
     t = time.time()
     for batch_data in data_loader:
+        print(np.array(batch_data[0]).shape)
+        print(np.array(batch_data[1]).shape)
+        print(np.array(batch_data[2]).shape)
+        print(np.array(batch_data[3]).shape)
+        print(np.array(batch_data[4]).shape)
+        
         print('time of batch: {}'.format(time.time()-t))
         t = time.time()
         
