@@ -152,7 +152,6 @@ class SliceBaseModel(object):
                 self.target_item_ph : batch_data[5],
                 self.label_ph : batch_data[6],
                 self.length_ph : batch_data[7],
-                self.lr : lr,
                 self.reg_lambda : reg_lambda,
             })
         return summary
