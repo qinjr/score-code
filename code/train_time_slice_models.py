@@ -138,8 +138,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
             if not os.path.exists(tf_summary_dir):
                 os.makedirs(tf_summary_dir)
             merged = tf.summary.merge_all()
-            train_writer = tf.summary.FileWriter(tf_summary_dir + 'train',
-                                                sess.graph)
+            train_writer = tf.summary.FileWriter(tf_summary_dir + 'train')
             test_writer = tf.summary.FileWriter(tf_summary_dir + 'test')
 
         sess.run(tf.global_variables_initializer())
@@ -155,6 +154,8 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
+        if model_type == 'SCORE':
+            write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
         test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
         test_loglosses.append(test_logloss)
         test_aucs.append(test_auc)

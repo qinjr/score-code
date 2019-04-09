@@ -143,7 +143,7 @@ class SliceBaseModel(object):
         return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss
     
     def summary(self, sess, batch_data, reg_lambda):
-        summary = sess.run([self.merged_summary], feed_dict = {
+        summary = sess.run(self.merged_summary, feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
                 self.item_1hop_ph : batch_data[2],
