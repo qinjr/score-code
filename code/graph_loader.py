@@ -168,6 +168,7 @@ class GraphHandler(object):
 
 
     def gen_user_history(self, start_uid, pred_time):
+        print(start_iid)
         user_1hop, user_2hop = [], []
         # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
@@ -187,7 +188,6 @@ class GraphHandler(object):
         return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid, pred_time):
-        print(start_iid)
         item_1hop, item_2hop = [], []
         # t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // self.item_per_collection].find({'iid':start_iid})[0]
