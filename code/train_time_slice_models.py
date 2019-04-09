@@ -134,9 +134,9 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
     # training process
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         if model_type == 'SCORE':
-            if not os.path.exists('tf_summary_score/{}/'.format(data_set)):
-                os.makedirs('tf_summary_score/{}/'.format(data_set))
-                tf_summary_dir = 'tf_summary_score/{}/'.format(data_set)
+            tf_summary_dir = 'tf_summary_score/{}/'.format(data_set)
+            if not os.path.exists(tf_summary_dir):
+                os.makedirs(tf_summary_dir)
             merged = tf.summary.merge_all()
             train_writer = tf.summary.FileWriter(tf_summary_dir + 'train',
                                                 sess.graph)
