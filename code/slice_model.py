@@ -155,6 +155,19 @@ class SliceBaseModel(object):
                 self.reg_lambda : reg_lambda,
             })
         return summary
+    
+    def get_co_attention(self, sess, batch_data):
+        user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = sess.run(self.user_1hop_wei, self.user_2hop_wei, self.item_1hop_wei, self.item_2hop_wei, feed_dict = {
+                self.user_1hop_ph : batch_data[0],
+                self.user_2hop_ph : batch_data[1],
+                self.item_1hop_ph : batch_data[2],
+                self.item_2hop_ph : batch_data[3],
+                self.target_user_ph : batch_data[4],
+                self.target_item_ph : batch_data[5],
+                self.label_ph : batch_data[6],
+                self.length_ph : batch_data[7],
+            })
+        return user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei
 
     def save(self, sess, path):
         saver = tf.train.Saver()
@@ -169,18 +182,16 @@ class SCORE(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
         super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
-        user_1hop_seq, item_2hop_seq, user_1hop_wei, item_2hop_wei= self.co_attention_v1(self.user_1hop, self.item_2hop)
-        user_2hop_seq, item_1hop_seq, user_2hop_wei, item_1hop_wei = self.co_attention_v1(self.user_2hop, self.item_1hop)
+        user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei = self.co_attention_v1(self.user_1hop, self.item_2hop)
+        user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei = self.co_attention_v1(self.user_2hop, self.item_1hop)
         # summary node
-        tf.summary.histogram('user_1hop_wei', user_1hop_wei)
-        tf.summary.histogram('user_2hop_wei', user_2hop_wei)
-        tf.summary.histogram('item_1hop_wei', item_1hop_wei)
-        tf.summary.histogram('item_2hop_wei', item_2hop_wei)
+        # tf.summary.histogram('user_1hop_wei', user_1hop_wei)
+        # tf.summary.histogram('user_2hop_wei', user_2hop_wei)
+        # tf.summary.histogram('item_1hop_wei', item_1hop_wei)
+        # tf.summary.histogram('item_2hop_wei', item_2hop_wei)
 
         user_side = tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
-        # user_side = tf.layers.dense(user_side, user_side.get_shape().as_list()[-1], activation=tf.nn.relu)
         item_side = tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
-        # item_side = tf.layers.dense(item_side, item_side.get_shape().as_list()[-1], activation=tf.nn.relu)
 
         # RNN
         with tf.name_scope('rnn'):
@@ -195,7 +206,7 @@ class SCORE(SliceBaseModel):
         self.build_fc_net(inp)
         self.build_logloss()
         # merged summary
-        self.merged_summary = tf.summary.merge_all()
+        # self.merged_summary = tf.summary.merge_all()
 
 
     def co_attention_v1(self, seq1, seq2):

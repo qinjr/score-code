@@ -83,6 +83,16 @@ def get_ndcg(preds, target_iids):
         ndcg_val.append(getNDCG(ranklist, pos_iids[i]))
     return np.mean(ndcg_val)
 
+def print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei):
+    print('----------user_1hop_wei----------')
+    print(user_1hop_wei[0])
+    print('----------user_2hop_wei----------')
+    print(user_2hop_wei[0])
+    print('----------item_1hop_wei----------')
+    print(item_1hop_wei[0])
+    print('----------item_2hop_wei----------')
+    print(item_2hop_wei[0])
+
 def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
         user_feat_dict_file, item_feat_dict_file):
     preds = []
@@ -98,6 +108,8 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
         labels += label
         losses.append(loss)
         target_iids += np.array(batch_data[5])[:,0].tolist()
+        user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = model.get_co_attention(sess, batch_data)
+        print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     ndcg = get_ndcg(preds, target_iids)
@@ -158,13 +170,13 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
-        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
-        test_loglosses.append(test_logloss)
-        test_aucs.append(test_auc)
-        test_ndcgs.append(test_ndcg)
-        test_losses.append(test_loss)
+        # test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+        # test_loglosses.append(test_logloss)
+        # test_aucs.append(test_auc)
+        # test_ndcgs.append(test_ndcg)
+        # test_losses.append(test_loss)
 
-        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
+        # print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
         early_stop = False
 
         # begin training process
@@ -179,7 +191,9 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 loss = model.train(sess, batch_data, lr, reg_lambda)
                 step += 1
                 train_losses_step.append(loss)
-
+                # print co-attention weights
+                user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = model.get_co_attention(sess, batch_data)
+                print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
                 if step % eval_iter_num == 0:
                     train_loss = sum(train_losses_step) / len(train_losses_step)
                     train_losses.append(train_loss)
@@ -190,8 +204,8 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     test_aucs.append(test_auc)
                     test_ndcgs.append(test_ndcg)
                     test_losses.append(test_loss)
-                    if model_type == 'SCORE':
-                        write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, step)
+                    # if model_type == 'SCORE':
+                    #     write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, step)
                     print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
                     if test_aucs[-1] > max(test_aucs[:-1]):
                         # save model
