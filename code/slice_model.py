@@ -157,7 +157,7 @@ class SliceBaseModel(object):
         return summary
     
     def get_co_attention(self, sess, batch_data):
-        user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = sess.run(self.user_1hop_wei, self.user_2hop_wei, self.item_1hop_wei, self.item_2hop_wei, feed_dict = {
+        user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = sess.run([self.user_1hop_wei, self.user_2hop_wei, self.item_1hop_wei, self.item_2hop_wei], feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
                 self.item_1hop_ph : batch_data[2],
