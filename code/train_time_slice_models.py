@@ -53,6 +53,12 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('fix')
+    elif model_type == 'SCORE_1HOP': 
+        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('sample')
+    elif model_type == 'RRN_AVG': 
+        model = RRN_AVG(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('fix')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -140,6 +146,12 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('fix')
+    elif model_type == 'SCORE_1HOP': 
+        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('sample')
+    elif model_type == 'RRN_AVG': 
+        model = RRN_AVG(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('fix')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -192,9 +204,9 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 step += 1
                 train_losses_step.append(loss)
                 # print co-attention weights
-                if step >= 7000:
-                    user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = model.get_co_attention(sess, batch_data)
-                    print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
+                # if step >= 7000:
+                #     user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = model.get_co_attention(sess, batch_data)
+                #     print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
                 if step % eval_iter_num == 0:
                     train_loss = sum(train_losses_step) / len(train_losses_step)
                     train_losses.append(train_loss)
