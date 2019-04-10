@@ -180,7 +180,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         early_stop = False
 
         # begin training process
-        for epoch in range(3):
+        for epoch in range(5):
             if early_stop:
                 break
             graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, user_feat_dict_file, item_feat_dict_file, WORKER_N)
