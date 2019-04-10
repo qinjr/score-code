@@ -59,6 +59,9 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     elif model_type == 'RRN_AVG': 
         model = RRN_AVG(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('fix')
+    elif model_type == 'SCORE_v2': 
+        model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('sample')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -152,6 +155,9 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
     elif model_type == 'RRN_AVG': 
         model = RRN_AVG(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('fix')
+    elif model_type == 'SCORE_v2': 
+        model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('sample')
     else:
         print('WRONG MODEL TYPE')
         exit(1)

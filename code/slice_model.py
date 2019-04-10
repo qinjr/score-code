@@ -253,15 +253,45 @@ class SCORE_1HOP(SliceBaseModel):
         # merged summary
         # self.merged_summary = tf.summary.merge_all()
 
+class SCORE_v2(SliceBaseModel):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+                obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
+        super(SCORE_v2, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
+        user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei = self.co_attention_v2(self.user_1hop, self.item_2hop)
+        user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei = self.co_attention_v2(self.user_2hop, self.item_1hop)
+        # summary node
+        # tf.summary.histogram('user_1hop_wei', user_1hop_wei)
+        # tf.summary.histogram('user_2hop_wei', user_2hop_wei)
+        # tf.summary.histogram('item_1hop_wei', item_1hop_wei)
+        # tf.summary.histogram('item_2hop_wei', item_2hop_wei)
 
-    def co_attention_v1(self, seq1, seq2):
+        user_side = tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
+        item_side = tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
+
+        # RNN
+        with tf.name_scope('rnn'):
+            _, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
+            _, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
+
+        inp = tf.concat([user_side_final_state, item_side_final_state, self.target_item, self.target_user], axis=1)
+
+        # fc layer
+        self.build_fc_net(inp)
+        self.build_logloss()
+        # merged summary
+        # self.merged_summary = tf.summary.merge_all()
+
+
+    def co_attention_v2(self, seq1, seq2):
         seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False)
         seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], use_bias=False)
         seq2 = tf.layers.dense(seq2, seq2.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False)
         product = tf.matmul(seq1, tf.transpose(seq2, [0, 1, 3, 2]))
 
-        seq1_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(product, axis=3)), axis=3)
-        seq2_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(product, axis=2)), axis=3)
+        seq1_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(product, axis=3)) * seq1.get_shape().as_list()[2], axis=3)
+        seq2_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(product, axis=2)) * seq1.get_shape().as_list()[2], axis=3)
 
         seq1_result = tf.reduce_sum(seq1 * seq1_weights, axis=2) #[B, T, D]
         seq2_result = tf.reduce_sum(seq2 * seq2_weights, axis=2)
