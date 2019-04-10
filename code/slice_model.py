@@ -199,9 +199,10 @@ class SCORE(SliceBaseModel):
 
 
     def co_attention_v1(self, seq1, seq2):
-        seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False, name='co-attention-f', reuse=True)
-        seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], use_bias=False, name='co-attention-a', reuse=True)
-        seq2 = tf.layers.dense(seq2, seq2.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False, name='co-attention-g', reuse=True)
+        with tf.variable_scope('co-attention'):
+            seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False, name='co-attention-f', reuse=tf.AUTO_REUSE)
+            seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], use_bias=False, name='co-attention-a', reuse=tf.AUTO_REUSE)
+            seq2 = tf.layers.dense(seq2, seq2.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False, name='co-attention-g', reuse=tf.AUTO_REUSE)
         product = tf.matmul(seq1, tf.transpose(seq2, [0, 1, 3, 2]))
 
         seq1_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(product, axis=3)), axis=3)
