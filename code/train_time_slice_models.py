@@ -108,8 +108,8 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
         labels += label
         losses.append(loss)
         target_iids += np.array(batch_data[5])[:,0].tolist()
-        user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = model.get_co_attention(sess, batch_data)
-        print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
+        # user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = model.get_co_attention(sess, batch_data)
+        # print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     ndcg = get_ndcg(preds, target_iids)
@@ -170,13 +170,13 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
-        # test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
-        # test_loglosses.append(test_logloss)
-        # test_aucs.append(test_auc)
-        # test_ndcgs.append(test_ndcg)
-        # test_losses.append(test_loss)
+        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+        test_loglosses.append(test_logloss)
+        test_aucs.append(test_auc)
+        test_ndcgs.append(test_ndcg)
+        test_losses.append(test_loss)
 
-        # print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
+        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
         early_stop = False
 
         # begin training process
