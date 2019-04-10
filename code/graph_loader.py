@@ -185,7 +185,7 @@ class GraphHandler(object):
             user_2hop.append(user_2hop[-1])
         # print('gen_user_history time: {}'.format(time.time() - t))
         return user_1hop, user_2hop
-        
+
     def gen_item_history(self, start_iid, pred_time):
         item_1hop, item_2hop = [], []
         # t = time.time()
@@ -208,7 +208,7 @@ class GraphHandler(object):
 
 class GraphLoader(object):
     def __init__(self, graph_handler_params, batch_size, target_file, start_time, 
-                pred_time, user_feat_dict_file, item_feat_dict_file, worker_n = WORKER_N, 
+                pred_time, user_feat_dict_file, item_feat_dict_file, worker_n, 
                 max_q_size = 10, wait_time = 0.05):
         self.batch_size = batch_size
         self.max_q_size = max_q_size
@@ -331,6 +331,10 @@ class GraphLoader(object):
             raise StopIteration
         re = self.results.get()
         return re
+    
+    def stop(self):
+        for thread in self.threads:
+            thread.terminate()
 
 if __name__ == "__main__":
     # graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \

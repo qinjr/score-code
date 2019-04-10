@@ -17,6 +17,9 @@ HIDDEN_SIZE = 16 * 2
 EVAL_BATCH_SIZE = 100
 NEG_SAMPLE_NUM = 9
 
+WORKER_N = 8
+WORKER_SUMMARY = 1
+
 # for CCMR
 OBJ_PER_TIME_SLICE_CCMR = 10
 TIME_SLICE_NUM_CCMR = 41
@@ -87,7 +90,7 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
     target_iids = []
     losses = []
 
-    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file)
+    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file, WORKER_N)
     t = time.time()
     for batch_data in graph_loader:
         pred, label, loss = model.eval(sess, batch_data, reg_lambda)
@@ -103,13 +106,13 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
     return logloss, auc, ndcg, loss
 
 def write_summary(model, sess, writer, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
-                user_feat_dict_file, item_feat_dict_file):
-    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file)
-    i = 0
+                user_feat_dict_file, item_feat_dict_file, step):
+    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file, WORKER_SUMMARY)
     for batch_data in graph_loader:
         summary = model.summary(sess, batch_data, reg_lambda)
-        writer.add_summary(summary, i)
-        i += 1
+        writer.add_summary(summary, step)
+        break
+    graph_loader.stop()
 
 def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
         pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
@@ -168,7 +171,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         for epoch in range(3):
             if early_stop:
                 break
-            graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, user_feat_dict_file, item_feat_dict_file)
+            graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, user_feat_dict_file, item_feat_dict_file, WORKER_N)
             for batch_data in graph_loader:
                 if early_stop:
                     break
@@ -188,7 +191,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     test_ndcgs.append(test_ndcg)
                     test_losses.append(test_loss)
                     if model_type == 'SCORE':
-                        write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+                        write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, step)
                     print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
                     if test_aucs[-1] > max(test_aucs[:-1]):
                         # save model
