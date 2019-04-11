@@ -339,11 +339,11 @@ class GraphLoader(object):
 if __name__ == "__main__":
     # graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
     #                             USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
-    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR,
+    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR, 5
     #                             'sample']
     graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
-                                DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao,
+                                DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao, 5
                                 'sample']
     # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
     #                             'ccmr_2hop',
