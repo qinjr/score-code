@@ -256,7 +256,7 @@ if __name__ == '__main__':
                 item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
                 start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
     tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_7.txt', 7)
-    tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl', DATA_DIR_Taobao + 'item_hist_dict.pkl', DATA_DIR_Taobao + 'remap_dict.pkl')
-    tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl')
+    # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl', DATA_DIR_Taobao + 'item_hist_dict.pkl', DATA_DIR_Taobao + 'remap_dict.pkl')
+    # tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict.pkl')
 
     
