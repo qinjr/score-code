@@ -300,7 +300,7 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
         user_fnum = 1 
         item_fnum = 2
-        eval_iter_num = 1000
+        eval_iter_num = 7000
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
