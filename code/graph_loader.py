@@ -209,7 +209,7 @@ class GraphHandler(object):
 class GraphLoader(object):
     def __init__(self, graph_handler_params, batch_size, target_file, start_time, 
                 pred_time, user_feat_dict_file, item_feat_dict_file, worker_n, 
-                max_q_size = 10, wait_time = 0.05):
+                max_q_size = 100, wait_time = 0.01):
         self.batch_size = batch_size
         self.max_q_size = max_q_size
         self.wait_time = wait_time
