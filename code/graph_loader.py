@@ -209,7 +209,7 @@ class GraphHandler(object):
 class GraphLoader(object):
     def __init__(self, graph_handler_params, batch_size, target_file, start_time, 
                 pred_time, user_feat_dict_file, item_feat_dict_file, worker_n, 
-                max_q_size = 100, wait_time = 0.01):
+                max_q_size = 10, wait_time = 0.01):
         self.batch_size = batch_size
         self.max_q_size = max_q_size
         self.wait_time = wait_time
@@ -239,7 +239,7 @@ class GraphLoader(object):
         # multiprocessing
         self.prod_batch_num = 0 # for producer
         self.work = multiprocessing.Queue(maxsize=self.max_q_size)
-        self.results = multiprocessing.Queue()
+        self.results = multiprocessing.Queue(maxsize=self.max_q_size)
         self.producer_stop = multiprocessing.Value('d', 0)
         self.worker_stop = multiprocessing.Value('d', 0)
         self.threads = []
@@ -361,9 +361,7 @@ if __name__ == "__main__":
     t = time.time()
     st = time.time()
     i = 1
-    batch_datas = []
     for batch_data in graph_loader:
-        batch_datas.append(batch_data)
         print('batch time of batch-{}: {}'.format(i, (time.time() - t)))
         i += 1
         t = time.time()
