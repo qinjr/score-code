@@ -14,7 +14,7 @@ random.seed(1111)
 
 EMBEDDING_SIZE = 16
 HIDDEN_SIZE = 16 * 2
-EVAL_BATCH_SIZE = 100
+EVAL_BATCH_SIZE = 500
 NEG_SAMPLE_NUM = 9
 
 WORKER_N = 5
@@ -300,15 +300,15 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
         user_fnum = 1 
         item_fnum = 2
-        eval_iter_num = 7000
+        eval_iter_num = 3500
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
 
     ################################## training hyper params ##################################
-    train_batch_sizes = [100]
-    lrs = [1e-3]
-    reg_lambdas = [1e-3]
+    train_batch_sizes = [200]
+    lrs = [1e-4, 1e-5]
+    reg_lambdas = [0]
 
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
