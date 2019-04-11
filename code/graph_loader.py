@@ -239,7 +239,7 @@ class GraphLoader(object):
         # multiprocessing
         self.prod_batch_num = 0 # for producer
         self.work = multiprocessing.Queue(maxsize=self.max_q_size)
-        self.results = multiprocessing.Queue(maxsize=self.max_q_size)
+        self.results = multiprocessing.Queue()
         self.producer_stop = multiprocessing.Value('d', 0)
         self.worker_stop = multiprocessing.Value('d', 0)
         self.threads = []
