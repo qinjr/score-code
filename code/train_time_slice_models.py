@@ -14,7 +14,7 @@ random.seed(1111)
 
 EMBEDDING_SIZE = 16
 HIDDEN_SIZE = 16 * 2
-EVAL_BATCH_SIZE = 1000
+EVAL_BATCH_SIZE = 100
 NEG_SAMPLE_NUM = 9
 
 WORKER_N = 5
@@ -306,7 +306,7 @@ if __name__ == '__main__':
         exit()
 
     ################################## training hyper params ##################################
-    train_batch_sizes = [700]
+    train_batch_sizes = [100]
     lrs = [1e-4, 1e-5]
     reg_lambdas = [0]
 
