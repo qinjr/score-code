@@ -339,11 +339,11 @@ class GraphLoader(object):
 if __name__ == "__main__":
     # graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
     #                             USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
-    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR, 5,
+    #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR,
     #                             'sample']
     graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
-                                DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao, 5,
+                                DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao,
                                 'sample']
     # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
     #                             'ccmr_2hop',
@@ -356,7 +356,7 @@ if __name__ == "__main__":
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
     #     graph_handler.gen_item_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_Taobao + 'target_8_hot.txt', START_TIME_Taobao, 8, None, DATA_DIR_Taobao + 'item_feat_dict.pkl')
+    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_Taobao + 'target_8_hot.txt', START_TIME_Taobao, 8, None, DATA_DIR_Taobao + 'item_feat_dict.pkl', 5)
     
     t = time.time()
     st = time.time()
