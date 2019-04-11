@@ -190,8 +190,8 @@ class SCORE(SliceBaseModel):
         # tf.summary.histogram('item_1hop_wei', item_1hop_wei)
         # tf.summary.histogram('item_2hop_wei', item_2hop_wei)
 
-        user_side = user_1hop_seq + user_2hop_seq#tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
-        item_side = item_1hop_seq + item_2hop_seq#tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
+        user_side = item_1hop_seq + user_2hop_seq#tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
+        item_side = user_1hop_seq + item_2hop_seq#tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
 
         # RNN
         with tf.name_scope('rnn'):
