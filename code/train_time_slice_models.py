@@ -307,8 +307,8 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     train_batch_sizes = [100]
-    lrs = [1e-4, 1e-5]
-    reg_lambdas = [0]
+    lrs = [1e-3]
+    reg_lambdas = [1e-3]
 
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
