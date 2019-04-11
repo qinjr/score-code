@@ -121,4 +121,5 @@ dmypy.json
 logs*/
 *.pdf
 save_model*/
+tf_summary_score/
 .DS_Store
