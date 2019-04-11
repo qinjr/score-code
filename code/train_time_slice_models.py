@@ -287,10 +287,10 @@ if __name__ == '__main__':
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
                                 DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, \
                                 ITEM_PER_COLLECTION_Taobao]
-        target_file_train = DATA_DIR_Taobao + 'target_8_hot_train.txt'##'target_train.txt'#
-        target_file_test = DATA_DIR_Taobao + 'target_8_hot_test.txt'##'target_test_sample.txt'#
+        target_file_train = DATA_DIR_Taobao + 'target_7_hot.txt'##'target_train.txt'#
+        target_file_test = DATA_DIR_Taobao + 'target_8_hot_sample.txt'##'target_test_sample.txt'#
         start_time = START_TIME_Taobao
-        pred_time_train = 8
+        pred_time_train = 7
         pred_time_test = 8
         user_feat_dict_file = None
         item_feat_dict_file = DATA_DIR_Taobao + 'item_feat_dict.pkl'
@@ -300,7 +300,7 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
         user_fnum = 1 
         item_fnum = 2
-        eval_iter_num = 14000
+        eval_iter_num = 18000
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
