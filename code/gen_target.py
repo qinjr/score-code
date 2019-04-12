@@ -86,11 +86,15 @@ class TargetGen(object):
         if len(user_neg_list) >= neg_sample_num:
             return user_neg_list[:neg_sample_num]
         else:
-            user_hist_list = user_hist_dict[str(uid)]
-            if len(user_neg_list) > neg_sample_num - len(user_neg_list):
-                user_neg_list += user_hist_list[:(neg_sample_num - len(user_neg_list))]
+            if str(uid) in user_hist_dict:
+                user_hist_list = user_hist_dict[str(uid)]
+                if len(user_neg_list) > neg_sample_num - len(user_neg_list):
+                    user_neg_list += user_hist_list[:(neg_sample_num - len(user_neg_list))]
+                else:
+                    user_neg_list += user_hist_list
+                    for i in range(neg_sample_num - len(user_neg_list)):
+                        user_neg_list.append(str(random.randint(start_iid, end_iid)))
             else:
-                user_neg_list += user_hist_list
                 for i in range(neg_sample_num - len(user_neg_list)):
                     user_neg_list.append(str(random.randint(start_iid, end_iid)))
             return user_neg_list
