@@ -221,8 +221,9 @@ class TargetGen(object):
 
         # load and construct dicts
         with open(hist_file, 'r') as f:
-            for line in f:
-                uid, iid, _, date = line[:-1].split(',')
+            lines = f.readlines()[1:]
+            for line in lines:
+                uid, iid, cid, sid, bid, date, btypeid, aid, gid = line[:-1].split(',')
                 uid = uid_remap_dict[uid]
                 iid = iid_remap_dict[iid]
 
@@ -311,6 +312,6 @@ if __name__ == '__main__':
                 item_num = ITEM_NUM_Tmall, user_per_collection = USER_PER_COLLECTION_Tmall,
                 item_per_collection = ITEM_PER_COLLECTION_Tmall, start_time = START_TIME_Tmall, 
                 start_time_idx = START_TIME_IDX_Tmall, time_delta = TIME_DELTA_Tmall)
-    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_6.txt', 6)
+    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_6.txt', 6)
     tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_6.pkl', DATA_DIR_Tmall + 'item_hist_dict_6.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 6)
     tg.filter_target_file(DATA_DIR_Tmall + 'target_6.txt', DATA_DIR_Tmall + 'target_6_hot.txt', DATA_DIR_Tmall + 'target_6_cold.txt', DATA_DIR_Tmall + 'user_hist_dict_6.pkl')
