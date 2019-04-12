@@ -94,7 +94,7 @@ class TargetGen(object):
             else:
                 user_neg_list += user_hist_list
                 for i in range(neg_sample_num - len(user_neg_list)):
-                    user_neg_list.append(random.randint(start_iid, end_iid))
+                    user_neg_list.append(str(random.randint(start_iid, end_iid)))
             return user_neg_list
 
     def gen_target_file(self, neg_sample_num, target_file, pred_time, user_hist_dict_file):
