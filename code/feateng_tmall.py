@@ -10,7 +10,7 @@ FEATENG_DIR = '../../score-data/Tmall/feateng/'
 
 def join_user_profile(user_profile_file, behavior_file, joined_file):
     user_profile_dict = {}
-    with open(user_profile_dict, 'r') as f:
+    with open(user_profile_file, 'r') as f:
         for line in f:
             uid, aid, gid = line[:-1].split(',')
             user_profile_dict[uid] = ','.join([aid, gid])
@@ -27,4 +27,3 @@ def join_user_profile(user_profile_file, behavior_file, joined_file):
     
 if __name__ == "__main__":
     join_user_profile(RAW_DIR + 'user_info_format1.csv', RAW_DIR + 'user_log_format1.csv', RAW_DIR + 'joined_user_behavior.csv')
-    
