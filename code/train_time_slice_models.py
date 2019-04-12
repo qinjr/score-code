@@ -61,22 +61,22 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('sample')
+        graph_handler_params.append('is')
     elif model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
+        graph_handler_params.append('is')
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
+        graph_handler_params.append('is')
     elif model_type == 'SCORE_1HOP': 
         model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('sample')
+        graph_handler_params.append('is')
     elif model_type == 'RRN_AVG': 
         model = RRN_AVG(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
+        graph_handler_params.append('is')
     elif model_type == 'SCORE_v2': 
         model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('sample')
+        graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -157,22 +157,22 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
     graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('sample')
+        graph_handler_params.append('is')
     elif model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
+        graph_handler_params.append('is')
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
+        graph_handler_params.append('is')
     elif model_type == 'SCORE_1HOP': 
         model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('sample')
+        graph_handler_params.append('is')
     elif model_type == 'RRN_AVG': 
         model = RRN_AVG(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('fix')
+        graph_handler_params.append('is')
     elif model_type == 'SCORE_v2': 
         model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('sample')
+        graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -336,15 +336,15 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
         user_fnum = 3 
         item_fnum = 4
-        eval_iter_num = 3000
+        eval_iter_num = 6600
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
 
     ################################## training hyper params ##################################
     train_batch_sizes = [100]
-    lrs = [1e-3]
-    reg_lambdas = [1e-3]
+    lrs = [1e-4, 5e-3, 1e-3]
+    reg_lambdas = [0]
 
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
