@@ -330,7 +330,7 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
         user_fnum = 3 
         item_fnum = 4
-        eval_iter_num = 14000
+        eval_iter_num = 3000
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
