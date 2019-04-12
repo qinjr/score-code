@@ -88,7 +88,7 @@ class TargetGen(object):
         else:
             if str(uid) in user_hist_dict:
                 user_hist_list = user_hist_dict[str(uid)]
-                if len(user_neg_list) > neg_sample_num - len(user_neg_list):
+                if len(user_hist_list) >= neg_sample_num - len(user_neg_list):
                     user_neg_list += user_hist_list[:(neg_sample_num - len(user_neg_list))]
                 else:
                     user_neg_list += user_hist_list
