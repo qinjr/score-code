@@ -316,5 +316,5 @@ if __name__ == '__main__':
                 start_time_idx = START_TIME_IDX_Tmall, time_delta = TIME_DELTA_Tmall)
     
     # tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_6.pkl', DATA_DIR_Tmall + 'item_hist_dict_6.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 6)
-    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_6.txt', 6, DATA_DIR_Tmall + 'user_hist_dict.pkl')
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_6.txt', 6, DATA_DIR_Tmall + 'user_hist_dict_6.pkl')
     tg.filter_target_file(DATA_DIR_Tmall + 'target_6.txt', DATA_DIR_Tmall + 'target_6_hot.txt', DATA_DIR_Tmall + 'target_6_cold.txt', DATA_DIR_Tmall + 'user_hist_dict_6.pkl')
