@@ -351,9 +351,14 @@ if __name__ == "__main__":
     #                             USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
     #                             DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR,
     #                             'sample']
-    graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
-                                USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
-                                DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao,
+    # graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
+    #                             USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
+    #                             DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao,
+    #                             'sample']
+    graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
+                                USER_NUM_Tmall, ITEM_NUM_Tmall, 1, 2, START_TIME_Tmall, \
+                                DATA_DIR_Tmall + 'user_feat_dict.pkl', \
+                                DATA_DIR_Tmall + 'item_feat_dict.pkl', USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall,
                                 'sample']
     # graph_handler = GraphHandler(TIME_SLICE_NUM_CCMR,
     #                             'ccmr_2hop',
@@ -366,7 +371,7 @@ if __name__ == "__main__":
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
     #     graph_handler.gen_item_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_Taobao + 'target_8_hot_test.txt', START_TIME_Taobao, 8, None, DATA_DIR_Taobao + 'item_feat_dict.pkl', 5)
+    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_Tmall + 'target_6_hot_test.txt', START_TIME_Tmall, 6, DATA_DIR_Tmall + 'user_feat_dict.pkl', DATA_DIR_Tmall + 'item_feat_dict.pkl', 5)
     
     t = time.time()
     st = time.time()

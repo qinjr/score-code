@@ -319,7 +319,7 @@ if __name__ == '__main__':
     elif data_set == 'tmall':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
-                                USER_NUM_Tmall, ITEM_NUM_Tmall, 3, 4, START_TIME_Tmall, 
+                                USER_NUM_Tmall, ITEM_NUM_Tmall, 3, 4, START_TIME_Tmall, \
                                 DATA_DIR_Tmall + 'user_feat_dict.pkl', \
                                 DATA_DIR_Tmall + 'item_feat_dict.pkl', USER_PER_COLLECTION_Tmall, \
                                 ITEM_PER_COLLECTION_Tmall]
