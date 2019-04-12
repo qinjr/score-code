@@ -29,6 +29,16 @@ USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 1000
 START_TIME_Taobao = 0
 
+# Tmall dataset parameters
+DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
+TIME_SLICE_NUM_Tmall = 7
+OBJ_PER_TIME_SLICE_Tmall = 10
+USER_NUM_Tmall = 424170
+ITEM_NUM_Tmall = 1090390
+USER_PER_COLLECTION_Tmall = 200
+ITEM_PER_COLLECTION_Tmall = 250
+START_TIME_Tmall = 0
+
 class GraphHandler(object):
     def __init__(self, time_slice_num, db_name, obj_per_time_slice,
                  user_num, item_num, user_fnum, item_fnum, start_time,

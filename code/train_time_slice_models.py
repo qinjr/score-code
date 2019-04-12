@@ -28,6 +28,8 @@ FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + 
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION_CCMR = 1000
 ITEM_PER_COLLECTION_CCMR = 100
+USER_NUM_CCMR = 4920695
+ITEM_NUM_CCMR = 190129
 
 # for Taobao
 OBJ_PER_TIME_SLICE_Taobao = 10
@@ -37,6 +39,8 @@ FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 1000
+USER_NUM_Taobao = 984105
+ITEM_NUM_Taobao = 4067842
 
 # for Tmall
 OBJ_PER_TIME_SLICE_Tmall = 10
@@ -46,6 +50,8 @@ FEAT_SIZE_Tmall = 1529672
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
 USER_PER_COLLECTION_Tmall = 200
 ITEM_PER_COLLECTION_Tmall = 250
+USER_NUM_Tmall = 424170
+ITEM_NUM_Tmall = 1090390
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, user_feat_dict_file, item_feat_dict_file,
