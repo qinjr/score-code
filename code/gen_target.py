@@ -32,6 +32,17 @@ START_TIME_Taobao = int(time.mktime(datetime.datetime.strptime('2017-11-25', "%Y
 START_TIME_IDX_Taobao = 0
 TIME_DELTA_Taobao = 1
 
+# Tmall dataset parameters
+DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
+TIME_SLICE_NUM_Tmall = 7
+OBJ_PER_TIME_SLICE_Tmall = 10
+USER_NUM_Tmall = 424170
+ITEM_NUM_Tmall = 1090390
+USER_PER_COLLECTION_Tmall = 200
+ITEM_PER_COLLECTION_Tmall = 250
+START_TIME_IDX_Tmall = 0
+
+
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name, user_num, item_num, user_per_collection,
                 item_per_collection, start_time, start_time_idx, time_delta):
@@ -252,6 +263,20 @@ if __name__ == '__main__':
     
     # Taobao
     tg = TargetGen(None, 'taobao_1hop', user_num = USER_NUM_Taobao,
+                item_num = ITEM_NUM_Taobao, user_per_collection = USER_PER_COLLECTION_Taobao,
+                item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
+                start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
+    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_7.txt', 7)
+    # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', DATA_DIR_Taobao + 'item_hist_dict_7.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 7)
+    # tg.filter_target_file(DATA_DIR_Taobao + 'target_7.txt', DATA_DIR_Taobao + 'target_7_hot.txt', DATA_DIR_Taobao + 'target_7_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl')
+
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8)
+    tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', DATA_DIR_Taobao + 'item_hist_dict_8.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 8)
+    tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
+
+
+    # Tmall
+    tg = TargetGen(None, 'tmall_1hop', user_num = USER_NUM_Tmall,
                 item_num = ITEM_NUM_Taobao, user_per_collection = USER_PER_COLLECTION_Taobao,
                 item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
                 start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)

@@ -33,7 +33,6 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     cid_set = set()
     sid_set = set()
     bid_set = set()
-    btypeid_set = set()
     aid_set = set()
     gid_set = set()
     with open(raw_file, 'r') as f:
@@ -45,7 +44,6 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
             cid_set.add(cid)
             sid_set.add(sid)
             bid_set.add(bid)
-            btypeid_set.add(btypeid)
             aid_set.add(aid)
             gid_set.add(gid)
             t_idx = int(time_stamp[:2]) - START_MONTH
@@ -57,7 +55,6 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     cid_list = list(cid_set)
     sid_list = list(sid_set)
     bid_list = list(bid_set)
-    btypeid_list = list(btypeid_set)
     aid_list = list(aid_set)
     gid_list = list(gid_set)
 
@@ -66,7 +63,6 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     print('cate num: {}'.format(len(cid_list)))
     print('seller num: {}'.format(len(sid_list)))
     print('brand num: {}'.format(len(bid_list)))
-    print('btype num: {}'.format(len(btypeid_list)))
     print('age num: {}'.format(len(aid_list)))
     print('gender num: {}'.format(len(gid_list)))
     
@@ -76,7 +72,6 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     cid_remap_dict = {}
     sid_remap_dict = {}
     bid_remap_dict = {}
-    btypeid_remap_dict = {}
     aid_remap_dict = {}
     gid_remap_dict = {}
 
@@ -95,9 +90,6 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     for bid in bid_list:
         bid_remap_dict[bid] = str(remap_id)
         remap_id += 1
-    for btypeid in btypeid_list:
-        btypeid_remap_dict[btypeid] = str(remap_id)
-        remap_id += 1
     for aid in aid_list:
         aid_remap_dict[aid] = str(remap_id)
         remap_id += 1
@@ -112,7 +104,6 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
         pkl.dump(cid_remap_dict, f)
         pkl.dump(sid_remap_dict, f)
         pkl.dump(bid_remap_dict, f)
-        pkl.dump(btypeid_remap_dict, f)
         pkl.dump(aid_remap_dict, f)
         pkl.dump(gid_remap_dict, f)
     print('remap ids completed')
@@ -130,12 +121,11 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
             cid_remap = cid_remap_dict[cid]
             sid_remap = sid_remap_dict[sid]
             bid_remap = bid_remap_dict[bid]
-            btypeid_remap = btypeid_remap_dict[btypeid]
             aid_remap = aid_remap_dict[aid]
             gid_remap = gid_remap_dict[gid]
             t_idx = str(int(time_stamp[:2]) - START_MONTH)
-            item_feat_dict[iid_remap] = [int(cid_remap), int(sid_remap), int(bid_remap), int(btypeid_remap)]
-            user_feat_dict[uid_remap] = [int(cid_remap), int(sid_remap), int(bid_remap), int(btypeid_remap)]
+            item_feat_dict[iid_remap] = [int(cid_remap), int(sid_remap), int(bid_remap)]
+            user_feat_dict[uid_remap] = [int(aid_remap), int(gid_remap)]
             newlines.append(','.join([uid_remap, iid_remap, '_', t_idx]) + '\n')
     with open(out_file, 'w') as f:
         f.writelines(newlines)
