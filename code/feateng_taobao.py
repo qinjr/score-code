@@ -90,7 +90,7 @@ def preprocess_raw_data(in_file, out_file_filtered, out_file_remaped, plt_file, 
     # plot distribution
     print('max t_idx: {}'.format(max(time_idxs)))
     print('min t_idx: {}'.format(min(time_idxs)))
-    plt.hist(time_idxs, bins=range(max(time_idxs)+1))
+    plt.hist(time_idxs, bins=range(max(time_idxs)+2))
     plt.savefig(plt_file)
 
 

@@ -144,7 +144,7 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
 
     with open(user_feat_dict_file, 'wb') as f:
         pkl.dump(user_feat_dict, f)
-    print('item feat dict dump completed')
+    print('user feat dict dump completed')
     with open(item_feat_dict_file, 'wb') as f:
         pkl.dump(item_feat_dict, f)
     print('item feat dict dump completed')
@@ -152,7 +152,7 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     # plot distribution
     print('max t_idx: {}'.format(max(time_idxs)))
     print('min t_idx: {}'.format(min(time_idxs)))
-    plt.hist(time_idxs, bins=range(max(time_idxs)+1))
+    plt.hist(time_idxs, bins=range(max(time_idxs)+2))
     plt.savefig(plt_file)
 
 
