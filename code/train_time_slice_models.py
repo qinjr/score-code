@@ -38,6 +38,15 @@ DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 1000
 
+# for Tmall
+OBJ_PER_TIME_SLICE_Tmall = 10
+TIME_SLICE_NUM_Tmall = 7
+START_TIME_Tmall = 0
+FEAT_SIZE_Tmall = 1529672
+DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
+USER_PER_COLLECTION_Tmall = 200
+ITEM_PER_COLLECTION_Tmall = 250
+
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, user_feat_dict_file, item_feat_dict_file,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
@@ -301,14 +310,35 @@ if __name__ == '__main__':
         user_fnum = 1 
         item_fnum = 2
         eval_iter_num = 14000
+    elif data_set == 'tmall':
+        # graph loader
+        graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
+                                USER_NUM_Tmall, ITEM_NUM_Tmall, 3, 4, START_TIME_Tmall, 
+                                DATA_DIR_Tmall + 'user_feat_dict.pkl', \
+                                DATA_DIR_Tmall + 'item_feat_dict.pkl', USER_PER_COLLECTION_Tmall, \
+                                ITEM_PER_COLLECTION_Tmall]
+        target_file_train = DATA_DIR_Tmall + 'target_6_hot_train.txt'##'target_train.txt'#
+        target_file_test = DATA_DIR_Tmall + 'target_6_hot_test.txt'##'target_test_sample.txt'#
+        start_time = START_TIME_Tmall
+        pred_time_train = 6
+        pred_time_test = 6
+        user_feat_dict_file = DATA_DIR_Tmall + 'user_feat_dict.pkl'
+        item_feat_dict_file = DATA_DIR_Tmall + 'item_feat_dict.pkl'
+        # model parameter
+        feature_size = FEAT_SIZE_Tmall
+        max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
+        obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
+        user_fnum = 3 
+        item_fnum = 4
+        eval_iter_num = 14000
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
 
     ################################## training hyper params ##################################
     train_batch_sizes = [100]
-    lrs = [5e-3]
-    reg_lambdas = [0]
+    lrs = [1e-3]
+    reg_lambdas = [1e-3]
 
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
