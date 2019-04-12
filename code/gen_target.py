@@ -77,9 +77,7 @@ class TargetGen(object):
         self.start_time_idx = start_time_idx
         self.time_delta = time_delta
 
-    def gen_user_neg_items(self, uid, neg_sample_num, start_iid, end_iid, user_hist_dict_file):
-        with open(user_hist_dict_file, 'rb') as f:
-            user_hist_dict = pkl.load(f)
+    def gen_user_neg_items(self, uid, neg_sample_num, start_iid, end_iid, user_hist_dict):
         if str(uid) in self.user_neg_dict:
             user_neg_list = self.user_neg_dict[str(uid)]
         else:
@@ -99,6 +97,8 @@ class TargetGen(object):
 
     def gen_target_file(self, neg_sample_num, target_file, pred_time, user_hist_dict_file):
         target_lines = []
+        with open(user_hist_dict_file, 'rb') as f:
+            user_hist_dict = pkl.load(f)
         for user_coll in self.user_colls:
             cursor = user_coll.find({})
             for user_doc in cursor:
@@ -109,7 +109,7 @@ class TargetGen(object):
                     pos_iids = user_doc['1hop'][pred_time]
                     # for pos_iid in pos_iids:
                     pos_iid = pos_iids[0]
-                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num, user_hist_dict_file)
+                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num, user_hist_dict)
                     target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
         with open(target_file, 'w') as f:
             # random.shuffle(target_lines)
