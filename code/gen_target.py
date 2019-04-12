@@ -293,25 +293,25 @@ class TargetGen(object):
         print('filter target file completed')   
 
 if __name__ == '__main__':
-    # # CCMR
-    # tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr_1hop', user_num = USER_NUM_CCMR,
-    #             item_num = ITEM_NUM_CCMR, user_per_collection = USER_PER_COLLECTION_CCMR,
-    #             item_per_collection = ITEM_PER_COLLECTION_CCMR, start_time = START_TIME_CCMR, 
-    #             start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
+    # CCMR
+    tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr_1hop', user_num = USER_NUM_CCMR,
+                item_num = ITEM_NUM_CCMR, user_per_collection = USER_PER_COLLECTION_CCMR,
+                item_per_collection = ITEM_PER_COLLECTION_CCMR, start_time = START_TIME_CCMR, 
+                start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
     
-    # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict.pkl', DATA_DIR_CCMR + 'item_hist_dict.pkl', 40)
-    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40)
-    # tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict.pkl')
+    # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', DATA_DIR_CCMR + 'item_hist_dict_40.pkl', 40)
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40, DATA_DIR_CCMR + 'user_hist_dict_40.pkl')
+    tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl')
     
-    # Taobao
-    tg = TargetGen(None, 'taobao_1hop', user_num = USER_NUM_Taobao,
-                item_num = ITEM_NUM_Taobao, user_per_collection = USER_PER_COLLECTION_Taobao,
-                item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
-                start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
+    # # Taobao
+    # tg = TargetGen(None, 'taobao_1hop', user_num = USER_NUM_Taobao,
+    #             item_num = ITEM_NUM_Taobao, user_per_collection = USER_PER_COLLECTION_Taobao,
+    #             item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
+    #             start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
 
-    # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', DATA_DIR_Taobao + 'item_hist_dict_8.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 8)
-    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8, DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
-    tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
+    # # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', DATA_DIR_Taobao + 'item_hist_dict_8.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 8)
+    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8, DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
+    # tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
 
     # Tmall
     # tg = TargetGen(None, 'tmall_1hop', user_num = USER_NUM_Tmall,
