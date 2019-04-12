@@ -138,7 +138,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         early_stop = False
 
         # begin training process
-        for epoch in range(3):
+        for epoch in range(5):
             if early_stop:
                 break
             data_loader = DataLoaderUserSeq(train_batch_size, max_time_len, user_fnum, item_fnum, target_file_train, user_seq_file_train, user_feat_dict_file, item_feat_dict_file)
