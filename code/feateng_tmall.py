@@ -26,7 +26,7 @@ def join_user_profile(user_profile_file, behavior_file, joined_file):
     with open(joined_file, 'w') as f:
         f.writelines(newlines)
 
-def preprocess_raw_data(raw_file, remap_dict_file, plt_file, user_feat_dict_file, item_feat_dict_file):
+def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat_dict_file, item_feat_dict_file):
     time_idxs = []
     uid_set = set()
     iid_set = set()
@@ -137,7 +137,7 @@ def preprocess_raw_data(raw_file, remap_dict_file, plt_file, user_feat_dict_file
             item_feat_dict[iid_remap] = [int(cid_remap), int(sid_remap), int(bid_remap), int(btypeid_remap)]
             user_feat_dict[uid_remap] = [int(cid_remap), int(sid_remap), int(bid_remap), int(btypeid_remap)]
             newlines.append(','.join([uid_remap, iid_remap, '_', t_idx]) + '\n')
-    with open(out_file_remaped, 'w') as f:
+    with open(out_file, 'w') as f:
         f.writelines(newlines)
     print('remaped file generated')
 
@@ -158,4 +158,4 @@ def preprocess_raw_data(raw_file, remap_dict_file, plt_file, user_feat_dict_file
 
 if __name__ == "__main__":
     # join_user_profile(RAW_DIR + 'user_info_format1.csv', RAW_DIR + 'user_log_format1.csv', RAW_DIR + 'joined_user_behavior.csv')
-    preprocess_raw_data(RAW_DIR + 'joined_user_behavior.csv', FEATENG_DIR + 'remap_dict.pkl', FEATENG_DIR + 'time_distri.png', FEATENG_DIR + 'user_feat_dict.pkl', FEATENG_DIR + 'item_feat_dict.pkl')
+    preprocess_raw_data(RAW_DIR + 'joined_user_behavior.csv', FEATENG_DIR + 'remaped_user_behavior.csv', FEATENG_DIR + 'remap_dict.pkl', FEATENG_DIR + 'time_distri.png', FEATENG_DIR + 'user_feat_dict.pkl', FEATENG_DIR + 'item_feat_dict.pkl')
