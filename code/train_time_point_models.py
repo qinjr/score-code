@@ -27,6 +27,11 @@ FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 MAX_LEN_Taobao = 300
 
+# for Tmall
+FEAT_SIZE_Tmall = 1529672
+DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
+MAX_LEN_Tmall = 150
+
 def restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file, item_feat_dict_file,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
         user_fnum, item_fnum, lr, reg_lambda):
@@ -216,7 +221,20 @@ if __name__ == '__main__':
         max_time_len = MAX_LEN_Taobao
         user_fnum = 1 
         item_fnum = 2
-        eval_iter_num = 7000
+        eval_iter_num = 14000
+    elif data_set == 'tmall':
+        target_file_train = DATA_DIR_Tmall + 'target_6_hot_train.txt'##'target_train.txt'#
+        target_file_test = DATA_DIR_Tmall + 'target_6_hot_test.txt'##'target_test_sample.txt'#
+        user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq.txt'
+        user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq.txt'
+        user_feat_dict_file = DATA_DIR_Tmall + 'user_feat_dict.pkl'
+        item_feat_dict_file = DATA_DIR_Tmall + 'item_feat_dict.pkl'
+        # model parameter
+        feature_size = FEAT_SIZE_Tmall
+        max_time_len = MAX_LEN_Tmall
+        user_fnum = 3 
+        item_fnum = 4
+        eval_iter_num = 6600
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
