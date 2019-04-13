@@ -278,6 +278,9 @@ class SCORE_v2(SliceBaseModel):
         # fc layer
         self.build_fc_net(inp)
         self.build_logloss()
+    
+    def lrelu(x, alpha=0.2):
+        return tf.nn.relu(x) - alpha * tf.nn.relu(-x)
 
     def gat(self, key, value, query):
         # key/value: [B, T, K, D], query: [B, D]
@@ -285,7 +288,8 @@ class SCORE_v2(SliceBaseModel):
         query = tf.expand_dims(tf.expand_dims(query, 1), 2)
         query = tf.tile(query, [1, key_shape[1], key_shape[2], 1]) #[B, T, K, D]
         query_key_concat = tf.concat([query, key], axis = 3)
-        atten = tf.layers.dense(query_key_concat, 1, activation=tf.nn.relu, use_bias=False) #[B, T, K, 1]
+        atten = tf.layers.dense(query_key_concat, 1, activation=None, use_bias=False) #[B, T, K, 1]
+        atten = self.lrelu(atten)
         atten = tf.reshape(atten, [-1, key_shape[1], key_shape[2]]) #[B, T, K]
         atten = tf.expand_dims(tf.nn.softmax(atten), 3) #[B, T, K, 1]
         res = tf.reduce_sum(atten * value, axis=2)
