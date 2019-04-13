@@ -44,7 +44,7 @@ ITEM_NUM_Taobao = 4067842
 
 # for Tmall
 OBJ_PER_TIME_SLICE_Tmall = 10
-TIME_SLICE_NUM_Tmall = 7
+TIME_SLICE_NUM_Tmall = 13
 START_TIME_Tmall = 0
 FEAT_SIZE_Tmall = 1529672
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
@@ -324,11 +324,11 @@ if __name__ == '__main__':
                                 DATA_DIR_Tmall + 'user_feat_dict.pkl', \
                                 DATA_DIR_Tmall + 'item_feat_dict.pkl', USER_PER_COLLECTION_Tmall, \
                                 ITEM_PER_COLLECTION_Tmall]
-        target_file_train = DATA_DIR_Tmall + 'target_6_hot_train.txt'##'target_train.txt'#
-        target_file_test = DATA_DIR_Tmall + 'target_6_hot_test.txt'##'target_test_sample.txt'#
+        target_file_train = DATA_DIR_Tmall + 'target_12_hot_train.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_12_hot_test.txt'
         start_time = START_TIME_Tmall
-        pred_time_train = 6
-        pred_time_test = 6
+        pred_time_train = 12
+        pred_time_test = 12
         user_feat_dict_file = DATA_DIR_Tmall + 'user_feat_dict.pkl'
         item_feat_dict_file = DATA_DIR_Tmall + 'item_feat_dict.pkl'
         # model parameter
@@ -337,7 +337,7 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
         user_fnum = 3 
         item_fnum = 4
-        eval_iter_num = 6600
+        eval_iter_num = 6200
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()

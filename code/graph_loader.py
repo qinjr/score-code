@@ -31,7 +31,7 @@ START_TIME_Taobao = 0
 
 # Tmall dataset parameters
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
-TIME_SLICE_NUM_Tmall = 7
+TIME_SLICE_NUM_Tmall = 13
 OBJ_PER_TIME_SLICE_Tmall = 10
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
