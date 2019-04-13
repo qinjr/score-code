@@ -22,7 +22,7 @@ START_TIME_CCMR = 30
 # Taobao dataset parameters
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 TIME_SLICE_NUM_Taobao = 18
-OBJ_PER_TIME_SLICE_Taobao = 10
+OBJ_PER_TIME_SLICE_Taobao = 5
 USER_NUM_Taobao = 984105
 ITEM_NUM_Taobao = 4067842
 USER_PER_COLLECTION_Taobao = 500
