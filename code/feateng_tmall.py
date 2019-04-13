@@ -129,7 +129,7 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
             t_idx = time_idxs[i]
             item_feat_dict[iid_remap] = [int(cid_remap), int(sid_remap), int(bid_remap)]
             user_feat_dict[uid_remap] = [int(aid_remap), int(gid_remap)]
-            newlines.append(','.join([uid_remap, iid_remap, '_', t_idx]) + '\n')
+            newlines.append(','.join([uid_remap, iid_remap, '_', str(t_idx)]) + '\n')
     with open(out_file, 'w') as f:
         f.writelines(newlines)
     print('remaped file generated')
