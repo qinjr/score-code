@@ -302,7 +302,7 @@ if __name__ == '__main__':
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8)
     # tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
 
-    Tmall
+    # Tmall
     tg = TargetGen(None, 'tmall_1hop', user_num = USER_NUM_Tmall,
                 item_num = ITEM_NUM_Tmall, user_per_collection = USER_PER_COLLECTION_Tmall,
                 item_per_collection = ITEM_PER_COLLECTION_Tmall, start_time = START_TIME_Tmall, 
