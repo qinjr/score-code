@@ -102,7 +102,7 @@ class TargetGen(object):
                     pos_iids = user_doc['1hop'][pred_time]
                     # for pos_iid in pos_iids:
                     pos_iid = pos_iids[0]
-                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num, user_hist_dict)
+                    neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num)
                     target_lines.append(','.join([str(uid), str(pos_iid)] + neg_iids) + '\n')
         with open(target_file, 'w') as f:
             # random.shuffle(target_lines)
