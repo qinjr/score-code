@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 
 RAW_DIR = '../../score-data/Tmall/raw_data/'
 FEATENG_DIR = '../../score-data/Tmall/feateng/'
-START_MONTH = 5
+START_TIME = int(time.mktime(datetime.datetime.strptime('2015-5-1', "%Y-%m-%d").timetuple()))
+TIME_DELTA = 15 * 24 * 3600
 
 def join_user_profile(user_profile_file, behavior_file, joined_file):
     user_profile_dict = {}
@@ -38,7 +39,7 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     with open(raw_file, 'r') as f:
         lines = f.readlines()[1:]
         for line in lines:
-            uid, iid, cid, sid, bid, time_stamp, btypeid, aid, gid = line[:-1].split(',')
+            uid, iid, cid, sid, bid, date_str, btypeid, aid, gid = line[:-1].split(',')
             uid_set.add(uid)
             iid_set.add(iid)
             cid_set.add(cid)
@@ -46,7 +47,9 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
             bid_set.add(bid)
             aid_set.add(aid)
             gid_set.add(gid)
-            t_idx = int(time_stamp[:2]) - START_MONTH
+            date_str = '2015' + date_str
+            time_int = int(time.mktime(datetime.datetime.strptime(date_str, "%Y%m%d").timetuple()))
+            t_idx = (time_int - START_TIME) // TIME_DELTA
             time_idxs.append(t_idx)
 
     # remap
@@ -114,8 +117,8 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     newlines = []
     with open(raw_file, 'r') as f:
         lines = f.readlines()[1:]
-        for line in lines:
-            uid, iid, cid, sid, bid, time_stamp, btypeid, aid, gid = line[:-1].split(',')
+        for i in range(len(lines)):
+            uid, iid, cid, sid, bid, time_stamp, btypeid, aid, gid = lines[i][:-1].split(',')
             uid_remap = uid_remap_dict[uid]
             iid_remap = iid_remap_dict[iid]
             cid_remap = cid_remap_dict[cid]
@@ -123,7 +126,7 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
             bid_remap = bid_remap_dict[bid]
             aid_remap = aid_remap_dict[aid]
             gid_remap = gid_remap_dict[gid]
-            t_idx = str(int(time_stamp[:2]) - START_MONTH)
+            t_idx = time_idxs[i]
             item_feat_dict[iid_remap] = [int(cid_remap), int(sid_remap), int(bid_remap)]
             user_feat_dict[uid_remap] = [int(aid_remap), int(gid_remap)]
             newlines.append(','.join([uid_remap, iid_remap, '_', t_idx]) + '\n')
