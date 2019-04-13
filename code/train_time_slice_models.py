@@ -33,12 +33,12 @@ ITEM_NUM_CCMR = 190129
 
 # for Taobao
 OBJ_PER_TIME_SLICE_Taobao = 10
-TIME_SLICE_NUM_Taobao = 9
-START_TIME_Taobao = 0
+TIME_SLICE_NUM_Taobao = 18
+START_TIME_Taobao = 7
 FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 USER_PER_COLLECTION_Taobao = 500
-ITEM_PER_COLLECTION_Taobao = 1000
+ITEM_PER_COLLECTION_Taobao = 500
 USER_NUM_Taobao = 984105
 ITEM_NUM_Taobao = 4067842
 
@@ -303,8 +303,8 @@ if __name__ == '__main__':
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
                                 DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, \
                                 ITEM_PER_COLLECTION_Taobao]
-        target_file_train = DATA_DIR_Taobao + 'target_8_hot_train.txt'##'target_train.txt'#
-        target_file_test = DATA_DIR_Taobao + 'target_8_hot_test.txt'##'target_test_sample.txt'#
+        target_file_train = DATA_DIR_Taobao + 'target_17_hot_train.txt'##'target_train.txt'#
+        target_file_test = DATA_DIR_Taobao + 'target_17_hot_test.txt'##'target_test_sample.txt'#
         start_time = START_TIME_Taobao
         pred_time_train = 8
         pred_time_test = 8
@@ -345,7 +345,7 @@ if __name__ == '__main__':
     ################################## training hyper params ##################################
     train_batch_sizes = [100]
     lrs = [1e-3, 5e-3]
-    reg_lambdas = [5e-3]
+    reg_lambdas = [5e-4]
 
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
