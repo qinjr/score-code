@@ -257,16 +257,14 @@ class SCORE_v2(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
         super(SCORE_v2, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
-        user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei = self.co_attention_v2(self.user_1hop, self.item_2hop)
-        user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei = self.co_attention_v2(self.user_2hop, self.item_1hop)
-        # summary node
-        # tf.summary.histogram('user_1hop_wei', user_1hop_wei)
-        # tf.summary.histogram('user_2hop_wei', user_2hop_wei)
-        # tf.summary.histogram('item_1hop_wei', item_1hop_wei)
-        # tf.summary.histogram('item_2hop_wei', item_2hop_wei)
+        user_1hop_gat = self.gat(self.user_1hop, self.user_1hop, self.target_item)
+        item_1hop_gat = self.gat(self.item_1hop, self.item_1hop, self.target_user)
 
-        user_side = tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
-        item_side = tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
+        user_1hop_seq, item_2hop_seq, user_1hop_wei, item_2hop_wei = self.co_attention_v1(self.user_1hop, self.item_2hop)
+        user_2hop_seq, item_1hop_seq, user_2hop_wei, item_1hop_wei = self.co_attention_v1(self.user_2hop, self.item_1hop)
+        
+        user_side = tf.concat([user_1hop_gat, user_2hop_seq], axis=2)
+        item_side = tf.concat([item_1hop_gat, item_2hop_seq], axis=2)
 
         # RNN
         with tf.name_scope('rnn'):
@@ -280,11 +278,20 @@ class SCORE_v2(SliceBaseModel):
         # fc layer
         self.build_fc_net(inp)
         self.build_logloss()
-        # merged summary
-        # self.merged_summary = tf.summary.merge_all()
 
+    def gat(self, key, value, query):
+        # key/value: [B, T, K, D], query: [B, D]
+        key_shape = key.get_shape().as_list()
+        query = tf.expand_dims(tf.expand_dims(query, 1), 2)
+        query = tf.tile(query, [1, key_shape[1], key_shape[2], 1]) #[B, T, K, D]
+        query_key_concat = tf.concat([query, key], axis = 3)
+        atten = tf.layers.dense(query_key_concat, 1, activation=tf.nn.leaky_relu, use_bias=False) #[B, T, K, 1]
+        atten = tf.reshape(atten, [-1, key_shape[1], key_shape[2]]) #[B, T, K]
+        atten = tf.expand_dims(tf.nn.softmax(atten), 3) #[B, T, K, 1]
+        res = tf.reduce_sum(atten * value, axis=2)
+        return res
 
-    def co_attention_v2(self, seq1, seq2):
+    def co_attention_v1(self, seq1, seq2):
         seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False)
         seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], use_bias=False)
         seq2 = tf.layers.dense(seq2, seq2.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False)
