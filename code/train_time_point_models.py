@@ -208,7 +208,7 @@ if __name__ == '__main__':
         max_time_len = MAX_LEN_CCMR
         user_fnum = 1 
         item_fnum = 5
-        eval_iter_num = 3300
+        eval_iter_num = 6600
     elif data_set == 'taobao':
         target_file_train = DATA_DIR_Taobao + 'target_8_hot_train.txt'##'target_train.txt'#
         target_file_test = DATA_DIR_Taobao + 'target_8_hot_test.txt'##'target_test_sample.txt'#

@@ -10,7 +10,7 @@ FEATENG_DIR = '../../score-data/Taobao/feateng/'
 
 START_TIME = int(time.mktime(datetime.datetime.strptime('2017-11-25', "%Y-%m-%d").timetuple()))
 END_TIME = int(time.mktime(datetime.datetime.strptime('2017-12-04', "%Y-%m-%d").timetuple()))
-TIME_DELTA = 24 * 3600
+TIME_DELTA = 12 * 3600
 
 # filtering and time to index and remap ids and plot distribution
 def preprocess_raw_data(in_file, out_file_filtered, out_file_remaped, plt_file, remap_dict_file, item_feat_dict_file):
