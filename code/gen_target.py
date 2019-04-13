@@ -40,9 +40,9 @@ USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
 USER_PER_COLLECTION_Tmall = 200
 ITEM_PER_COLLECTION_Tmall = 250
-START_TIME_Tmall = 0
+START_TIME_Tmall = int(time.mktime(datetime.datetime.strptime('2015-5-1', "%Y-%m-%d").timetuple()))
 START_TIME_IDX_Tmall = 0
-TIME_DELTA_Tmall = 0
+TIME_DELTA_Tmall = 15
 
 
 class TargetGen(object):
@@ -209,7 +209,7 @@ class TargetGen(object):
         with open(item_hist_dict_file, 'wb') as f:
             pkl.dump(item_hist_dict_sort, f)
 
-    def gen_user_item_hist_dict_tmall(self, hist_file, user_hist_dict_file, item_hist_dict_file, remap_dict_file, pred_time=6):
+    def gen_user_item_hist_dict_tmall(self, hist_file, user_hist_dict_file, item_hist_dict_file, remap_dict_file, pred_time):
         user_hist_dict = {}
         item_hist_dict = {}
         
@@ -225,20 +225,20 @@ class TargetGen(object):
                 uid = uid_remap_dict[uid]
                 iid = iid_remap_dict[iid]
 
-                timestamp = int(time.mktime(datetime.datetime.strptime('2015'+date, "%Y%m%d").timetuple()))
-                time_idx = int(date[:2]) - 5
+                time_int = int(time.mktime(datetime.datetime.strptime('2015'+date, "%Y%m%d").timetuple()))
+                time_idx = int((time_int - self.start_time) / (SECONDS_PER_DAY * self.time_delta))
                 if int(time_idx) < self.start_time_idx:
                     continue
                 if int(time_idx) >= pred_time:
                     continue
                 if uid not in user_hist_dict:
-                    user_hist_dict[uid] = [(iid, timestamp)]
+                    user_hist_dict[uid] = [(iid, time_int)]
                 else:
-                    user_hist_dict[uid].append((iid, timestamp))
+                    user_hist_dict[uid].append((iid, time_int))
                 if iid not in item_hist_dict:
-                    item_hist_dict[iid] = [(uid, timestamp)]
+                    item_hist_dict[iid] = [(uid, time_int)]
                 else:
-                    item_hist_dict[iid].append((uid, timestamp))
+                    item_hist_dict[iid].append((uid, time_int))
             print('dicts construct completed')
 
         # sort by time
@@ -283,14 +283,14 @@ class TargetGen(object):
 
 if __name__ == '__main__':
     # CCMR
-    tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr_1hop', user_num = USER_NUM_CCMR,
-                item_num = ITEM_NUM_CCMR, user_per_collection = USER_PER_COLLECTION_CCMR,
-                item_per_collection = ITEM_PER_COLLECTION_CCMR, start_time = START_TIME_CCMR, 
-                start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
+    # tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr_1hop', user_num = USER_NUM_CCMR,
+    #             item_num = ITEM_NUM_CCMR, user_per_collection = USER_PER_COLLECTION_CCMR,
+    #             item_per_collection = ITEM_PER_COLLECTION_CCMR, start_time = START_TIME_CCMR, 
+    #             start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
     
-    # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', DATA_DIR_CCMR + 'item_hist_dict_40.pkl', 40)
-    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40)
-    tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl')
+    # # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', DATA_DIR_CCMR + 'item_hist_dict_40.pkl', 40)
+    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40)
+    # tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl')
     
     # # Taobao
     # tg = TargetGen(None, 'taobao_1hop', user_num = USER_NUM_Taobao,
@@ -302,12 +302,12 @@ if __name__ == '__main__':
     # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8)
     # tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
 
-    # Tmall
-    # tg = TargetGen(None, 'tmall_1hop', user_num = USER_NUM_Tmall,
-    #             item_num = ITEM_NUM_Tmall, user_per_collection = USER_PER_COLLECTION_Tmall,
-    #             item_per_collection = ITEM_PER_COLLECTION_Tmall, start_time = START_TIME_Tmall, 
-    #             start_time_idx = START_TIME_IDX_Tmall, time_delta = TIME_DELTA_Tmall)
+    Tmall
+    tg = TargetGen(None, 'tmall_1hop', user_num = USER_NUM_Tmall,
+                item_num = ITEM_NUM_Tmall, user_per_collection = USER_PER_COLLECTION_Tmall,
+                item_per_collection = ITEM_PER_COLLECTION_Tmall, start_time = START_TIME_Tmall, 
+                start_time_idx = START_TIME_IDX_Tmall, time_delta = TIME_DELTA_Tmall)
     
-    # tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_6.pkl', DATA_DIR_Tmall + 'item_hist_dict_6.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 6)
-    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_6.txt', 6)
-    # tg.filter_target_file(DATA_DIR_Tmall + 'target_6.txt', DATA_DIR_Tmall + 'target_6_hot.txt', DATA_DIR_Tmall + 'target_6_cold.txt', DATA_DIR_Tmall + 'user_hist_dict_6.pkl')
+    tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_12.pkl', DATA_DIR_Tmall + 'item_hist_dict_12.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 12)
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_12.txt', 12)
+    tg.filter_target_file(DATA_DIR_Tmall + 'target_12.txt', DATA_DIR_Tmall + 'target_12_hot.txt', DATA_DIR_Tmall + 'target_12_cold.txt', DATA_DIR_Tmall + 'user_hist_dict_12.pkl')
