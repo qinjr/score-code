@@ -279,7 +279,7 @@ class SCORE_v2(SliceBaseModel):
         self.build_fc_net(inp)
         self.build_logloss()
     
-    def lrelu(x, alpha=0.2):
+    def lrelu(self, x, alpha=0.2):
         return tf.nn.relu(x) - alpha * tf.nn.relu(-x)
 
     def gat(self, key, value, query):
