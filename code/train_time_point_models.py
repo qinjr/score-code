@@ -161,7 +161,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                     test_losses.append(test_loss)
 
                     print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
-                    if test_losses[-1] > max(test_losses[:-1]):
+                    if test_losses[-1] < min(test_losses[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
@@ -186,8 +186,8 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
             f.write('Result Test AUC: {}\n'.format(test_aucs[index]))
             f.write('Result Test Logloss: {}\n'.format(test_loglosses[index]))
             f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs[index]))
-
         return 
+        
 if __name__ == '__main__':
     if len(sys.argv) < 4:
         print("PLEASE INPUT [MODEL TYPE] [GPU] [DATASET]")
@@ -248,9 +248,9 @@ if __name__ == '__main__':
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
             for reg_lambda in reg_lambdas:
-                # test_auc, test_logloss, test_ndcg = train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
-                #                                         user_feat_dict_file, item_feat_dict_file, model_type, train_batch_size, feature_size, 
-                #                                         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
+                train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
+                                                        user_feat_dict_file, item_feat_dict_file, model_type, train_batch_size, feature_size, 
+                                                        EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
                 
                 restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file, item_feat_dict_file,
                     model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
