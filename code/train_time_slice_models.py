@@ -241,7 +241,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     # if model_type == 'SCORE':
                     #     write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, step)
                     print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
-                    if test_aucs[-1] > max(test_aucs[:-1]):
+                    if test_losses[-1] < min(test_losses[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
@@ -262,11 +262,12 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
             dump_tuple = (train_losses, test_losses, test_loglosses, test_aucs, test_ndcgs)
             pkl.dump(dump_tuple, f)
         with open('logs_{}/{}.result'.format(data_set, logname), 'w') as f:
-            f.write('Result Test AUC: {}\n'.format(max(test_aucs)))
-            f.write('Result Test Logloss: {}\n'.format(test_loglosses[np.argmax(test_aucs)]))
-            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs[np.argmax(test_aucs)]))
+            index = np.argmin(test_losses)
+            f.write('Result Test AUC: {}\n'.format(test_aucs[index]))
+            f.write('Result Test Logloss: {}\n'.format(test_loglosses[index]))
+            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs[index]))
 
-        return max(test_aucs), test_loglosses[np.argmax(test_aucs)], test_ndcgs[np.argmax(test_aucs)]
+        return 
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
@@ -343,8 +344,8 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     train_batch_sizes = [100]
-    lrs = [1e-4, 5e-3, 1e-3]
-    reg_lambdas = [0]
+    lrs = [1e-3, 5e-3]
+    reg_lambdas = [5e-3]
 
     for train_batch_size in train_batch_sizes:
         for lr in lrs:

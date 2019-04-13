@@ -182,12 +182,12 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
             dump_tuple = (train_losses, test_losses, test_loglosses, test_aucs, test_ndcgs)
             pkl.dump(dump_tuple, f)
         with open('logs_{}/{}.result'.format(data_set, logname), 'w') as f:
-            f.write('Result Test AUC: {}\n'.format(max(test_aucs)))
-            f.write('Result Test Logloss: {}\n'.format(test_loglosses[np.argmax(test_aucs)]))
-            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs[np.argmax(test_aucs)]))
+            index = np.argmin(test_losses)
+            f.write('Result Test AUC: {}\n'.format(test_aucs[index]))
+            f.write('Result Test Logloss: {}\n'.format(test_loglosses[index]))
+            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs[index]))
 
-        return max(test_aucs), test_loglosses[np.argmax(test_aucs)], test_ndcgs[np.argmax(test_aucs)]
-
+        return 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
         print("PLEASE INPUT [MODEL TYPE] [GPU] [DATASET]")
@@ -241,8 +241,9 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     train_batch_sizes = [100]
-    lrs = [1e-4, 5e-3, 1e-3]
-    reg_lambdas = [0]
+    lrs = [1e-3, 5e-3]
+    reg_lambdas = [5e-3]
+
 
     for train_batch_size in train_batch_sizes:
         for lr in lrs:

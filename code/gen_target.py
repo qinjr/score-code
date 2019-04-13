@@ -77,7 +77,7 @@ class TargetGen(object):
         self.start_time_idx = start_time_idx
         self.time_delta = time_delta
 
-    def gen_user_neg_items(self, uid, neg_sample_num, start_iid, end_iid, user_hist_dict):
+    def gen_user_neg_items(self, uid, neg_sample_num, start_iid, end_iid):
         if str(uid) in self.user_neg_dict:
             user_neg_list = self.user_neg_dict[str(uid)]
         else:
@@ -86,23 +86,12 @@ class TargetGen(object):
         if len(user_neg_list) >= neg_sample_num:
             return user_neg_list[:neg_sample_num]
         else:
-            if str(uid) in user_hist_dict:
-                user_hist_list = list(set(user_hist_dict[str(uid)]))
-                if len(user_hist_list) >= neg_sample_num - len(user_neg_list):
-                    user_neg_list += user_hist_list[:(neg_sample_num - len(user_neg_list))]
-                else:
-                    user_neg_list += user_hist_list
-                    for i in range(neg_sample_num - len(user_neg_list)):
-                        user_neg_list.append(str(random.randint(start_iid, end_iid)))
-            else:
-                for i in range(neg_sample_num - len(user_neg_list)):
-                    user_neg_list.append(str(random.randint(start_iid, end_iid)))
+            for i in range(neg_sample_num - len(user_neg_list)):
+                user_neg_list.append(str(random.randint(start_iid, end_iid)))
             return user_neg_list
 
-    def gen_target_file(self, neg_sample_num, target_file, pred_time, user_hist_dict_file):
+    def gen_target_file(self, neg_sample_num, target_file, pred_time):
         target_lines = []
-        with open(user_hist_dict_file, 'rb') as f:
-            user_hist_dict = pkl.load(f)
         for user_coll in self.user_colls:
             cursor = user_coll.find({})
             for user_doc in cursor:
@@ -300,7 +289,7 @@ if __name__ == '__main__':
                 start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
     
     # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', DATA_DIR_CCMR + 'item_hist_dict_40.pkl', 40)
-    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40, DATA_DIR_CCMR + 'user_hist_dict_40.pkl')
+    tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40)
     tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl')
     
     # # Taobao
@@ -310,7 +299,7 @@ if __name__ == '__main__':
     #             start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
 
     # # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', DATA_DIR_Taobao + 'item_hist_dict_8.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 8)
-    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8, DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
+    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8)
     # tg.filter_target_file(DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'target_8_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl')
 
     # Tmall
@@ -320,5 +309,5 @@ if __name__ == '__main__':
     #             start_time_idx = START_TIME_IDX_Tmall, time_delta = TIME_DELTA_Tmall)
     
     # tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_6.pkl', DATA_DIR_Tmall + 'item_hist_dict_6.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 6)
-    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_6.txt', 6, DATA_DIR_Tmall + 'user_hist_dict_6.pkl')
+    # tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_6.txt', 6)
     # tg.filter_target_file(DATA_DIR_Tmall + 'target_6.txt', DATA_DIR_Tmall + 'target_6_hot.txt', DATA_DIR_Tmall + 'target_6_cold.txt', DATA_DIR_Tmall + 'user_hist_dict_6.pkl')
