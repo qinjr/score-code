@@ -41,7 +41,7 @@ MAX_1HOP_Tmall = 30
 MAX_2HOP_Tmall = 30
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
-TIME_SLICE_NUM_Tmall = 7
+TIME_SLICE_NUM_Tmall = 14
 
 
 class GraphStore(object):
