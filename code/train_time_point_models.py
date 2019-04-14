@@ -223,8 +223,8 @@ if __name__ == '__main__':
         item_fnum = 2
         eval_iter_num = 14000
     elif data_set == 'tmall':
-        target_file_train = DATA_DIR_Tmall + 'target_6_hot_train.txt'##'target_train.txt'#
-        target_file_test = DATA_DIR_Tmall + 'target_6_hot_test.txt'##'target_test_sample.txt'#
+        target_file_train = DATA_DIR_Tmall + 'target_12_hot_train.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_12_hot_test.txt'
         user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq.txt'
         user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq.txt'
         user_feat_dict_file = DATA_DIR_Tmall + 'user_feat_dict.pkl'
