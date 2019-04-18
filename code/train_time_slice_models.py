@@ -23,7 +23,7 @@ WORKER_SUMMARY = 1
 # for CCMR
 OBJ_PER_TIME_SLICE_CCMR = 10
 TIME_SLICE_NUM_CCMR = 41
-START_TIME_CCMR = 30
+START_TIME_CCMR = 0
 FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION_CCMR = 1000
@@ -68,14 +68,11 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('is')
-    elif model_type == 'SCORE_1HOP': 
-        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
-    elif model_type == 'RRN_AVG': 
-        model = RRN_AVG(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
     elif model_type == 'SCORE_v2': 
         model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('is')
+    elif model_type == 'SCORE_v3': 
+        model = SCORE_v3(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
@@ -164,14 +161,11 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('is')
-    elif model_type == 'SCORE_1HOP': 
-        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
-    elif model_type == 'RRN_AVG': 
-        model = RRN_AVG(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
     elif model_type == 'SCORE_v2': 
         model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        graph_handler_params.append('is')
+    elif model_type == 'SCORE_v3': 
+        model = SCORE_v3(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
