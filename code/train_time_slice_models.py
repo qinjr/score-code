@@ -290,7 +290,7 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
         user_fnum = 1 
         item_fnum = 5
-        eval_iter_num = 6600
+        eval_iter_num = 6800
     elif data_set == 'taobao':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
