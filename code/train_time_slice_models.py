@@ -172,7 +172,7 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
         ndcg = get_ndcg(preds, target_iids)
         print("EVAL TIME: %.4fs" % (time.time() - t))
         return logloss, auc, ndcg, loss
-    else mode == 'restore':
+    elif mode == 'restore':
         ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
         print("EVAL TIME: %.4fs" % (time.time() - t))
         return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss

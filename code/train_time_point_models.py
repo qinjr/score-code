@@ -109,7 +109,7 @@ def get_ranking_quality(preds, target_iids):
     return np.mean(ndcg_5_val), np.mean(ndcg_10_val), np.mean(hr_1_val), np.mean(hr_5_val), np.mean(hr_10_val), np.mean(mrr_val)
 
 
-def eval(model, sess, target_file, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file, user_feat_dict_file, item_feat_dict_file):
+def eval(model, sess, target_file, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file, user_feat_dict_file, item_feat_dict_file, mode = 'train'):
     preds = []
     labels = []
     target_iids = []
@@ -125,10 +125,15 @@ def eval(model, sess, target_file, max_time_len, user_fnum, item_fnum, reg_lambd
         target_iids += np.array(batch_data[3])[:,0].tolist()
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
-    ndcg = get_ndcg(preds, target_iids)
     loss = sum(losses) / len(losses)
-    print("EVAL TIME: %.4fs" % (time.time() - t))
-    return logloss, auc, ndcg, loss
+    if mode == 'train':
+        ndcg = get_ndcg(preds, target_iids)
+        print("EVAL TIME: %.4fs" % (time.time() - t))
+        return logloss, auc, ndcg, loss
+    elif mode == 'restore':
+        ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
+        print("EVAL TIME: %.4fs" % (time.time() - t))
+        return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
 
 def train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
         user_feat_dict_file, item_feat_dict_file, model_type, train_batch_size, feature_size, 
