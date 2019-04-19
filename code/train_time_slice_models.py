@@ -318,8 +318,8 @@ if __name__ == '__main__':
                                 DATA_DIR_Tmall + 'user_feat_dict.pkl', \
                                 DATA_DIR_Tmall + 'item_feat_dict.pkl', USER_PER_COLLECTION_Tmall, \
                                 ITEM_PER_COLLECTION_Tmall]
-        target_file_train = DATA_DIR_Tmall + 'target_10_hot_train.txt'
-        target_file_test = DATA_DIR_Tmall + 'target_11_hot_test.txt'
+        target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_11_hot.txt'
         start_time = START_TIME_Tmall
         pred_time_train = 10
         pred_time_test = 11
