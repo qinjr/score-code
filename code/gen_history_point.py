@@ -69,10 +69,10 @@ if __name__ == "__main__":
     # gen_item_hist_seq_file(DATA_DIR_Taobao + 'target_17_hot_test.txt', DATA_DIR_Taobao + 'test_item_hist_seq.txt', DATA_DIR_Taobao + 'item_hist_dict_17.pkl', MAX_LEN_Taobao)
 
     # Tmall
-    gen_user_hist_seq_file(DATA_DIR_Tmall + 'target_11_hot_train.txt', DATA_DIR_Tmall + 'train_user_hist_seq_11.txt', DATA_DIR_Tmall + 'user_hist_dict_11.pkl', MAX_LEN_Tmall)
-    gen_user_hist_seq_file(DATA_DIR_Tmall + 'target_11_hot_test.txt', DATA_DIR_Tmall + 'test_user_hist_seq_11.txt', DATA_DIR_Tmall + 'user_hist_dict_11.pkl', MAX_LEN_Tmall)
+    gen_user_hist_seq_file(DATA_DIR_Tmall + 'target_10_hot.txt', DATA_DIR_Tmall + 'train_user_hist_seq_10.txt', DATA_DIR_Tmall + 'user_hist_dict_10.pkl', MAX_LEN_Tmall)
+    gen_user_hist_seq_file(DATA_DIR_Tmall + 'target_11_hot.txt', DATA_DIR_Tmall + 'test_user_hist_seq_11.txt', DATA_DIR_Tmall + 'user_hist_dict_11.pkl', MAX_LEN_Tmall)
 
-    gen_item_hist_seq_file(DATA_DIR_Tmall + 'target_11_hot_train.txt', DATA_DIR_Tmall + 'train_item_hist_seq_11.txt', DATA_DIR_Tmall + 'item_hist_dict_11.pkl', MAX_LEN_Tmall)
-    gen_item_hist_seq_file(DATA_DIR_Tmall + 'target_11_hot_test.txt', DATA_DIR_Tmall + 'test_item_hist_seq_11.txt', DATA_DIR_Tmall + 'item_hist_dict_11.pkl', MAX_LEN_Tmall)
+    gen_item_hist_seq_file(DATA_DIR_Tmall + 'target_10_hot.txt', DATA_DIR_Tmall + 'train_item_hist_seq_10.txt', DATA_DIR_Tmall + 'item_hist_dict_10.pkl', MAX_LEN_Tmall)
+    gen_item_hist_seq_file(DATA_DIR_Tmall + 'target_11_hot.txt', DATA_DIR_Tmall + 'test_item_hist_seq_11.txt', DATA_DIR_Tmall + 'item_hist_dict_11.pkl', MAX_LEN_Tmall)
 
 
