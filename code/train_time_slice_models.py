@@ -359,11 +359,11 @@ if __name__ == '__main__':
                                 DATA_DIR_Tmall + 'user_feat_dict.pkl', \
                                 DATA_DIR_Tmall + 'item_feat_dict.pkl', USER_PER_COLLECTION_Tmall, \
                                 ITEM_PER_COLLECTION_Tmall]
-        target_file_train = DATA_DIR_Tmall + 'target_12_hot_train.txt'
-        target_file_test = DATA_DIR_Tmall + 'target_12_hot_test.txt'
+        target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_11_hot.txt'
         start_time = START_TIME_Tmall
-        pred_time_train = 12
-        pred_time_test = 12
+        pred_time_train = 10
+        pred_time_test = 11
         user_feat_dict_file = DATA_DIR_Tmall + 'user_feat_dict.pkl'
         item_feat_dict_file = DATA_DIR_Tmall + 'item_feat_dict.pkl'
         # model parameter
@@ -372,7 +372,7 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
         user_fnum = 3 
         item_fnum = 4
-        eval_iter_num = 6200
+        eval_iter_num = 4400
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
