@@ -53,16 +53,10 @@ def restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        logloss, auc, ndcg, loss = eval(model, sess, target_file_test, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file_test, user_feat_dict_file, item_feat_dict_file)
+        logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, 'restore')
         p = 1. / (1 + NEG_SAMPLE_NUM)
         rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
-        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f' % (loss, logloss, rig, auc, ndcg))
-
-def getNDCG(ranklist, target_item):
-    for i in range(len(ranklist)):
-        if ranklist[i] == target_item:
-            return math.log(2) / math.log(i + 2)
-    return 0
+        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, logloss, rig, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
 
 def get_ndcg(preds, target_iids):
     preds = np.array(preds).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
@@ -71,8 +65,49 @@ def get_ndcg(preds, target_iids):
     ndcg_val = []
     for i in range(len(preds)):
         ranklist = list(reversed(np.take(target_iids[i], np.argsort(preds[i]))))
-        ndcg_val.append(getNDCG(ranklist, pos_iids[i]))
+        ndcg_val.append(getNDCG_at_K(ranklist, pos_iids[i], 5))
     return np.mean(ndcg_val)
+
+def getNDCG_at_K(ranklist, target_item, k):
+    for i in range(k):
+        if ranklist[i] == target_item:
+            return math.log(2) / math.log(i + 2)
+    return 0
+
+def getHR_at_K(ranklist, target_item, k):
+    if target_item in ranklist[:k]:
+        return 1
+    else:
+        return 0
+
+def getMRR(ranklist, target_item):
+    for i in range(len(ranklist)):
+        if ranklist[i] == target_item:
+            return 1. / (i+1)
+    return 0
+
+def get_ranking_quality(preds, target_iids):
+    preds = np.array(preds).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
+    target_iids = np.array(target_iids).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
+    pos_iids = np.array(target_iids).reshape(-1, NEG_SAMPLE_NUM + 1)[:,0].flatten().tolist()
+    ndcg_5_val = []
+    ndcg_10_val = []
+    hr_1_val = []
+    hr_5_val = []
+    hr_10_val = []
+    mrr_val = []
+
+    for i in range(len(preds)):
+        ranklist = list(reversed(np.take(target_iids[i], np.argsort(preds[i]))))
+        target_item = pos_iids[i]
+        ndcg_5_val.append(getNDCG_at_K(ranklist, target_item, 5))
+        ndcg_10_val.append(getNDCG_at_K(ranklist, target_item, 10))
+        hr_1_val.append(getHR_at_K(ranklist, target_item, 1))
+        hr_5_val.append(getHR_at_K(ranklist, target_item, 5))
+        hr_10_val.append(getHR_at_K(ranklist, target_item, 10))
+        mrr_val.append(getMRR(ranklist, target_item))
+    return np.mean(ndcg_5_val), np.mean(ndcg_10_val), np.mean(hr_1_val), np.mean(hr_5_val), np.mean(hr_10_val), np.mean(mrr_val)
+
 
 def eval(model, sess, target_file, max_time_len, user_fnum, item_fnum, reg_lambda, user_seq_file, user_feat_dict_file, item_feat_dict_file):
     preds = []
@@ -134,7 +169,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         test_ndcgs.append(test_ndcg)
         test_losses.append(test_loss)
 
-        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
+        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
         early_stop = False
 
         # begin training process
@@ -160,7 +195,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                     test_ndcgs.append(test_ndcg)
                     test_losses.append(test_loss)
 
-                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
+                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
                     if test_losses[-1] < min(test_losses[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
@@ -185,7 +220,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
             index = np.argmin(test_losses)
             f.write('Result Test AUC: {}\n'.format(test_aucs[index]))
             f.write('Result Test Logloss: {}\n'.format(test_loglosses[index]))
-            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs[index]))
+            f.write('Result Test NDCG@5: {}\n'.format(test_ndcgs[index]))
         return 
         
 if __name__ == '__main__':
@@ -248,9 +283,9 @@ if __name__ == '__main__':
     for train_batch_size in train_batch_sizes:
         for lr in lrs:
             for reg_lambda in reg_lambdas:
-                train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
-                                                        user_feat_dict_file, item_feat_dict_file, model_type, train_batch_size, feature_size, 
-                                                        EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
+                # train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
+                #                                         user_feat_dict_file, item_feat_dict_file, model_type, train_batch_size, feature_size, 
+                #                                         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
                 
                 restore(data_set, target_file_test, user_seq_file_test, user_feat_dict_file, item_feat_dict_file,
                     model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 

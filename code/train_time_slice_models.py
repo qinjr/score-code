@@ -83,16 +83,10 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        logloss, auc, ndcg, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+        logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, 'restore')
         p = 1. / (1 + NEG_SAMPLE_NUM)
         rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
-        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f' % (loss, logloss, rig, auc, ndcg))
-
-def getNDCG(ranklist, target_item):
-    for i in range(len(ranklist)):
-        if ranklist[i] == target_item:
-            return math.log(2) / math.log(i + 2)
-    return 0
+        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, logloss, rig, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
 
 def get_ndcg(preds, target_iids):
     preds = np.array(preds).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
@@ -101,7 +95,7 @@ def get_ndcg(preds, target_iids):
     ndcg_val = []
     for i in range(len(preds)):
         ranklist = list(reversed(np.take(target_iids[i], np.argsort(preds[i]))))
-        ndcg_val.append(getNDCG(ranklist, pos_iids[i]))
+        ndcg_val.append(getNDCG_at_K(ranklist, pos_iids[i], 5))
     return np.mean(ndcg_val)
 
 def getNDCG_at_K(ranklist, target_item, k):
@@ -155,7 +149,7 @@ def print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_we
     print(item_2hop_wei[0])
 
 def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
-        user_feat_dict_file, item_feat_dict_file):
+        user_feat_dict_file, item_feat_dict_file, mode = 'train'):
     preds = []
     labels = []
     target_iids = []
@@ -173,11 +167,17 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
         # print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
-    ndcg = get_ndcg(preds, target_iids)
-    # ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
     loss = sum(losses) / len(losses)
-    print("EVAL TIME: %.4fs" % (time.time() - t))
-    return logloss, auc, ndcg, loss
+    if mode == 'train':
+        ndcg = get_ndcg(preds, target_iids)
+        print("EVAL TIME: %.4fs" % (time.time() - t))
+        return logloss, auc, ndcg, loss
+    else mode == 'restore':
+        ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
+        print("EVAL TIME: %.4fs" % (time.time() - t))
+        return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
+    
+    
 
 def write_summary(model, sess, writer, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
                 user_feat_dict_file, item_feat_dict_file, step):
@@ -244,7 +244,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         test_ndcgs.append(test_ndcg)
         test_losses.append(test_loss)
 
-        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
+        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
         early_stop = False
 
         # begin training process
@@ -275,7 +275,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     test_losses.append(test_loss)
                     # if model_type == 'SCORE':
                     #     write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, step)
-                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@10 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
+                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
                     if test_losses[-1] < min(test_losses[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
@@ -300,7 +300,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
             index = np.argmin(test_losses)
             f.write('Result Test AUC: {}\n'.format(test_aucs[index]))
             f.write('Result Test Logloss: {}\n'.format(test_loglosses[index]))
-            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs[index]))
+            f.write('Result Test NDCG@5: {}\n'.format(test_ndcgs[index]))
 
         return 
 
