@@ -364,14 +364,14 @@ if __name__ == '__main__':
         start_time = START_TIME_Tmall
         pred_time_train = 10
         pred_time_test = 11
-        user_feat_dict_file = DATA_DIR_Tmall + 'user_feat_dict.pkl'
-        item_feat_dict_file = DATA_DIR_Tmall + 'item_feat_dict.pkl'
+        user_feat_dict_file = None#DATA_DIR_Tmall + 'user_feat_dict.pkl'
+        item_feat_dict_file = None#DATA_DIR_Tmall + 'item_feat_dict.pkl'
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
-        user_fnum = 3 
-        item_fnum = 4
+        user_fnum = 1#3 
+        item_fnum = 1#4
         eval_iter_num = 4400
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
