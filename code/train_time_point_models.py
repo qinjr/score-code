@@ -267,13 +267,13 @@ if __name__ == '__main__':
         target_file_test = DATA_DIR_Tmall + 'target_11_hot.txt'
         user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_10.txt'
         user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_11.txt'
-        user_feat_dict_file = DATA_DIR_Tmall + 'user_feat_dict.pkl'
-        item_feat_dict_file = DATA_DIR_Tmall + 'item_feat_dict.pkl'
+        user_feat_dict_file = None#DATA_DIR_Tmall + 'user_feat_dict.pkl'
+        item_feat_dict_file = None#DATA_DIR_Tmall + 'item_feat_dict.pkl'
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = MAX_LEN_Tmall
-        user_fnum = 3 
-        item_fnum = 4
+        user_fnum = 1#3 
+        item_fnum = 1#4
         eval_iter_num = 4400
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
