@@ -237,18 +237,18 @@ if __name__ == '__main__':
     data_set = sys.argv[3]
 
     if data_set == 'ccmr':
-        target_file_train = DATA_DIR_CCMR + 'target_40_hot_train.txt'##'target_train.txt'#
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot_test.txt'##'target_test_sample.txt'#
-        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq.txt'
-        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot.txt'
+        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39.txt'
+        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40.txt'
         user_feat_dict_file = None
-        item_feat_dict_file = DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
+        item_feat_dict_file = None#DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
         user_fnum = 1 
-        item_fnum = 5
-        eval_iter_num = 6600
+        item_fnum = 1
+        eval_iter_num = 10400
     elif data_set == 'taobao':
         target_file_train = DATA_DIR_Taobao + 'target_17_hot_train.txt'##'target_train.txt'#
         target_file_test = DATA_DIR_Taobao + 'target_17_hot_test.txt'##'target_test_sample.txt'#

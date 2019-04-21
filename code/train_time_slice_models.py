@@ -315,23 +315,23 @@ if __name__ == '__main__':
     if data_set == 'ccmr':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
-                                USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 5, START_TIME_CCMR, None, \
+                                USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 1, START_TIME_CCMR, None, \
                                 DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR,
                                 ITEM_PER_COLLECTION_CCMR]
-        target_file_train = DATA_DIR_CCMR + 'target_40_hot_train.txt'##'target_train.txt'#
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot_test.txt'##'target_test_sample.txt'#
+        target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot.txt'
         start_time = START_TIME_CCMR
-        pred_time_train = 40#39
+        pred_time_train = 39
         pred_time_test = 40
         user_feat_dict_file = None
-        item_feat_dict_file = DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
+        item_feat_dict_file = None#DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
         user_fnum = 1 
-        item_fnum = 5
-        eval_iter_num = 6800
+        item_fnum = 1#5
+        eval_iter_num = 10400
     elif data_set == 'taobao':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
