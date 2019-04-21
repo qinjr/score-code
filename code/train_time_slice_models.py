@@ -157,7 +157,10 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
 
     graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file, WORKER_N)
     t = time.time()
+    i = 1
     for batch_data in graph_loader:
+        print(i)
+        i += 1
         pred, label, loss = model.eval(sess, batch_data, reg_lambda)
         preds += pred
         labels += label
