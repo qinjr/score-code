@@ -319,8 +319,8 @@ if __name__ == '__main__':
                                 #DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
                                 USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR]
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
         start_time = START_TIME_CCMR
         pred_time_train = 39
         pred_time_test = 40

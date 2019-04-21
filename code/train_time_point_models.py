@@ -237,10 +237,10 @@ if __name__ == '__main__':
     data_set = sys.argv[3]
 
     if data_set == 'ccmr':
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot.txt'
-        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39.txt'
-        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
+        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39_sample.txt'
+        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt'
         user_feat_dict_file = None
         item_feat_dict_file = None#DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
         # model parameter
