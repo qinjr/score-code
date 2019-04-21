@@ -315,8 +315,9 @@ if __name__ == '__main__':
     if data_set == 'ccmr':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
-                                USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 1, START_TIME_CCMR, None, \
-                                DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', USER_PER_COLLECTION_CCMR,
+                                USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 1, START_TIME_CCMR, None, None\
+                                #DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
+                                USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR]
         target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
         target_file_test = DATA_DIR_CCMR + 'target_40_hot.txt'
