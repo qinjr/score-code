@@ -124,7 +124,7 @@ class GraphStore(object):
 
         for line in self.rating_file:
             uid, iid, rating, t_idx = line[:-1].split(',')
-            if rating >= 4:
+            if int(rating) >= 4:
                 list_of_user_doc_list[(int(uid) - 1) // self.user_per_collection][(int(uid) - 1) % self.user_per_collection]['1hop_pos'][int(t_idx)].append(int(iid))
                 list_of_item_doc_list[(int(iid) - self.user_num - 1) // self.item_per_collection][(int(iid) - self.user_num - 1) % self.item_per_collection]['1hop_pos'][int(t_idx)].append(int(uid))
             else:
