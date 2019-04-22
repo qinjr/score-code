@@ -399,6 +399,9 @@ if __name__ == "__main__":
                 max_1hop = MAX_1HOP_CCMR, max_2hop = MAX_2HOP_CCMR, user_num = USER_NUM_CCMR,
                 item_num = ITEM_NUM_CCMR, db_1hop = 'ccmr_1hop', db_2hop = 'ccmr_2hop',
                 time_slice_num = TIME_SLICE_NUM_CCMR)
+    gs.construct_coll_1hop()
+    gs.construct_coll_2hop()
+    gs.cal_stat()
     
     # # For Taobao
     # gs = GraphStore(DATA_DIR_Taobao + 'remaped_user_behavior.txt', user_per_collection = USER_PER_COLLECTION_Taobao, 
