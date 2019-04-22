@@ -16,9 +16,9 @@ SECONDS_PER_DAY = 24 * 3600
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION_CCMR = 1000
 ITEM_PER_COLLECTION_CCMR = 100
-START_TIME_CCMR = 30
-MAX_1HOP_CCMR = 30
-MAX_2HOP_CCMR = 30
+START_TIME_CCMR = 0
+MAX_1HOP_CCMR = 50
+MAX_2HOP_CCMR = 50
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 TIME_SLICE_NUM_CCMR = 41
@@ -27,7 +27,7 @@ TIME_SLICE_NUM_CCMR = 41
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 500
-START_TIME_Taobao = 7
+START_TIME_Taobao = 0
 MAX_1HOP_Taobao = 30
 MAX_2HOP_Taobao = 30
 USER_NUM_Taobao = 984105
@@ -393,12 +393,12 @@ class GraphStore(object):
 
 
 if __name__ == "__main__":
-    # # For CCMR
-    # gs = GraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', user_per_collection = USER_PER_COLLECTION_CCMR, 
-    #             item_per_collection = ITEM_PER_COLLECTION_CCMR,  start_time = START_TIME_CCMR,   
-    #             max_1hop = MAX_1HOP_CCMR, max_2hop = MAX_2HOP_CCMR, user_num = USER_NUM_CCMR,
-    #             item_num = ITEM_NUM_CCMR, db_1hop = 'ccmr_1hop', db_2hop = 'ccmr_2hop',
-    #             time_slice_num = TIME_SLICE_NUM_CCMR)
+    # For CCMR
+    gs = GraphStore(DATA_DIR_CCMR + 'remap_rating_idx.csv', user_per_collection = USER_PER_COLLECTION_CCMR, 
+                item_per_collection = ITEM_PER_COLLECTION_CCMR,  start_time = START_TIME_CCMR,   
+                max_1hop = MAX_1HOP_CCMR, max_2hop = MAX_2HOP_CCMR, user_num = USER_NUM_CCMR,
+                item_num = ITEM_NUM_CCMR, db_1hop = 'ccmr_1hop', db_2hop = 'ccmr_2hop',
+                time_slice_num = TIME_SLICE_NUM_CCMR)
     
     # # For Taobao
     # gs = GraphStore(DATA_DIR_Taobao + 'remaped_user_behavior.txt', user_per_collection = USER_PER_COLLECTION_Taobao, 
@@ -420,12 +420,12 @@ if __name__ == "__main__":
     # gs.construct_coll_2hop()
     # gs.cal_stat()
 
-    # For ML
-    gs = GraphStore(DATA_DIR_ML + 'remaped_ratings.txt', user_per_collection = USER_PER_COLLECTION_ML, 
-                item_per_collection = ITEM_PER_COLLECTION_ML,  start_time = START_TIME_ML,   
-                max_1hop = MAX_1HOP_ML, max_2hop = MAX_2HOP_ML, user_num = USER_NUM_ML,
-                item_num = ITEM_NUM_ML, db_1hop = 'ml_1hop', db_2hop = 'ml_2hop',
-                time_slice_num = TIME_SLICE_NUM_ML)
-    gs.construct_coll_1hop()
-    gs.construct_coll_2hop()
-    gs.cal_stat()
+    # # For ML
+    # gs = GraphStore(DATA_DIR_ML + 'remaped_ratings.txt', user_per_collection = USER_PER_COLLECTION_ML, 
+    #             item_per_collection = ITEM_PER_COLLECTION_ML,  start_time = START_TIME_ML,   
+    #             max_1hop = MAX_1HOP_ML, max_2hop = MAX_2HOP_ML, user_num = USER_NUM_ML,
+    #             item_num = ITEM_NUM_ML, db_1hop = 'ml_1hop', db_2hop = 'ml_2hop',
+    #             time_slice_num = TIME_SLICE_NUM_ML)
+    # gs.construct_coll_1hop()
+    # gs.construct_coll_2hop()
+    # gs.cal_stat()
