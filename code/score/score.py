@@ -160,8 +160,8 @@ class SCOREBASE(object):
 
 class SCORE(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
+                obj_per_time_slice, neg_sample_num = NEG_SAMPLE_NUM):
+        super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, neg_sample_num)
         # co-attention graph aggregator
         user_1hop_seq_pos, item_2hop_seq_pos, self.user_1hop_wei_pos, self.item_2hop_wei_pos = self.co_attention(self.user_1hop_pos, self.item_2hop_pos)
         user_2hop_seq_pos, item_1hop_seq_pos, self.user_2hop_wei_pos, self.item_1hop_wei_pos = self.co_attention(self.user_2hop_pos, self.item_1hop_pos)

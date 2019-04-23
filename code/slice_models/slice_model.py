@@ -138,8 +138,8 @@ class SliceBaseModel(object):
 
 class RRN(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
+                obj_per_time_slice, neg_sample_num = NEG_SAMPLE_NUM):
+        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, neg_sample_num)
         user_side = tf.reduce_sum(self.user_1hop, axis=2)
         item_side = tf.reduce_sum(self.item_1hop, axis=2)
 
@@ -158,8 +158,8 @@ class RRN(SliceBaseModel):
 
 class GCMC(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice, user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(GCMC, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum, neg_sample_num)
+                obj_per_time_slice, neg_sample_num = NEG_SAMPLE_NUM):
+        super(GCMC, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, neg_sample_num)
 
         user_1hop_li = tf.layers.dense(self.user_1hop, self.user_1hop.get_shape().as_list()[-1], activation=None, use_bias=False)
         item_1hop_li = tf.layers.dense(self.item_1hop, self.item_1hop.get_shape().as_list()[-1], activation=None, use_bias=False)
