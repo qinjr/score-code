@@ -95,7 +95,7 @@ class GraphHandler(object):
         # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
         for i in range(self.start_time, pred_time):
-            user_1hop_t, user_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
+            user_1hop_t, user_2hop_t = self.gen_node_neighbor(start_node_doc, i)
             user_1hop.append(user_1hop_t)
             user_2hop.append(user_2hop_t)
         for i in range(self.time_slice_num - pred_time - 1):
@@ -109,7 +109,7 @@ class GraphHandler(object):
         # t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // self.item_per_collection].find({'iid':start_iid})[0]
         for i in range(self.start_time, pred_time):
-            item_1hop_t, item_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
+            item_1hop_t, item_2hop_t = self.gen_node_neighbor(start_node_doc, i)
             item_1hop.append(item_1hop_t)
             item_2hop.append(item_2hop_t)
         for i in range(self.time_slice_num - pred_time - 1):
