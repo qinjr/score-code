@@ -5,6 +5,7 @@ import time
 import numpy as np
 import multiprocessing
 import datetime
+import sys
 
 NEG_SAMPLE_NUM = 9
 SECONDS_PER_DAY = 24*3600
