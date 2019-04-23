@@ -59,10 +59,10 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     print('restore begin')
     graph_handler_params = graph_handler_params
     if model_type == 'RRN': 
-        model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
         graph_handler_params.append('is')
     elif model_type == 'GCMC': 
-        model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
         graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
@@ -160,9 +160,9 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         eb_dim, hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size):
     graph_handler_params = graph_handler_params
     if model_type == 'RRN': 
-        model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     elif model_type == 'GCMC': 
-        model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+        model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
