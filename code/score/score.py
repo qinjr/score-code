@@ -36,8 +36,8 @@ class SCOREBASE(object):
             # lr
             self.lr = tf.placeholder(tf.float32, [])
             # lambda and mu
-            self.reg_lambda = tf.placeholder(tf.float32, [])
-            self.mu = tf.placeholder(tf.float32, [])
+            self.reg_lambda = tf.placeholder(tf.float32, [], name='lambda')
+            self.mu = tf.placeholder(tf.float32, [], name='mu')
             # keep prob
             self.keep_prob = tf.placeholder(tf.float32, [])
         
