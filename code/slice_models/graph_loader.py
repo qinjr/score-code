@@ -88,7 +88,7 @@ class GraphHandler(object):
                 result.append(node_2hop_list)
         else:
             result.append(self.dummy_node)
-
+        return result
 
     def gen_user_history(self, start_uid, pred_time):
         user_1hop, user_2hop = [], []

@@ -111,6 +111,7 @@ class GraphHandler(object):
             result.append(node_2hop_list_neg)
         else:
             result.append(self.dummy_node)
+        return result
     
     def gen_node_neighbor_rs(self, start_node_doc, time_slice):
         node_1hop_list_pos = start_node_doc['1hop_pos'][time_slice]
