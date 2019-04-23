@@ -62,7 +62,8 @@ class GraphHandler(object):
 
         self.user_colls = [self.db['user_%d'%(i)] for i in range(user_coll_num)]
         self.item_colls = [self.db['item_%d'%(i)] for i in range(item_coll_num)]
-
+        self.dummy_node = np.zeros(self.obj_per_time_slice).tolist()
+        
     def gen_node_neighbor(self, start_node_doc, time_slice):
         node_1hop_list = start_node_doc['1hop_pos'][time_slice]
         node_2hop_list = start_node_doc['2hop_pos'][time_slice]
