@@ -54,9 +54,8 @@ ITEM_NUM_CCMR = 190129
 # ITEM_NUM_Tmall = 1090390
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
-        pred_time_test, user_feat_dict_file, item_feat_dict_file,
-        model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
-        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda):
+        pred_time_test, model_type, train_batch_size, feature_size, 
+        eb_dim, hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda):
     print('restore begin')
     graph_handler_params = graph_handler_params
     if model_type == 'RRN': 
@@ -74,7 +73,7 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, 'restore')
+        logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, 'restore')
         p = 1. / (1 + NEG_SAMPLE_NUM)
         rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
         print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, logloss, rig, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
@@ -130,13 +129,13 @@ def get_ranking_quality(preds, target_iids):
     return np.mean(ndcg_5_val), np.mean(ndcg_10_val), np.mean(hr_1_val), np.mean(hr_5_val), np.mean(hr_10_val), np.mean(mrr_val)
 
 def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
-        user_feat_dict_file, item_feat_dict_file, mode = 'train'):
+        mode = 'train'):
     preds = []
     labels = []
     target_iids = []
     losses = []
 
-    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file, WORKER_N)
+    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, WORKER_N)
     t = time.time()
     for batch_data in graph_loader:
         pred, label, loss = model.eval(sess, batch_data, reg_lambda)
@@ -157,9 +156,8 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
         return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
 
 def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-        pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-        model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
-        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, dataset_size):
+        pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
+        eb_dim, hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size):
     graph_handler_params = graph_handler_params
     if model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
@@ -187,7 +185,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
-        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
         test_loglosses.append(test_logloss)
         test_aucs.append(test_auc)
         test_ndcgs.append(test_ndcg)
@@ -200,7 +198,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         for epoch in range(5):
             if early_stop:
                 break
-            graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, user_feat_dict_file, item_feat_dict_file, WORKER_N)
+            graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, WORKER_N)
             for batch_data in graph_loader:
                 if early_stop:
                     break
@@ -212,7 +210,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     train_loss = sum(train_losses_step) / len(train_losses_step)
                     train_losses.append(train_loss)
                     train_losses_step = []
-                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file)
+                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
 
                     test_loglosses.append(test_logloss)
                     test_aucs.append(test_auc)
@@ -324,11 +322,11 @@ if __name__ == '__main__':
     for hyper in hyper_paras:
         train_batch_size, lr = hyper_paras[0]
         train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-                                        pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                                        model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                                        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, dataset_size)
+            pred_time_train, pred_time_test, model_type, train_batch_size, 
+            feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
+            obj_per_time_slice, lr, reg_lambda, dataset_size)
         
         restore(data_set, target_file_test, graph_handler_params, start_time,
-                pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda)
+                pred_time_test, model_type, train_batch_size, feature_size, 
+                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
+                lr, reg_lambda)
