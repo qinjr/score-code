@@ -203,7 +203,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     train_loss = sum(train_losses_step) / len(train_losses_step)
                     train_losses.append(train_loss)
                     train_losses_step = []
-                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
 
                     test_loglosses.append(test_logloss)
                     test_aucs.append(test_auc)

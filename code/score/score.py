@@ -107,7 +107,7 @@ class SCOREBASE(object):
                 self.length_ph : batch_data[11],
                 self.lr : lr,
                 self.reg_lambda : reg_lambda,
-                self.reg_lambda : mu,
+                self.mu : mu,
                 self.keep_prob : 0.8
             })
         return loss
@@ -127,7 +127,7 @@ class SCOREBASE(object):
                 self.label_ph : batch_data[10],
                 self.length_ph : batch_data[11],
                 self.reg_lambda : reg_lambda,
-                self.reg_lambda : mu,
+                self.mu : mu,
                 self.keep_prob : 1.
             })
         
