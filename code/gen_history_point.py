@@ -53,10 +53,17 @@ def gen_item_hist_seq_file(in_file, out_file, item_hist_dict_file, max_len):
 
 
 if __name__ == "__main__":
-    # CCMR
-    gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_39_hot.txt', DATA_DIR_CCMR + 'train_user_hist_seq_39.txt', DATA_DIR_CCMR + 'user_hist_dict_39.pkl', MAX_LEN_CCMR)
-    gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'test_user_hist_seq_40.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', MAX_LEN_CCMR)
-    
+    if len(sys.argv) < 2:
+        print("PLEASE INPUT [MODEL TYPE] [GPU] [DATASET]")
+        sys.exit(0)
+    dataset = sys.argv[1]
+    if dataset == 'CCMR':
+        # CCMR
+        gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_39_hot_sample.txt', DATA_DIR_CCMR + 'train_user_hist_seq_39_sample.txt', DATA_DIR_CCMR + 'user_hist_dict_39.pkl', MAX_LEN_CCMR)
+        gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot_sample.txt', DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', MAX_LEN_CCMR)
+    else:
+        print('WRONG DATASET: {}'.format(dataset))
+
     # # Taobao
     # gen_user_hist_seq_file(DATA_DIR_Taobao + 'target_17_hot_train.txt', DATA_DIR_Taobao + 'train_user_hist_seq.txt', DATA_DIR_Taobao + 'user_hist_dict_17.pkl', MAX_LEN_Taobao)
     # gen_user_hist_seq_file(DATA_DIR_Taobao + 'target_17_hot_test.txt', DATA_DIR_Taobao + 'test_user_hist_seq.txt', DATA_DIR_Taobao + 'user_hist_dict_17.pkl', MAX_LEN_Taobao)
