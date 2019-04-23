@@ -153,7 +153,7 @@ class GraphHandler(object):
             result.append(node_2hop_list_neg)
         else:
             result.append(self.dummy_node)
-         return result
+        return result
 
     def gen_user_history(self, start_uid, pred_time):
         user_1hop_pos, user_1hop_neg, user_2hop_pos, user_2hop_neg = [], [], [], []
