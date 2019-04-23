@@ -31,27 +31,27 @@ ITEM_PER_COLLECTION_CCMR = 100
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
-# for Taobao
-OBJ_PER_TIME_SLICE_Taobao = 10
-TIME_SLICE_NUM_Taobao = 18
-START_TIME_Taobao = 7
-FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
-DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
-USER_PER_COLLECTION_Taobao = 500
-ITEM_PER_COLLECTION_Taobao = 500
-USER_NUM_Taobao = 984105
-ITEM_NUM_Taobao = 4067842
+# # for Taobao
+# OBJ_PER_TIME_SLICE_Taobao = 10
+# TIME_SLICE_NUM_Taobao = 18
+# START_TIME_Taobao = 7
+# FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
+# DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+# USER_PER_COLLECTION_Taobao = 500
+# ITEM_PER_COLLECTION_Taobao = 500
+# USER_NUM_Taobao = 984105
+# ITEM_NUM_Taobao = 4067842
 
-# for Tmall
-OBJ_PER_TIME_SLICE_Tmall = 10
-TIME_SLICE_NUM_Tmall = 13
-START_TIME_Tmall = 0
-FEAT_SIZE_Tmall = 1529672
-DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
-USER_PER_COLLECTION_Tmall = 200
-ITEM_PER_COLLECTION_Tmall = 250
-USER_NUM_Tmall = 424170
-ITEM_NUM_Tmall = 1090390
+# # for Tmall
+# OBJ_PER_TIME_SLICE_Tmall = 10
+# TIME_SLICE_NUM_Tmall = 13
+# START_TIME_Tmall = 0
+# FEAT_SIZE_Tmall = 1529672
+# DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
+# USER_PER_COLLECTION_Tmall = 200
+# ITEM_PER_COLLECTION_Tmall = 250
+# USER_NUM_Tmall = 424170
+# ITEM_NUM_Tmall = 1090390
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, user_feat_dict_file, item_feat_dict_file,
@@ -59,20 +59,11 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
         obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda):
     print('restore begin')
     graph_handler_params = graph_handler_params
-    if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
-    elif model_type == 'RRN': 
+    if model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('is')
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
-    elif model_type == 'SCORE_v2': 
-        model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
-    elif model_type == 'SCORE_v3': 
-        model = SCORE_v3(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
@@ -138,16 +129,6 @@ def get_ranking_quality(preds, target_iids):
         mrr_val.append(getMRR(ranklist, target_item))
     return np.mean(ndcg_5_val), np.mean(ndcg_10_val), np.mean(hr_1_val), np.mean(hr_5_val), np.mean(hr_10_val), np.mean(mrr_val)
 
-def print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei):
-    print('----------user_1hop_wei----------')
-    print(user_1hop_wei[0])
-    print('----------user_2hop_wei----------')
-    print(user_2hop_wei[0])
-    print('----------item_1hop_wei----------')
-    print(item_1hop_wei[0])
-    print('----------item_2hop_wei----------')
-    print(item_2hop_wei[0])
-
 def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
         user_feat_dict_file, item_feat_dict_file, mode = 'train'):
     preds = []
@@ -163,8 +144,6 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
         labels += label
         losses.append(loss)
         target_iids += np.array(batch_data[5])[:,0].tolist()
-        # user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = model.get_co_attention(sess, batch_data)
-        # print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     loss = sum(losses) / len(losses)
@@ -176,38 +155,16 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
         ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
         print("EVAL TIME: %.4fs" % (time.time() - t))
         return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
-    
-    
-
-def write_summary(model, sess, writer, graph_handler_params, target_file, start_time, pred_time, reg_lambda, 
-                user_feat_dict_file, item_feat_dict_file, step):
-    graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, user_feat_dict_file, item_feat_dict_file, WORKER_SUMMARY)
-    for batch_data in graph_loader:
-        summary = model.summary(sess, batch_data, reg_lambda)
-        writer.add_summary(summary, step)
-        break
-    graph_loader.stop()
 
 def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
         pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
-        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num):
+        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, dataset_size):
     graph_handler_params = graph_handler_params
-    if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
-    elif model_type == 'RRN': 
+    if model_type == 'RRN': 
         model = RRN(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
     elif model_type == 'GCMC': 
         model = GCMC(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
-    elif model_type == 'SCORE_v2': 
-        model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
-    elif model_type == 'SCORE_v3': 
-        model = SCORE_v3(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -217,14 +174,6 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
     # training process
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        if model_type == 'SCORE':
-            tf_summary_dir = 'tf_summary_score/{}/'.format(data_set)
-            if not os.path.exists(tf_summary_dir):
-                os.makedirs(tf_summary_dir)
-            merged = tf.summary.merge_all()
-            train_writer = tf.summary.FileWriter(tf_summary_dir + 'train')
-            test_writer = tf.summary.FileWriter(tf_summary_dir + 'test')
-
         sess.run(tf.global_variables_initializer())
         sess.run(tf.local_variables_initializer())
 
@@ -246,7 +195,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
         early_stop = False
-
+        eval_iter_num = (dataset_size // 5) // (train_batch_size / 10)
         # begin training process
         for epoch in range(5):
             if early_stop:
@@ -259,10 +208,6 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 loss = model.train(sess, batch_data, lr, reg_lambda)
                 step += 1
                 train_losses_step.append(loss)
-                # print co-attention weights
-                # if step >= 7000:
-                #     user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei = model.get_co_attention(sess, batch_data)
-                #     print_co_attention(user_1hop_wei, user_2hop_wei, item_1hop_wei, item_2hop_wei)
                 if step % eval_iter_num == 0:
                     train_loss = sum(train_losses_step) / len(train_losses_step)
                     train_losses.append(train_loss)
@@ -273,8 +218,6 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     test_aucs.append(test_auc)
                     test_ndcgs.append(test_ndcg)
                     test_losses.append(test_loss)
-                    # if model_type == 'SCORE':
-                    #     write_summary(model, sess, test_writer, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, user_feat_dict_file, item_feat_dict_file, step)
                     print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
                     if test_losses[-1] < min(test_losses[:-1]):
                         # save model
@@ -291,17 +234,16 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         # generate log
         if not os.path.exists('logs_{}/'.format(data_set)):
             os.makedirs('logs_{}/'.format(data_set))
-        logname = '{}_{}_{}.pkl'.format(model_type, lr, reg_lambda)
+        model_name = '{}_{}_{}'.format(model_type, lr, reg_lambda)
 
-        with open('logs_{}/{}'.format(data_set, logname), 'wb') as f:
+        with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
             dump_tuple = (train_losses, test_losses, test_loglosses, test_aucs, test_ndcgs)
             pkl.dump(dump_tuple, f)
-        with open('logs_{}/{}.result'.format(data_set, logname), 'w') as f:
+        with open('logs_{}/{}.result'.format(data_set, model_name), 'w') as f:
             index = np.argmin(test_losses)
             f.write('Result Test AUC: {}\n'.format(test_aucs[index]))
             f.write('Result Test Logloss: {}\n'.format(test_loglosses[index]))
             f.write('Result Test NDCG@5: {}\n'.format(test_ndcgs[index]))
-
         return 
 
 if __name__ == '__main__':
@@ -315,8 +257,7 @@ if __name__ == '__main__':
     if data_set == 'ccmr':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
-                                USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 1, START_TIME_CCMR, None, None, \
-                                #DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 
+                                USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
                                 USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR]
         target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
@@ -324,75 +265,70 @@ if __name__ == '__main__':
         start_time = START_TIME_CCMR
         pred_time_train = 39
         pred_time_test = 40
-        user_feat_dict_file = None
-        item_feat_dict_file = None#DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
-        user_fnum = 1 
-        item_fnum = 1#5
-        eval_iter_num = 2800
-    elif data_set == 'taobao':
-        # graph loader
-        graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
-                                USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
-                                DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, \
-                                ITEM_PER_COLLECTION_Taobao]
-        target_file_train = DATA_DIR_Taobao + 'target_17_hot_train.txt'##'target_train.txt'#
-        target_file_test = DATA_DIR_Taobao + 'target_17_hot_test.txt'##'target_test_sample.txt'#
-        start_time = START_TIME_Taobao
-        pred_time_train = 8
-        pred_time_test = 8
-        user_feat_dict_file = None
-        item_feat_dict_file = DATA_DIR_Taobao + 'item_feat_dict.pkl'
-        # model parameter
-        feature_size = FEAT_SIZE_Taobao
-        max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
-        obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
-        user_fnum = 1 
-        item_fnum = 2
-        eval_iter_num = 14000
-    elif data_set == 'tmall':
-        # graph loader
-        graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
-                                USER_NUM_Tmall, ITEM_NUM_Tmall, 1, 1, START_TIME_Tmall, \
-                                None, #DATA_DIR_Tmall + 'user_feat_dict.pkl', \
-                                None, #DATA_DIR_Tmall + 'item_feat_dict.pkl', \
-                                USER_PER_COLLECTION_Tmall, \
-                                ITEM_PER_COLLECTION_Tmall]
-        target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
-        target_file_test = DATA_DIR_Tmall + 'target_11_hot.txt'
-        start_time = START_TIME_Tmall
-        pred_time_train = 10
-        pred_time_test = 11
-        user_feat_dict_file = None#DATA_DIR_Tmall + 'user_feat_dict.pkl'
-        item_feat_dict_file = None#DATA_DIR_Tmall + 'item_feat_dict.pkl'
-        # model parameter
-        feature_size = FEAT_SIZE_Tmall
-        max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
-        obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
-        user_fnum = 1#3 
-        item_fnum = 1#4
-        eval_iter_num = 4400
+        dataset_size = 140000
+    # elif data_set == 'taobao':
+    #     # graph loader
+    #     graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
+    #                             USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
+    #                             DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, \
+    #                             ITEM_PER_COLLECTION_Taobao]
+    #     target_file_train = DATA_DIR_Taobao + 'target_17_hot_train.txt'##'target_train.txt'#
+    #     target_file_test = DATA_DIR_Taobao + 'target_17_hot_test.txt'##'target_test_sample.txt'#
+    #     start_time = START_TIME_Taobao
+    #     pred_time_train = 8
+    #     pred_time_test = 8
+    #     user_feat_dict_file = None
+    #     item_feat_dict_file = DATA_DIR_Taobao + 'item_feat_dict.pkl'
+    #     # model parameter
+    #     feature_size = FEAT_SIZE_Taobao
+    #     max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
+    #     obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
+    #     user_fnum = 1 
+    #     item_fnum = 2
+    #     eval_iter_num = 14000
+    # elif data_set == 'tmall':
+    #     # graph loader
+    #     graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
+    #                             USER_NUM_Tmall, ITEM_NUM_Tmall, 1, 1, START_TIME_Tmall, \
+    #                             None, #DATA_DIR_Tmall + 'user_feat_dict.pkl', \
+    #                             None, #DATA_DIR_Tmall + 'item_feat_dict.pkl', \
+    #                             USER_PER_COLLECTION_Tmall, \
+    #                             ITEM_PER_COLLECTION_Tmall]
+    #     target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
+    #     target_file_test = DATA_DIR_Tmall + 'target_11_hot.txt'
+    #     start_time = START_TIME_Tmall
+    #     pred_time_train = 10
+    #     pred_time_test = 11
+    #     user_feat_dict_file = None#DATA_DIR_Tmall + 'user_feat_dict.pkl'
+    #     item_feat_dict_file = None#DATA_DIR_Tmall + 'item_feat_dict.pkl'
+    #     # model parameter
+    #     feature_size = FEAT_SIZE_Tmall
+    #     max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
+    #     obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
+    #     user_fnum = 1#3 
+    #     item_fnum = 1#4
+    #     eval_iter_num = 4400
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
 
     ################################## training hyper params ##################################
-    train_batch_sizes = [100]
-    lrs = [1e-4, 5e-4]
-    reg_lambdas = [5e-4]
+    reg_lambda = 5e-4
+    mu = 5e-2
+    hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
-    for train_batch_size in train_batch_sizes:
-        for lr in lrs:
-            for reg_lambda in reg_lambdas:
-                train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-                                                pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                                                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                                                obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
-                
-                restore(data_set, target_file_test, graph_handler_params, start_time,
-                        pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                        model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda)
+    for hyper in hyper_paras:
+        train_batch_size, lr = hyper_paras[0]
+        train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
+                                        pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
+                                        model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
+                                        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, dataset_size)
+        
+        restore(data_set, target_file_test, graph_handler_params, start_time,
+                pred_time_test, user_feat_dict_file, item_feat_dict_file,
+                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
+                obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda)

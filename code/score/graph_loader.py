@@ -112,7 +112,7 @@ class GraphHandler(object):
         else:
             result.append(self.dummy_node)
     
-    def gen_node_neighbor_rs(self, start_node_doc, node_type, time_slice):
+    def gen_node_neighbor_rs(self, start_node_doc, time_slice):
         node_1hop_list_pos = start_node_doc['1hop_pos'][time_slice]
         node_1hop_list_neg = start_node_doc['1hop_neg'][time_slice]
         node_2hop_list_pos = start_node_doc['2hop_pos'][time_slice]
@@ -161,9 +161,9 @@ class GraphHandler(object):
         start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
         for i in range(self.start_time, pred_time):
             if self.mode == 'is':
-                user_1hop_t_pos, user_1hop_t_neg, user_2hop_t_pos, user_2hop_t_neg = self.gen_node_neighbor_is(start_node_doc, 'user', i)
+                user_1hop_t_pos, user_1hop_t_neg, user_2hop_t_pos, user_2hop_t_neg = self.gen_node_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
-                user_1hop_t_pos, user_1hop_t_neg, user_2hop_t_pos, user_2hop_t_neg = self.gen_node_neighbor_rs(start_node_doc, 'user', i)
+                user_1hop_t_pos, user_1hop_t_neg, user_2hop_t_pos, user_2hop_t_neg = self.gen_node_neighbor_rs(start_node_doc, i)
             else:
                 print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
             user_1hop_pos.append(user_1hop_t_pos)
@@ -185,9 +185,9 @@ class GraphHandler(object):
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // self.item_per_collection].find({'iid':start_iid})[0]
         for i in range(self.start_time, pred_time):
             if self.mode == 'is':
-                item_1hop_t_pos, item_1hop_t_neg, item_2hop_t_pos, item_2hop_t_neg = self.gen_node_neighbor_is(start_node_doc, 'item', i)
+                item_1hop_t_pos, item_1hop_t_neg, item_2hop_t_pos, item_2hop_t_neg = self.gen_node_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
-                item_1hop_t_pos, item_1hop_t_neg, item_2hop_t_pos, item_2hop_t_neg = self.gen_node_neighbor_rs(start_node_doc, 'item', i)
+                item_1hop_t_pos, item_1hop_t_neg, item_2hop_t_pos, item_2hop_t_neg = self.gen_node_neighbor_rs(start_node_doc, i)
             else:
                 print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
             item_1hop_pos.append(item_1hop_t_pos)

@@ -60,7 +60,6 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -159,7 +158,6 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
     graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-        graph_handler_params.append('is')
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -235,7 +233,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
             dump_tuple = (train_losses, test_losses, test_loglosses, test_aucs, test_ndcgs)
             pkl.dump(dump_tuple, f)
-        with open('logs_{}/{}.result'.format(data_set, logname), 'w') as f:
+        with open('logs_{}/{}.result'.format(data_set, model_name), 'w') as f:
             index = np.argmin(test_losses)
             f.write('Result Test AUC: {}\n'.format(test_aucs[index]))
             f.write('Result Test Logloss: {}\n'.format(test_loglosses[index]))
@@ -253,9 +251,9 @@ if __name__ == '__main__':
     if data_set == 'ccmr':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
-                                USER_NUM_CCMR, ITEM_NUM_CCMR, 1, 1, START_TIME_CCMR, \
+                                USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
                                 USER_PER_COLLECTION_CCMR, \
-                                ITEM_PER_COLLECTION_CCMR]
+                                ITEM_PER_COLLECTION_CCMR, 'is']
         target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
         target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
         start_time = START_TIME_CCMR
@@ -265,7 +263,7 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_CCMR
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
-        dataset_size = 28000
+        dataset_size = 140000
     # elif data_set == 'taobao':
     #     # graph loader
     #     graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
@@ -315,17 +313,16 @@ if __name__ == '__main__':
     ################################## training hyper params ##################################
     reg_lambda = 5e-4
     mu = 5e-2
-    hyper_para = [(100, 5e-4), (200, 1e-3)]
+    hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
-    for train_batch_size in train_batch_sizes:
-        for lr in lrs:
-            for reg_lambda in reg_lambdas:
-                train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-                                                pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                                                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                                                obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, eval_iter_num)
-                
-                restore(data_set, target_file_test, graph_handler_params, start_time,
-                        pred_time_test, user_feat_dict_file, item_feat_dict_file,
-                        model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-                        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda)
+    for hyper in hyper_paras:
+        train_batch_size, lr = hyper_paras[0]
+        train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
+                                        pred_time_train, pred_time_test, user_feat_dict_file, item_feat_dict_file,
+                                        model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
+                                        obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, mu, dataset_size)
+        
+        restore(data_set, target_file_test, graph_handler_params, start_time,
+                pred_time_test, user_feat_dict_file, item_feat_dict_file,
+                model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
+                obj_per_time_slice, user_fnum, item_fnum, lr, reg_lambda, mu)
