@@ -66,7 +66,7 @@ class GraphHandler(object):
         
         self.dummy_node = np.zeros(self.obj_per_time_slice).tolist()
 
-    def gen_node_neighbor_is(self, start_node_doc, node_type, time_slice):
+    def gen_node_neighbor_is(self, start_node_doc, time_slice):
         node_1hop_list_pos = start_node_doc['1hop_pos'][time_slice]
         node_1hop_list_neg = start_node_doc['1hop_neg'][time_slice]
         node_2hop_list_pos = start_node_doc['2hop_pos'][time_slice]
