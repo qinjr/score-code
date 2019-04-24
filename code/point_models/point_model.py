@@ -142,7 +142,7 @@ class Caser(PointBaseModel):
         with tf.name_scope('user_seq_cnn'):
             # horizontal filters
             filters_user = 32
-            h_kernel_size_user = [8, item_fnum * eb_dim]
+            h_kernel_size_user = [8, eb_dim]
             v_kernel_size_user = [self.user_seq.get_shape().as_list()[1], 1]
 
             self.user_seq = tf.expand_dims(self.user_seq, 3)
@@ -152,8 +152,8 @@ class Caser(PointBaseModel):
 
             # vertical
             conv2 = tf.layers.conv2d(self.user_seq, filters_user, v_kernel_size_user)
-            conv2 = tf.reshape(conv2, [-1, item_fnum * eb_dim, filters_user])
-            user_vert_out = tf.reshape(tf.layers.dense(conv2, 1), [-1, item_fnum * eb_dim])
+            conv2 = tf.reshape(conv2, [-1, eb_dim, filters_user])
+            user_vert_out = tf.reshape(tf.layers.dense(conv2, 1), [-1, eb_dim])
 
             inp = tf.concat([user_hori_out, user_vert_out, self.target_item, self.target_user], axis=1)
 

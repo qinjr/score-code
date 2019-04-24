@@ -266,16 +266,16 @@ if __name__ == '__main__':
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
                                 USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR, 'is']
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_40_hot_train.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot_test.txt'
         start_time = START_TIME_CCMR
-        pred_time_train = 39
+        pred_time_train = 40
         pred_time_test = 40
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
-        dataset_size = 200000
+        dataset_size = 300000
     # elif data_set == 'taobao':
     #     # graph loader
     #     graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
@@ -328,7 +328,7 @@ if __name__ == '__main__':
     hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:
-        train_batch_size, lr = hyper_paras[0]
+        train_batch_size, lr = hyper
         train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
                 pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
                 EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, mu, dataset_size)
