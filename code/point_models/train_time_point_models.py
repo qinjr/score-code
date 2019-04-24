@@ -237,10 +237,10 @@ if __name__ == '__main__':
     data_set = sys.argv[3]
 
     if data_set == 'ccmr':
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot.txt'
-        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39.txt'
-        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
+        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39_sample.txt'
+        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
