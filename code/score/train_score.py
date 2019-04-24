@@ -68,10 +68,10 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu, 'restore')
+        logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss, aux_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu, 'restore')
         p = 1. / (1 + NEG_SAMPLE_NUM)
         rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
-        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, logloss, rig, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
+        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUX_LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, logloss, aux_loss, rig, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
 
 def get_ndcg(preds, target_iids):
     preds = np.array(preds).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
@@ -129,26 +129,29 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time,
     labels = []
     target_iids = []
     losses = []
+    aux_losses = []
 
     graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, WORKER_N)
     t = time.time()
     for batch_data in graph_loader:
-        pred, label, loss = model.eval(sess, batch_data, reg_lambda, mu)
+        pred, label, loss, aux_loss = model.eval(sess, batch_data, reg_lambda, mu)
         preds += pred
         labels += label
         losses.append(loss)
+        aux_losses(aux_loss)
         target_iids += np.array(batch_data[9]).tolist()
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     loss = sum(losses) / len(losses)
+    aux_loss = sum(aux_losses) / len(aux_losses)
     if mode == 'train':
         ndcg = get_ndcg(preds, target_iids)
         print("EVAL TIME: %.4fs" % (time.time() - t))
-        return logloss, auc, ndcg, loss
+        return logloss, auc, ndcg, loss, aux_loss
     elif mode == 'restore':
         ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
         print("EVAL TIME: %.4fs" % (time.time() - t))
-        return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
+        return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss, aux_loss
     
 def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
         pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
@@ -169,22 +172,27 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         sess.run(tf.local_variables_initializer())
 
         train_losses_step = []
-        
+        train_aux_losses_step = []
+
         train_losses = []
+        train_aux_losses = []
+
         test_loglosses = []
+        test_aux_losses = []
         test_aucs = []
         test_ndcgs = []
         test_losses = []
 
         # before training process
         step = 0
-        # test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
+        # test_logloss, test_auc, test_ndcg, test_loss, test_aux_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
         # test_loglosses.append(test_logloss)
         # test_aucs.append(test_auc)
         # test_ndcgs.append(test_ndcg)
         # test_losses.append(test_loss)
+        # test_aux_losses.append(test_aux_loss)
 
-        # print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
+        # print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUX_LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_aux_loss, test_auc, test_ndcg))
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / 10)
         # begin training process
@@ -196,22 +204,28 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 if early_stop:
                     break
 
-                loss, prod = model.train(sess, batch_data, lr, reg_lambda, mu)
-                print(prod)
+                loss, aux_loss = model.train(sess, batch_data, lr, reg_lambda, mu)
+                print(loss, aux_loss)
                 step += 1
                 train_losses_step.append(loss)
+                train_aux_losses_step.append(aux_loss)
                 if step % eval_iter_num == 0:
                     train_loss = sum(train_losses_step) / len(train_losses_step)
+                    train_aux_loss = sum(train_aux_losses_step) / len(train_aux_losses_step)
                     train_losses.append(train_loss)
+                    train_aux_losses.append(train_aux_loss)
                     train_losses_step = []
-                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
+                    train_aux_losses_step = []
+
+                    test_logloss, test_auc, test_ndcg, test_loss, test_aux_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
 
                     test_loglosses.append(test_logloss)
                     test_aucs.append(test_auc)
                     test_ndcgs.append(test_ndcg)
                     test_losses.append(test_loss)
+                    test_aux_losses.append(test_aux_loss)
                     
-                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
+                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUX_LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_aux_loss, test_auc, test_ndcg))
                     if test_losses[-1] < min(test_losses[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda, mu)
@@ -230,7 +244,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         model_name = '{}_{}_{}_{}'.format(model_type, lr, reg_lambda, mu)
 
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
-            dump_tuple = (train_losses, test_losses, test_loglosses, test_aucs, test_ndcgs)
+            dump_tuple = (train_losses, train_aux_losses, test_losses, test_loglosses, test_aux_losses, test_aucs, test_ndcgs)
             pkl.dump(dump_tuple, f)
         with open('logs_{}/{}.result'.format(data_set, model_name), 'w') as f:
             index = np.argmin(test_losses)
@@ -311,7 +325,7 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     reg_lambda = 5e-4
-    mu = 1e-8
+    mu = 1e-2
     hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:
