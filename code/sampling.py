@@ -12,7 +12,6 @@ DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
 
 def sample_files(target_file, user_seq_file, sample_target_file, sample_user_seq_file,
                 sample_factor):
-    print('hh')
     target_lines = open(target_file).readlines()
     user_seq_lines = open(user_seq_file).readlines()
 
@@ -20,7 +19,6 @@ def sample_files(target_file, user_seq_file, sample_target_file, sample_user_seq
     sample_user_seq_lines = []
     
     length = len(target_lines)
-    print(length)
     for i in range(length):
         rand_int = random.randint(1, sample_factor)
         if rand_int == 1:
@@ -31,8 +29,7 @@ def sample_files(target_file, user_seq_file, sample_target_file, sample_user_seq
     with open(sample_user_seq_file, 'w') as f:
         f.writelines(sample_user_seq_lines)
 
-
-if __name__ == 'main':
+if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("PLEASE INPUT [DATASET]")
         sys.exit(0)
