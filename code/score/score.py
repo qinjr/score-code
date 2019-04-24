@@ -187,8 +187,8 @@ class SCORE(SCOREBASE):
         # build loss
         self.build_logloss()
         self.build_l2norm()
-        self.prod = tf.reduce_sum(user_side_pos * user_side_neg, axis=2)
-        self.loss += self.mu * -tf.reduce_mean(tf.log(1 - tf.sigmoid(tf.reduce_sum(user_side_pos * user_side_neg, axis=2))))
-        self.loss += self.mu * -tf.reduce_mean(tf.log(1 - tf.sigmoid(tf.reduce_sum(item_side_pos * item_side_neg, axis=2))))
+        self.prod = tf.reduce_sum(user_side_pos * user_side_neg / tf.norm(user_side_pos, 2) / tf.norm(user_side_neg, 2), axis=2)
+        self.loss += self.mu * -tf.reduce_mean(tf.log(1 - tf.sigmoid(tf.reduce_sum(user_side_pos * user_side_neg / tf.norm(user_side_pos, 2) / tf.norm(user_side_neg, 2), axis=2))))
+        self.loss += self.mu * -tf.reduce_mean(tf.log(1 - tf.sigmoid(tf.reduce_sum(item_side_pos * item_side_neg / tf.norm(item_side_pos, 2) / tf.norm(item_side_neg, 2), axis=2))))
         self.build_train_step()
         
