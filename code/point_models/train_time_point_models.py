@@ -122,7 +122,7 @@ def eval(model, sess, target_file, max_time_len, reg_lambda, user_seq_file, mode
         preds += pred
         labels += label
         losses.append(loss)
-        target_iids += np.array(batch_data[3])[:,0].tolist()
+        target_iids += np.array(batch_data[3]).tolist()
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     loss = sum(losses) / len(losses)
