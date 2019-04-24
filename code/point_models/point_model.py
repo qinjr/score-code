@@ -8,8 +8,7 @@ NEG_SAMPLE_NUM = 9
 Point Based Models: GRU4Rec
 '''
 class PointBaseModel(object):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                user_fnum, item_fnum, neg_sample_num):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num):
         # reset graph
         tf.reset_default_graph()
 
@@ -17,10 +16,10 @@ class PointBaseModel(object):
 
         # input placeholders
         with tf.name_scope('inputs'):
-            self.user_seq_ph = tf.placeholder(tf.int32, [None, max_time_len, item_fnum], name='user_seq_ph')
+            self.user_seq_ph = tf.placeholder(tf.int32, [None, max_time_len], name='user_seq_ph')
             self.user_seq_length_ph = tf.placeholder(tf.int32, [None,], name='user_seq_length_ph')
-            self.target_user_ph = tf.placeholder(tf.int32, [None, user_fnum], name='target_user_ph')
-            self.target_item_ph = tf.placeholder(tf.int32, [None, item_fnum], name='target_item_ph')
+            self.target_user_ph = tf.placeholder(tf.int32, [None,], name='target_user_ph')
+            self.target_item_ph = tf.placeholder(tf.int32, [None,], name='target_item_ph')
             self.label_ph = tf.placeholder(tf.int32, [None,], name='label_ph')
 
             # lr
@@ -33,21 +32,14 @@ class PointBaseModel(object):
         # embedding
         with tf.name_scope('embedding'):
             self.emb_mtx = tf.get_variable('emb_mtx', [feature_size, eb_dim], initializer=tf.truncated_normal_initializer)
-            self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
-            self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
-            self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
+            # self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
+            # self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
+            # self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
 
             self.user_seq = tf.nn.embedding_lookup(self.emb_mtx, self.user_seq_ph)
-            user_seq_shape = self.user_seq.get_shape().as_list()
-            self.user_seq = tf.reshape(self.user_seq, [-1, user_seq_shape[1], user_seq_shape[2] * user_seq_shape[3]])
-
             self.target_item = tf.nn.embedding_lookup(self.emb_mtx, self.target_item_ph)
-            target_item_shape = self.target_item.get_shape().as_list()
-            self.target_item = tf.reshape(self.target_item, [-1, target_item_shape[1] * target_item_shape[2]])
-            
             self.target_user = tf.nn.embedding_lookup(self.emb_mtx, self.target_user_ph)
-            target_user_shape = self.target_user.get_shape().as_list()
-            self.target_user = tf.reshape(self.target_user, [-1, target_user_shape[1] * target_user_shape[2]])
+            
     
     def build_fc_net(self, inp):
         bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1')
@@ -129,10 +121,8 @@ class PointBaseModel(object):
         print('model restored from {}'.format(path))
 
 class GRU4Rec(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                        user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(GRU4Rec, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, 
-                                    user_fnum, item_fnum, neg_sample_num)
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num = NEG_SAMPLE_NUM):
+        super(GRU4Rec, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num)
 
         # GRU
         with tf.name_scope('rnn'):
@@ -146,10 +136,8 @@ class GRU4Rec(PointBaseModel):
         self.build_logloss()
 
 class Caser(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                        user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(Caser, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, 
-                                    user_fnum, item_fnum, neg_sample_num)
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num = NEG_SAMPLE_NUM):
+        super(Caser, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num)
         
         with tf.name_scope('user_seq_cnn'):
             # horizontal filters
@@ -174,10 +162,8 @@ class Caser(PointBaseModel):
         self.build_logloss()
 
 class ARNN(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                        user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(ARNN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, 
-                                    user_fnum, item_fnum, neg_sample_num)
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num = NEG_SAMPLE_NUM):
+        super(ARNN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num)
         self.user_seq_mask = tf.sequence_mask(self.user_seq_length_ph, tf.shape(self.user_seq)[1], dtype=tf.float32) # [B, T]
         self.user_seq_mask = tf.expand_dims(self.user_seq_mask, -1) # [B, T, 1]
         with tf.name_scope('user_seq_gru'):
@@ -211,33 +197,33 @@ class ARNN(PointBaseModel):
         return atten_output_sum, atten_output, score
 
 class SVDpp(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                        user_fnum, item_fnum, neg_sample_num = NEG_SAMPLE_NUM):
-        super(SVDpp, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, 
-                                    user_fnum, item_fnum, neg_sample_num)
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num = NEG_SAMPLE_NUM):
+        super(SVDpp, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num)
         # SVDFeature
-        with tf.name_scope('user_feature_rep'):
-            self.user_feat_w_list = []
-            for i in range(user_fnum):
-                self.user_feat_w_list.append(tf.get_variable('user_feat_w_%d'%i, [], initializer=tf.truncated_normal_initializer))
-            self.target_user_rep = self.target_user[:, :eb_dim] * self.user_feat_w_list[0]
-            for i in range(1, user_fnum):
-                self.target_user_rep += self.target_user[:,i*eb_dim:(i+1)*eb_dim] * self.user_feat_w_list[i]
+        # with tf.name_scope('user_feature_rep'):
+        #     self.user_feat_w_list = []
+        #     for i in range(user_fnum):
+        #         self.user_feat_w_list.append(tf.get_variable('user_feat_w_%d'%i, [], initializer=tf.truncated_normal_initializer))
+        #     self.target_user_rep = self.target_user[:, :eb_dim] * self.user_feat_w_list[0]
+        #     for i in range(1, user_fnum):
+        #         self.target_user_rep += self.target_user[:,i*eb_dim:(i+1)*eb_dim] * self.user_feat_w_list[i]
 
-        with tf.name_scope('item_feature_rep'):
-            self.item_feat_w_list = []
-            for i in range(item_fnum):
-                self.item_feat_w_list.append(tf.get_variable('item_feat_w_%d'%i, [], initializer=tf.truncated_normal_initializer))
-            self.target_item_rep = self.target_item[:, :eb_dim] * self.item_feat_w_list[0]
-            self.user_seq_rep = self.user_seq[:, :, :eb_dim] * self.item_feat_w_list[0]
-            for i in range(1, item_fnum):
-                self.target_item_rep += self.target_item[:,i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
-                self.user_seq_rep += self.user_seq[:, :, i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
+        # with tf.name_scope('item_feature_rep'):
+        #     self.item_feat_w_list = []
+        #     for i in range(item_fnum):
+        #         self.item_feat_w_list.append(tf.get_variable('item_feat_w_%d'%i, [], initializer=tf.truncated_normal_initializer))
+        #     self.target_item_rep = self.target_item[:, :eb_dim] * self.item_feat_w_list[0]
+        #     self.user_seq_rep = self.user_seq[:, :, :eb_dim] * self.item_feat_w_list[0]
+        #     for i in range(1, item_fnum):
+        #         self.target_item_rep += self.target_item[:,i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
+        #         self.user_seq_rep += self.user_seq[:, :, i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
         
         # user and item bias
         # with tf.name_scope('b'):
         #     self.item_user_bias = tf.get_variable('item_b', [feature_size, 1])
-        
+        self.target_user_rep = self.target_user[:, :eb_dim]
+        self.target_item_rep = self.target_item[:, :eb_dim]
+        self.user_seq_rep = self.user_seq[:, :, :eb_dim]
         # prediction
         self.user_seq_mask = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph, max_time_len, dtype=tf.float32), 2)
         self.user_seq_rep = self.user_seq_rep * self.user_seq_mask

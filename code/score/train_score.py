@@ -275,7 +275,7 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_CCMR
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
-        dataset_size = 140000
+        dataset_size = 200000
     # elif data_set == 'taobao':
     #     # graph loader
     #     graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
