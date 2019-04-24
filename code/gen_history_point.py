@@ -61,7 +61,7 @@ if __name__ == "__main__":
     if dataset == 'CCMR':
         # CCMR
         gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot_train.txt', DATA_DIR_CCMR + 'train_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', MAX_LEN_CCMR)
-        gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot_train.txt', DATA_DIR_CCMR + 'test_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', MAX_LEN_CCMR)
+        gen_user_hist_seq_file(DATA_DIR_CCMR + 'target_40_hot_test.txt', DATA_DIR_CCMR + 'test_user_hist_seq.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', MAX_LEN_CCMR)
     else:
         print('WRONG DATASET: {}'.format(dataset))
 
