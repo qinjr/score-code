@@ -178,13 +178,13 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
-        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
-        test_loglosses.append(test_logloss)
-        test_aucs.append(test_auc)
-        test_ndcgs.append(test_ndcg)
-        test_losses.append(test_loss)
+        # test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
+        # test_loglosses.append(test_logloss)
+        # test_aucs.append(test_auc)
+        # test_ndcgs.append(test_ndcg)
+        # test_losses.append(test_loss)
 
-        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
+        # print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / 10)
         # begin training process
@@ -196,7 +196,8 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 if early_stop:
                     break
 
-                loss = model.train(sess, batch_data, lr, reg_lambda, mu)
+                loss, prod = model.train(sess, batch_data, lr, reg_lambda, mu)
+                print(prod)
                 step += 1
                 train_losses_step.append(loss)
                 if step % eval_iter_num == 0:
