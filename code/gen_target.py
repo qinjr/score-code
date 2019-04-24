@@ -296,7 +296,7 @@ class TargetGen(object):
             cursor = item_coll.find({})
             for item_doc in cursor:
                 num_not_null_slice = 0
-                for nei in item_doc['1hop']:
+                for nei in item_doc['1hop_pos']:
                     if nei != []:
                         num_not_null_slice += 1
                 if num_not_null_slice >= pop_standad:
@@ -308,7 +308,7 @@ class TargetGen(object):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("PLEASE INPUT [MODEL TYPE] [GPU] [DATASET]")
+        print("PLEASE INPUT [DATASET]")
         sys.exit(0)
     dataset = sys.argv[1]
     if dataset == 'CCMR':
