@@ -55,7 +55,7 @@ def gen_item_hist_seq_file(in_file, out_file, item_hist_dict_file, max_len):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("PLEASE INPUT [MODEL TYPE] [GPU] [DATASET]")
+        print("PLEASE INPUT [DATASET]")
         sys.exit(0)
     dataset = sys.argv[1]
     if dataset == 'CCMR':
