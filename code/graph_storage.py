@@ -88,15 +88,13 @@ class GraphStore(object):
     def gen_user_doc(self, uid):
         user_doc = {}
         user_doc['uid'] = uid
-        user_doc['1hop_pos'] = [[] for i in range(self.time_slice_num)]
-        user_doc['1hop_neg'] = [[] for i in range(self.time_slice_num)]
+        user_doc['1hop'] = [[] for i in range(self.time_slice_num)]
         return user_doc
 
     def gen_item_doc(self, iid):
         item_doc = {}
         item_doc['iid'] = iid
-        item_doc['1hop_pos'] = [[] for i in range(self.time_slice_num)]
-        item_doc['1hop_neg'] = [[] for i in range(self.time_slice_num)]
+        item_doc['1hop'] = [[] for i in range(self.time_slice_num)]
         return item_doc
 
     def construct_coll_1hop(self):
@@ -123,13 +121,10 @@ class GraphStore(object):
             list_of_item_doc_list.append(item_doc_list)
 
         for line in self.rating_file:
-            uid, iid, rating, t_idx = line[:-1].split(',')
-            if int(rating) >= 4:
-                list_of_user_doc_list[(int(uid) - 1) // self.user_per_collection][(int(uid) - 1) % self.user_per_collection]['1hop_pos'][int(t_idx)].append(int(iid))
-                list_of_item_doc_list[(int(iid) - self.user_num - 1) // self.item_per_collection][(int(iid) - self.user_num - 1) % self.item_per_collection]['1hop_pos'][int(t_idx)].append(int(uid))
-            else:
-                list_of_user_doc_list[(int(uid) - 1) // self.user_per_collection][(int(uid) - 1) % self.user_per_collection]['1hop_neg'][int(t_idx)].append(int(iid))
-                list_of_item_doc_list[(int(iid) - self.user_num - 1) // self.item_per_collection][(int(iid) - self.user_num - 1) % self.item_per_collection]['1hop_neg'][int(t_idx)].append(int(uid))
+            uid, iid, _, t_idx = line[:-1].split(',')
+            list_of_user_doc_list[(int(uid) - 1) // self.user_per_collection][(int(uid) - 1) % self.user_per_collection]['1hop'][int(t_idx)].append(int(iid))
+            list_of_item_doc_list[(int(iid) - self.user_num - 1) // self.item_per_collection][(int(iid) - self.user_num - 1) % self.item_per_collection]['1hop'][int(t_idx)].append(int(uid))
+        
         print('user and item doc list completed')
 
         for i in range(len(list_of_user_doc_list)):
@@ -171,83 +166,39 @@ class GraphStore(object):
                 old_item_doc = all_item_docs[iid - 1 - self.user_num]
                 new_item_doc = {
                     'iid': iid,
-                    '1hop_pos': old_item_doc['1hop_pos'],
-                    '1hop_neg': old_item_doc['1hop_neg'],
-                    '2hop_pos': [],
-                    '2hop_neg': [],
-                    'degrees_pos': [],
-                    'degrees_neg': [],
+                    '1hop': old_item_doc['1hop'],
+                    '2hop': [],
+                    'degrees': []
                 }
                 for t in range(self.start_time):
-                    new_item_doc['2hop_pos'].append([])
-                    new_item_doc['2hop_neg'].append([])
-                    new_item_doc['degrees_pos'].append([])
-                    new_item_doc['degrees_neg'].append([])
+                    new_item_doc['2hop'].append([])
+                    new_item_doc['degrees'].append([])
                 for t in range(self.start_time, self.time_slice_num):
-                    iids_2hop_pos = []
-                    degrees_2hop_pos = []
-                    iids_2hop_neg = []
-                    degrees_2hop_neg = []
+                    iids_2hop = []
+                    degrees_2hop = []
                     
-                    # pos+pos/neg
-                    uids = old_item_doc['1hop_pos'][t]
+                    uids = old_item_doc['1hop'][t]
                     if len(uids) > self.max_1hop:
                         random.shuffle(uids)
                         uids = uids[:self.max_1hop]
                     for uid in uids:
                         user_doc = all_user_docs[uid - 1]
-                        degree = len(user_doc['1hop_pos'][t])
+                        degree = len(user_doc['1hop'][t])
                         if degree > 1 and degree < self.max_2hop:
-                            iids_2hop_pos += user_doc['1hop_pos'][t]
-                            degrees_2hop_pos += [degree] * degree
+                            iids_2hop += user_doc['1hop'][t]
+                            degrees_2hop += [degree] * degree
                         elif degree > self.max_2hop:
-                            iids_2hop_pos += user_doc['1hop_pos'][t][:5]
-                            degrees_2hop_pos += [degree] * 5
-                        
-                        degree = len(user_doc['1hop_neg'][t])
-                        if degree > 1 and degree < self.max_2hop:
-                            iids_2hop_neg += user_doc['1hop_neg'][t]
-                            degrees_2hop_neg += [degree] * degree
-                        elif degree > self.max_2hop:
-                            iids_2hop_neg += user_doc['1hop_neg'][t][:5]
-                            degrees_2hop_neg += [degree] * 5
+                            iids_2hop += user_doc['1hop'][t][:5]
+                            degrees_2hop += [degree] * 5
 
-                    # neg+neg/pos
-                    uids = old_item_doc['1hop_neg'][t]
-                    if len(uids) > self.max_1hop:
-                        random.shuffle(uids)
-                        uids = uids[:self.max_1hop]
-                    for uid in uids:
-                        user_doc = all_user_docs[uid - 1]
-                        degree = len(user_doc['1hop_neg'][t])
-                        if degree > 1 and degree < self.max_2hop:
-                            iids_2hop_pos += user_doc['1hop_neg'][t]
-                            degrees_2hop_pos += [degree] * degree
-                        elif degree > self.max_2hop:
-                            iids_2hop_pos += user_doc['1hop_neg'][t][:5]
-                            degrees_2hop_pos += [degree] * 5
-                        
-                        degree = len(user_doc['1hop_pos'][t])
-                        if degree > 1 and degree < self.max_2hop:
-                            iids_2hop_neg += user_doc['1hop_pos'][t]
-                            degrees_2hop_neg += [degree] * degree
-                        elif degree > self.max_2hop:
-                            iids_2hop_neg += user_doc['1hop_pos'][t][:5]
-                            degrees_2hop_neg += [degree] * 5
-                    
-                    if len(iids_2hop_pos) > self.max_2hop:
-                        idx = np.random.choice(np.arange(len(iids_2hop_pos)), len(iids_2hop_pos), replace=False)
-                        iids_2hop_pos = np.array(iids_2hop_pos)[idx].tolist()[:self.max_2hop]
-                        degrees_2hop_pos = np.array(degrees_2hop_pos)[idx].tolist()[:self.max_2hop]
-                    if len(iids_2hop_neg) > self.max_2hop:
-                        idx = np.random.choice(np.arange(len(iids_2hop_neg)), len(iids_2hop_neg), replace=False)
-                        iids_2hop_neg = np.array(iids_2hop_neg)[idx].tolist()[:self.max_2hop]
-                        degrees_2hop_neg = np.array(degrees_2hop_neg)[idx].tolist()[:self.max_2hop]    
-                    
-                    new_item_doc['2hop_pos'].append(iids_2hop_pos)
-                    new_item_doc['2hop_neg'].append(iids_2hop_neg)
-                    new_item_doc['degrees_pos'].append(degrees_2hop_pos)
-                    new_item_doc['degrees_neg'].append(degrees_2hop_neg)
+                    if len(iids_2hop) > self.max_2hop:
+                        idx = np.random.choice(np.arange(len(iids_2hop)), len(iids_2hop), replace=False)
+                        iids_2hop = np.array(iids_2hop)[idx].tolist()[:self.max_2hop]
+                        degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:self.max_2hop]
+
+                    new_item_doc['2hop'].append(iids_2hop)
+                    new_item_doc['degrees'].append(degrees_2hop)
+
                 item_docs_block.append(new_item_doc)
             self.db_2hop['item_%d'%i].insert_many(item_docs_block)
             print('item block-{} completed'.format(i))
@@ -261,81 +212,39 @@ class GraphStore(object):
                 old_user_doc = all_user_docs[uid - 1]
                 new_user_doc = {
                     'uid': uid,
-                    '1hop_pos': old_user_doc['1hop_pos'],
-                    '1hop_neg': old_user_doc['1hop_neg'],
-                    '2hop_pos': [],
-                    '2hop_neg': [],
-                    'degrees_pos': [],
-                    'degrees_neg': [],
+                    '1hop': old_user_doc['1hop'],
+                    '2hop': [],
+                    'degrees': []
                 }
                 for t in range(self.start_time):
-                    new_user_doc['2hop_pos'].append([])
-                    new_user_doc['2hop_neg'].append([])
-                    new_user_doc['degrees_pos'].append([])
-                    new_user_doc['degrees_neg'].append([])
+                    new_user_doc['2hop'].append([])
+                    new_user_doc['degrees'].append([])
                 for t in range(self.start_time, self.time_slice_num):
-                    uids_2hop_pos = []
-                    degrees_2hop_pos = []
-                    uids_2hop_neg = []
-                    degrees_2hop_neg = []
+                    uids_2hop = []
+                    degrees_2hop = []
 
-                    # pos+pos/neg
-                    iids = old_user_doc['1hop_pos'][t]
+                    iids = old_user_doc['1hop'][t]
                     if len(iids) > self.max_1hop:
                         random.shuffle(iids)
                         iids = iids[:self.max_1hop]
                     for iid in iids:
                         item_doc = all_item_docs[iid - 1 - self.user_num]
-                        degree = len(item_doc['1hop_pos'][t])
+                        degree = len(item_doc['1hop'][t])
                         if degree > 1 and degree <= self.max_2hop:
-                            uids_2hop_pos += item_doc['1hop_pos'][t]
-                            degrees_2hop_pos += [degree] * degree
+                            uids_2hop += item_doc['1hop'][t]
+                            degrees_2hop += [degree] * degree
                         elif degree > self.max_2hop:
-                            uids_2hop_pos += item_doc['1hop_pos'][t][:5]
-                            degrees_2hop_pos += [degree] * 5
-                        degree = len(item_doc['1hop_neg'][t])
-                        if degree > 1 and degree <= self.max_2hop:
-                            uids_2hop_neg += item_doc['1hop_neg'][t]
-                            degrees_2hop_neg += [degree] * degree
-                        elif degree > self.max_2hop:
-                            uids_2hop_neg += item_doc['1hop_neg'][t][:5]
-                            degrees_2hop_neg += [degree] * 5
-                    
-                    # neg+pos/neg
-                    iids = old_user_doc['1hop_neg'][t]
-                    if len(iids) > self.max_1hop:
-                        random.shuffle(iids)
-                        iids = iids[:self.max_1hop]
-                    for iid in iids:
-                        item_doc = all_item_docs[iid - 1 - self.user_num]
-                        degree = len(item_doc['1hop_neg'][t])
-                        if degree > 1 and degree <= self.max_2hop:
-                            uids_2hop_pos += item_doc['1hop_neg'][t]
-                            degrees_2hop_pos += [degree] * degree
-                        elif degree > self.max_2hop:
-                            uids_2hop_pos += item_doc['1hop_neg'][t][:5]
-                            degrees_2hop_pos += [degree] * 5
-                        degree = len(item_doc['1hop_pos'][t])
-                        if degree > 1 and degree <= self.max_2hop:
-                            uids_2hop_neg += item_doc['1hop_pos'][t]
-                            degrees_2hop_neg += [degree] * degree
-                        elif degree > self.max_2hop:
-                            uids_2hop_neg += item_doc['1hop_pos'][t][:5]
-                            degrees_2hop_neg += [degree] * 5
+                            uids_2hop += item_doc['1hop'][t][:5]
+                            degrees_2hop += [degree] * 5
+                        
+                    if len(uids_2hop) > self.max_2hop:
+                        idx = np.random.choice(np.arange(len(uids_2hop)), len(uids_2hop), replace=False)
+                        uids_2hop = np.array(uids_2hop)[idx].tolist()[:self.max_2hop]
+                        degrees_2hop = np.array(degrees_2hop)[idx].tolist()[:self.max_2hop]
 
-                    if len(uids_2hop_pos) > self.max_2hop:
-                        idx = np.random.choice(np.arange(len(uids_2hop_pos)), len(uids_2hop_pos), replace=False)
-                        uids_2hop_pos = np.array(uids_2hop_pos)[idx].tolist()[:self.max_2hop]
-                        degrees_2hop_pos = np.array(degrees_2hop_pos)[idx].tolist()[:self.max_2hop]
-                    if len(uids_2hop_neg) > self.max_2hop:
-                        idx = np.random.choice(np.arange(len(uids_2hop_neg)), len(uids_2hop_neg), replace=False)
-                        uids_2hop_neg = np.array(uids_2hop_neg)[idx].tolist()[:self.max_2hop]
-                        degrees_2hop_neg = np.array(degrees_2hop_neg)[idx].tolist()[:self.max_2hop]
+                    new_user_doc['2hop'].append(uids_2hop)
+                    new_user_doc['degrees'].append(degrees_2hop)
 
-                    new_user_doc['2hop_pos'].append(uids_2hop_pos)
-                    new_user_doc['2hop_neg'].append(uids_2hop_neg)
-                    new_user_doc['degrees_pos'].append(degrees_2hop_pos)
-                    new_user_doc['degrees_neg'].append(degrees_2hop_neg)
 
                 user_docs_block.append(new_user_doc)
             self.db_2hop['user_%d'%i].insert_many(user_docs_block)
@@ -359,7 +268,7 @@ class GraphStore(object):
         for user_coll in user_colls:
             for user_doc in user_coll.find({}):
                 for t in range(self.time_slice_num):
-                    hist_len_user.append(len(user_doc['1hop_pos'][t]))
+                    hist_len_user.append(len(user_doc['1hop'][t]))
         
         arr = np.array(hist_len_user)
         print('max user slice hist len: {}'.format(np.max(arr)))
@@ -379,7 +288,7 @@ class GraphStore(object):
         for item_coll in item_colls:
             for item_doc in item_coll.find({}):
                 for t in range(self.time_slice_num):
-                    hist_len_item.append(len(item_doc['1hop_pos'][t]))
+                    hist_len_item.append(len(item_doc['1hop'][t]))
         arr = np.array(hist_len_item)
         print('max item hist len: {}'.format(np.max(arr)))
         print('min item hist len: {}'.format(np.min(arr)))
@@ -394,7 +303,7 @@ class GraphStore(object):
 
 if __name__ == "__main__":
     # For CCMR
-    gs = GraphStore(DATA_DIR_CCMR + 'remap_rating_idx.csv', user_per_collection = USER_PER_COLLECTION_CCMR, 
+    gs = GraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', user_per_collection = USER_PER_COLLECTION_CCMR, 
                 item_per_collection = ITEM_PER_COLLECTION_CCMR,  start_time = START_TIME_CCMR,   
                 max_1hop = MAX_1HOP_CCMR, max_2hop = MAX_2HOP_CCMR, user_num = USER_NUM_CCMR,
                 item_num = ITEM_NUM_CCMR, db_1hop = 'ccmr_1hop', db_2hop = 'ccmr_2hop',
