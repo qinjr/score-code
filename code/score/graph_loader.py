@@ -89,7 +89,7 @@ class GraphHandler(object):
             result.append(node_2hop_list)
         else:
             result.append(self.dummy_node)
-        
+        return result
     
     def gen_node_neighbor_rs(self, start_node_doc, time_slice):
         node_1hop_list = start_node_doc['1hop'][time_slice]
