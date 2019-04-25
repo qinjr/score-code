@@ -31,27 +31,27 @@ ITEM_PER_COLLECTION_CCMR = 100
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 
-# # for Taobao
-# OBJ_PER_TIME_SLICE_Taobao = 10
-# TIME_SLICE_NUM_Taobao = 18
-# START_TIME_Taobao = 7
-# FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
-# DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
-# USER_PER_COLLECTION_Taobao = 500
-# ITEM_PER_COLLECTION_Taobao = 500
-# USER_NUM_Taobao = 984105
-# ITEM_NUM_Taobao = 4067842
+# for Taobao
+OBJ_PER_TIME_SLICE_Taobao = 10
+TIME_SLICE_NUM_Taobao = 18
+START_TIME_Taobao = 0
+FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
+DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
+USER_PER_COLLECTION_Taobao = 500
+ITEM_PER_COLLECTION_Taobao = 500
+USER_NUM_Taobao = 984105
+ITEM_NUM_Taobao = 4067842
 
-# # for Tmall
-# OBJ_PER_TIME_SLICE_Tmall = 10
-# TIME_SLICE_NUM_Tmall = 13
-# START_TIME_Tmall = 0
-# FEAT_SIZE_Tmall = 1529672
-# DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
-# USER_PER_COLLECTION_Tmall = 200
-# ITEM_PER_COLLECTION_Tmall = 250
-# USER_NUM_Tmall = 424170
-# ITEM_NUM_Tmall = 1090390
+# for Tmall
+OBJ_PER_TIME_SLICE_Tmall = 10
+TIME_SLICE_NUM_Tmall = 13
+START_TIME_Tmall = 0
+FEAT_SIZE_Tmall = 1529672
+DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
+USER_PER_COLLECTION_Tmall = 200
+ITEM_PER_COLLECTION_Tmall = 250
+USER_NUM_Tmall = 424170
+ITEM_NUM_Tmall = 1090390
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, model_type, train_batch_size, feature_size, eb_dim, 
@@ -264,48 +264,36 @@ if __name__ == '__main__':
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
         dataset_size = 262988
-    # elif data_set == 'taobao':
-    #     # graph loader
-    #     graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
-    #                             USER_NUM_Taobao, ITEM_NUM_Taobao, 1, 2, START_TIME_Taobao, None, \
-    #                             DATA_DIR_Taobao + 'item_feat_dict.pkl', USER_PER_COLLECTION_Taobao, \
-    #                             ITEM_PER_COLLECTION_Taobao]
-    #     target_file_train = DATA_DIR_Taobao + 'target_17_hot_train.txt'##'target_train.txt'#
-    #     target_file_test = DATA_DIR_Taobao + 'target_17_hot_test.txt'##'target_test_sample.txt'#
-    #     start_time = START_TIME_Taobao
-    #     pred_time_train = 8
-    #     pred_time_test = 8
-    #     user_feat_dict_file = None
-    #     item_feat_dict_file = DATA_DIR_Taobao + 'item_feat_dict.pkl'
-    #     # model parameter
-    #     feature_size = FEAT_SIZE_Taobao
-    #     max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
-    #     obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
-    #     user_fnum = 1 
-    #     item_fnum = 2
-    #     dataset_size = 28000
-    # elif data_set == 'tmall':
-    #     # graph loader
-    #     graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
-    #                             USER_NUM_Tmall, ITEM_NUM_Tmall, 1, 1, START_TIME_Tmall, \
-    #                             None, #DATA_DIR_Tmall + 'user_feat_dict.pkl', \
-    #                             None, #DATA_DIR_Tmall + 'item_feat_dict.pkl', \
-    #                             USER_PER_COLLECTION_Tmall, \
-    #                             ITEM_PER_COLLECTION_Tmall]
-    #     target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
-    #     target_file_test = DATA_DIR_Tmall + 'target_11_hot.txt'
-    #     start_time = START_TIME_Tmall
-    #     pred_time_train = 10
-    #     pred_time_test = 11
-    #     user_feat_dict_file = None#DATA_DIR_Tmall + 'user_feat_dict.pkl'
-    #     item_feat_dict_file = None#DATA_DIR_Tmall + 'item_feat_dict.pkl'
-    #     # model parameter
-    #     feature_size = FEAT_SIZE_Tmall
-    #     max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
-    #     obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
-    #     user_fnum = 1#3 
-    #     item_fnum = 1#4
-    #     dataset_size = 28000
+    elif data_set == 'taobao':
+        # graph loader
+        graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
+                                USER_NUM_Taobao, ITEM_NUM_Taobao, START_TIME_Taobao, \
+                                USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao]
+        target_file_train = DATA_DIR_Taobao + 'target_16_hot_train_sample.txt'
+        target_file_test = DATA_DIR_Taobao + 'target_17_hot_test_sample.txt'
+        start_time = START_TIME_Taobao
+        pred_time_train = 16
+        pred_time_test = 17
+        # model parameter
+        feature_size = FEAT_SIZE_Taobao
+        max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
+        obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
+        dataset_size = 262988
+    elif data_set == 'tmall':
+        # graph loader
+        graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
+                                USER_NUM_Tmall, ITEM_NUM_Tmall, START_TIME_Tmall, \
+                                USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall]
+        target_file_train = DATA_DIR_Tmall + 'target_10_hot_sample.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
+        start_time = START_TIME_Tmall
+        pred_time_train = 10
+        pred_time_test = 11
+        # model parameter
+        feature_size = FEAT_SIZE_Tmall
+        max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
+        obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
+        dataset_size = 262988
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()

@@ -246,33 +246,25 @@ if __name__ == '__main__':
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
-        eval_iter_num = 262988
-    # elif data_set == 'taobao':
-    #     target_file_train = DATA_DIR_Taobao + 'target_17_hot_train.txt'##'target_train.txt'#
-    #     target_file_test = DATA_DIR_Taobao + 'target_17_hot_test.txt'##'target_test_sample.txt'#
-    #     user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq.txt'
-    #     user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq.txt'
-    #     user_feat_dict_file = None
-    #     item_feat_dict_file = DATA_DIR_Taobao + 'item_feat_dict.pkl'
-    #     # model parameter
-    #     feature_size = FEAT_SIZE_Taobao
-    #     max_time_len = MAX_LEN_Taobao
-    #     user_fnum = 1 
-    #     item_fnum = 2
-    #     eval_iter_num = 14000
-    # elif data_set == 'tmall':
-    #     target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
-    #     target_file_test = DATA_DIR_Tmall + 'target_11_hot.txt'
-    #     user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_10.txt'
-    #     user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_11.txt'
-    #     user_feat_dict_file = None#DATA_DIR_Tmall + 'user_feat_dict.pkl'
-    #     item_feat_dict_file = None#DATA_DIR_Tmall + 'item_feat_dict.pkl'
-    #     # model parameter
-    #     feature_size = FEAT_SIZE_Tmall
-    #     max_time_len = MAX_LEN_Tmall
-    #     user_fnum = 1#3 
-    #     item_fnum = 1#4
-    #     eval_iter_num = 4400
+        dataset_size = 262988
+    elif data_set == 'taobao':
+        target_file_train = DATA_DIR_Taobao + 'target_16_hot_sample.txt'
+        target_file_test = DATA_DIR_Taobao + 'target_17_hot_sample.txt'
+        user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq_16_sample.txt'
+        user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq_17_sample.txt'
+        # model parameter
+        feature_size = FEAT_SIZE_Taobao
+        max_time_len = MAX_LEN_Taobao
+        dataset_size = 262988
+    elif data_set == 'tmall':
+        target_file_train = DATA_DIR_Tmall + 'target_10_hot_sample.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
+        user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_10_sample.txt'
+        user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_11_sample.txt'
+        # model parameter
+        feature_size = FEAT_SIZE_Tmall
+        max_time_len = MAX_LEN_Tmall
+        dataset_size = 262988
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
@@ -285,7 +277,7 @@ if __name__ == '__main__':
         train_batch_size, lr = hyper
         train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
                 model_type, train_batch_size, feature_size, 
-                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, lr, reg_lambda, eval_iter_num)
+                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, lr, reg_lambda, dataset_size)
         
         restore(data_set, target_file_test, user_seq_file_test,
             model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
