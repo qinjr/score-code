@@ -254,10 +254,10 @@ if __name__ == '__main__':
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
                                 USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR, 'is']
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_40_hot_train.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot_test.txt'
         start_time = START_TIME_CCMR
-        pred_time_train = 39
+        pred_time_train = 40
         pred_time_test = 40
         # model parameter
         feature_size = FEAT_SIZE_CCMR
