@@ -239,19 +239,19 @@ if __name__ == '__main__':
     data_set = sys.argv[3]
 
     if data_set == 'ccmr':
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_train4point_model_sample.txt'
         target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
-        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39_sample.txt'
-        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt'
+        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_sample.txt'
+        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
         dataset_size = 300000
     elif data_set == 'taobao':
-        target_file_train = DATA_DIR_Taobao + 'target_16_hot_sample.txt'
+        target_file_train = DATA_DIR_Taobao + 'target_train4point_model_sample.txt'
         target_file_test = DATA_DIR_Taobao + 'target_17_hot_sample.txt'
-        user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq_16_sample.txt'
-        user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq_17_sample.txt'
+        user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq_sample.txt'
+        user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = MAX_LEN_Taobao
@@ -259,8 +259,8 @@ if __name__ == '__main__':
     elif data_set == 'tmall':
         target_file_train = DATA_DIR_Tmall + 'target_10_hot_sample.txt'
         target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
-        user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_10_sample.txt'
-        user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_11_sample.txt'
+        user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_sample.txt'
+        user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = MAX_LEN_Tmall
