@@ -169,7 +169,7 @@ class GraphLoader(object):
         if self.batch_size % (1 + self.neg_sample_num) != 0:
             print('batch size should be time of {}'.format(1 + self.neg_sample_num))
             exit(1)
-        self.batch_size2line_num = int(self.batch_size / 10)
+        self.batch_size2line_num = int(self.batch_size / (1 + self.neg_sample_num))
         with open(target_file, 'r') as f:
             self.target_lines = f.readlines()
         self.num_of_batch = len(self.target_lines) // self.batch_size2line_num
@@ -238,11 +238,7 @@ class GraphLoader(object):
             for i in range(len(uids)):
                 user_1hop, user_2hop = graph_handler.gen_user_history(uids[i], self.pred_time)
                 for j in range(i * (self.neg_sample_num + 1), (i + 1) * (self.neg_sample_num + 1)):
-                    try:
-                        item_1hop, item_2hop = graph_handler.gen_item_history(iids[j], self.pred_time)
-                    except:
-                        print(j)
-                        print(len(iids))
+                    item_1hop, item_2hop = graph_handler.gen_item_history(iids[j], self.pred_time)
                     user_1hop_batch.append(user_1hop)
                     user_2hop_batch.append(user_2hop)
 
