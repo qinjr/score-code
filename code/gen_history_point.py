@@ -7,7 +7,7 @@ import sys
 
 # CCMR dataset parameters
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
-MAX_LEN_CCMR = 100
+MAX_LEN_CCMR = 300
 
 # Taobao dataset parameters
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
@@ -15,7 +15,7 @@ MAX_LEN_Taobao = 300
 
 # Tmall dataset parameters
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
-MAX_LEN_Tmall = 150
+MAX_LEN_Tmall = 300
 
 def gen_user_hist_seq_file(in_file, out_file, user_hist_dict_file, max_len):
     with open(user_hist_dict_file, 'rb') as f:
