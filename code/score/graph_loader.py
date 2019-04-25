@@ -209,6 +209,8 @@ class GraphLoader(object):
                 iids += line_list[1:(1 + self.neg_sample_num)]
             uids = [int(uid) for uid in uids]
             iids = [int(iid) for iid in iids]
+            print('len uids: {}'.format(len(uids)))
+            print('len iids: {}'.format(len(iids)))
             while self.work.qsize() >= self.max_q_size:
                 time.sleep(self.wait_time)
             self.work.put((uids, iids))
