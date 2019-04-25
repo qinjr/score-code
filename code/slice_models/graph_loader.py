@@ -129,7 +129,7 @@ class GraphLoader(object):
         self.pred_time = pred_time
         self.start_time = start_time
         self.neg_sample_num = neg_sample_num
-        if self.batch_size % self.neg_sample_num != 0:
+        if self.batch_size % (1 + self.neg_sample_num) != 0:
             print('batch size should be time of {}'.format(1 + self.neg_sample_num))
             exit(1)
         self.batch_size2line_num = int(self.batch_size / (1 + self.neg_sample_num))
@@ -169,7 +169,7 @@ class GraphLoader(object):
             for line in lines:
                 line_list = line[:-1].split(',')
                 uids.append(line_list[0])
-                iids += line_list[1:(1 + self.neg_sample_num)]
+                iids += line_list[1:(2 + self.neg_sample_num)]
             uids = [int(uid) for uid in uids]
             iids = [int(iid) for iid in iids]
             while self.work.qsize() >= self.max_q_size:

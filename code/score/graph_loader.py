@@ -206,11 +206,9 @@ class GraphLoader(object):
             for line in lines:
                 line_list = line[:-1].split(',')
                 uids.append(line_list[0])
-                iids += line_list[1:(1 + self.neg_sample_num)]
+                iids += line_list[1:(2 + self.neg_sample_num)]
             uids = [int(uid) for uid in uids]
             iids = [int(iid) for iid in iids]
-            print('len uids: {}'.format(len(uids)))
-            print('len iids: {}'.format(len(iids)))
             while self.work.qsize() >= self.max_q_size:
                 time.sleep(self.wait_time)
             self.work.put((uids, iids))
@@ -240,11 +238,7 @@ class GraphLoader(object):
             for i in range(len(uids)):
                 user_1hop, user_2hop = graph_handler.gen_user_history(uids[i], self.pred_time)
                 for j in range(i * (self.neg_sample_num + 1), (i + 1) * (self.neg_sample_num + 1)):
-                    try:
-                        item_1hop, item_2hop = graph_handler.gen_item_history(iids[j], self.pred_time)
-                    except:
-                        print(j)
-                        print(len(iids))
+                    item_1hop, item_2hop = graph_handler.gen_item_history(iids[j], self.pred_time)
                     user_1hop_batch.append(user_1hop)
                     user_2hop_batch.append(user_2hop)
 
