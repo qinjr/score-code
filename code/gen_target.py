@@ -308,7 +308,7 @@ if __name__ == '__main__':
         print("PLEASE INPUT [DATASET]")
         sys.exit(0)
     dataset = sys.argv[1]
-    if dataset == 'CCMR':
+    if dataset == 'ccmr':
         # CCMR
         tg = TargetGen(None, 'ccmr_1hop', user_num = USER_NUM_CCMR,
                     item_num = ITEM_NUM_CCMR, user_per_collection = USER_PER_COLLECTION_CCMR,
@@ -321,7 +321,7 @@ if __name__ == '__main__':
         # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict_39.pkl', DATA_DIR_CCMR + 'item_hist_dict_39.pkl', 39)
         tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl')
         tg.filter_target_file(DATA_DIR_CCMR + 'target_39.txt', DATA_DIR_CCMR + 'target_39_hot.txt', DATA_DIR_CCMR + 'target_39_cold.txt', DATA_DIR_CCMR + 'user_hist_dict_39.pkl')
-    elif dataset == 'Taobao':
+    elif dataset == 'taobao':
         # Taobao
         tg = TargetGen(None, 'taobao_1hop', user_num = USER_NUM_Taobao,
                     item_num = ITEM_NUM_Taobao, user_per_collection = USER_PER_COLLECTION_Taobao,
@@ -334,7 +334,7 @@ if __name__ == '__main__':
         # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_17.pkl', DATA_DIR_Taobao + 'item_hist_dict_17.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 17)
         tg.filter_target_file(DATA_DIR_Taobao + 'target_16.txt', DATA_DIR_Taobao + 'target_16_hot.txt', DATA_DIR_Taobao + 'target_16_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_16.pkl')
         tg.filter_target_file(DATA_DIR_Taobao + 'target_17.txt', DATA_DIR_Taobao + 'target_17_hot.txt', DATA_DIR_Taobao + 'target_17_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_17.pkl')
-    elif dataset == 'Tmall':
+    elif dataset == 'tmall':
         # Tmall
         tg = TargetGen(None, 'tmall_1hop', user_num = USER_NUM_Tmall,
                     item_num = ITEM_NUM_Tmall, user_per_collection = USER_PER_COLLECTION_Tmall,

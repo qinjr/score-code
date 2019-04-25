@@ -295,7 +295,7 @@ if __name__ == "__main__":
         print("PLEASE INPUT [DATASET]")
         sys.exit(0)
     dataset = sys.argv[1]
-    if dataset == 'CCMR':
+    if dataset == 'ccmr':
         # For CCMR
         gs = GraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', user_per_collection = USER_PER_COLLECTION_CCMR, 
                     item_per_collection = ITEM_PER_COLLECTION_CCMR,  start_time = START_TIME_CCMR,   
@@ -305,7 +305,7 @@ if __name__ == "__main__":
         gs.construct_coll_1hop()
         gs.construct_coll_2hop()
         gs.cal_stat()
-    elif dataset == 'Taobao':
+    elif dataset == 'taobao':
         # For Taobao
         gs = GraphStore(DATA_DIR_Taobao + 'remaped_user_behavior.txt', user_per_collection = USER_PER_COLLECTION_Taobao, 
                     item_per_collection = ITEM_PER_COLLECTION_Taobao,  start_time = START_TIME_Taobao,   
@@ -315,7 +315,7 @@ if __name__ == "__main__":
         gs.construct_coll_1hop()
         gs.construct_coll_2hop()
         gs.cal_stat()
-    elif dataset == 'Tmall':
+    elif dataset == 'tmall':
         # For Tmall
         gs = GraphStore(DATA_DIR_Tmall + 'remaped_user_behavior.csv', user_per_collection = USER_PER_COLLECTION_Tmall, 
                     item_per_collection = ITEM_PER_COLLECTION_Tmall,  start_time = START_TIME_Tmall,   
