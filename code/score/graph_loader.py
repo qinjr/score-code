@@ -238,7 +238,11 @@ class GraphLoader(object):
             for i in range(len(uids)):
                 user_1hop, user_2hop = graph_handler.gen_user_history(uids[i], self.pred_time)
                 for j in range(i * (self.neg_sample_num + 1), (i + 1) * (self.neg_sample_num + 1)):
-                    item_1hop, item_2hop = graph_handler.gen_item_history(iids[j], self.pred_time)
+                    try:
+                        item_1hop, item_2hop = graph_handler.gen_item_history(iids[j], self.pred_time)
+                    except:
+                        print(j)
+                        print(len(iids))
                     user_1hop_batch.append(user_1hop)
                     user_2hop_batch.append(user_2hop)
 
