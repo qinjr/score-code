@@ -302,15 +302,22 @@ class GraphStore(object):
 
 
 if __name__ == "__main__":
-    # For CCMR
-    gs = GraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', user_per_collection = USER_PER_COLLECTION_CCMR, 
-                item_per_collection = ITEM_PER_COLLECTION_CCMR,  start_time = START_TIME_CCMR,   
-                max_1hop = MAX_1HOP_CCMR, max_2hop = MAX_2HOP_CCMR, user_num = USER_NUM_CCMR,
-                item_num = ITEM_NUM_CCMR, db_1hop = 'ccmr_1hop', db_2hop = 'ccmr_2hop',
-                time_slice_num = TIME_SLICE_NUM_CCMR)
-    gs.construct_coll_1hop()
-    gs.construct_coll_2hop()
-    gs.cal_stat()
+    if len(sys.argv) < 2:
+        print("PLEASE INPUT [DATASET]")
+        sys.exit(0)
+    dataset = sys.argv[1]
+    if dataset == 'CCMR':
+        # For CCMR
+        gs = GraphStore(DATA_DIR_CCMR + 'remap_rating_pos_idx.csv', user_per_collection = USER_PER_COLLECTION_CCMR, 
+                    item_per_collection = ITEM_PER_COLLECTION_CCMR,  start_time = START_TIME_CCMR,   
+                    max_1hop = MAX_1HOP_CCMR, max_2hop = MAX_2HOP_CCMR, user_num = USER_NUM_CCMR,
+                    item_num = ITEM_NUM_CCMR, db_1hop = 'ccmr_1hop', db_2hop = 'ccmr_2hop',
+                    time_slice_num = TIME_SLICE_NUM_CCMR)
+        gs.construct_coll_1hop()
+        gs.construct_coll_2hop()
+        gs.cal_stat()
+    else:
+        print('WRONG DATASET: {}'.format(dataset))
     
     # # For Taobao
     # gs = GraphStore(DATA_DIR_Taobao + 'remaped_user_behavior.txt', user_per_collection = USER_PER_COLLECTION_Taobao, 

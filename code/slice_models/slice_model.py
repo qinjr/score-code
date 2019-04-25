@@ -2,19 +2,16 @@ import tensorflow as tf
 from tensorflow.python.ops.rnn_cell import GRUCell
 import numpy as np
 
-NEG_SAMPLE_NUM = 9
-
 '''
-Slice Based Models: SCORE, RRN, GCMC
+Slice Based Models: RRN, GCMC
 '''
 class SliceBaseModel(object):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice, neg_sample_num):
+                obj_per_time_slice):
         # reset graph
         tf.reset_default_graph()
 
         self.obj_per_time_slice = obj_per_time_slice
-        self.neg_sample_num = neg_sample_num
 
         # input placeholders
         with tf.name_scope('inputs'):
@@ -65,19 +62,6 @@ class SliceBaseModel(object):
         # loss
         self.log_loss = tf.losses.log_loss(self.label_ph, self.y_pred)
         self.loss = self.log_loss
-        for v in tf.trainable_variables():
-            if 'bias' not in v.name and 'emb' not in v.name:
-                self.loss += self.reg_lambda * tf.nn.l2_loss(v)
-        # optimizer and training step
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
-        self.train_step = self.optimizer.minimize(self.loss)
-
-    def build_bprloss(self):
-        self.pred_reshape = tf.reshape(self.y_pred, [-1, self.neg_sample_num + 1])
-        self.pred_pos = tf.tile(tf.expand_dims(self.pred_reshape[:, 0], 1), [1, self.neg_num])
-        self.pred_neg = self.pred_reshape[:, 1:]
-        self.loss = tf.reduce_mean(tf.log(tf.nn.sigmoid(self.pred_pos - self.pred_neg)))
-        # regularization term
         for v in tf.trainable_variables():
             if 'bias' not in v.name and 'emb' not in v.name:
                 self.loss += self.reg_lambda * tf.nn.l2_loss(v)
@@ -138,8 +122,8 @@ class SliceBaseModel(object):
 
 class RRN(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice, neg_sample_num = NEG_SAMPLE_NUM):
-        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, neg_sample_num)
+                obj_per_time_slice):
+        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
         user_side = tf.reduce_sum(self.user_1hop, axis=2)
         item_side = tf.reduce_sum(self.item_1hop, axis=2)
 
@@ -158,8 +142,8 @@ class RRN(SliceBaseModel):
 
 class GCMC(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice, neg_sample_num = NEG_SAMPLE_NUM):
-        super(GCMC, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, neg_sample_num)
+                obj_per_time_slice):
+        super(GCMC, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
 
         user_1hop_li = tf.layers.dense(self.user_1hop, self.user_1hop.get_shape().as_list()[-1], activation=None, use_bias=False)
         item_1hop_li = tf.layers.dense(self.item_1hop, self.item_1hop.get_shape().as_list()[-1], activation=None, use_bias=False)

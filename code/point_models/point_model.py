@@ -2,17 +2,14 @@ import tensorflow as tf
 from tensorflow.python.ops.rnn_cell import GRUCell
 import numpy as np
 
-NEG_SAMPLE_NUM = 9
 
 '''
 Point Based Models: GRU4Rec
 '''
 class PointBaseModel(object):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len):
         # reset graph
         tf.reset_default_graph()
-
-        self.neg_sample_num = neg_sample_num
 
         # input placeholders
         with tf.name_scope('inputs'):
@@ -55,19 +52,6 @@ class PointBaseModel(object):
         # loss
         self.log_loss = tf.losses.log_loss(self.label_ph, self.y_pred)
         self.loss = self.log_loss
-        for v in tf.trainable_variables():
-            if 'bias' not in v.name and 'emb' not in v.name:
-                self.loss += self.reg_lambda * tf.nn.l2_loss(v)
-        # optimizer and training step
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
-        self.train_step = self.optimizer.minimize(self.loss)
-
-    def build_bprloss(self):
-        self.pred_reshape = tf.reshape(self.y_pred, [-1, self.neg_sample_num + 1])
-        self.pred_pos = tf.tile(tf.expand_dims(self.pred_reshape[:, 0], 1), [1, self.neg_num])
-        self.pred_neg = self.pred_reshape[:, 1:]
-        self.loss = tf.reduce_mean(tf.log(tf.nn.sigmoid(self.pred_pos - self.pred_neg)))
-        # regularization term
         for v in tf.trainable_variables():
             if 'bias' not in v.name and 'emb' not in v.name:
                 self.loss += self.reg_lambda * tf.nn.l2_loss(v)
@@ -121,8 +105,8 @@ class PointBaseModel(object):
         print('model restored from {}'.format(path))
 
 class GRU4Rec(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num = NEG_SAMPLE_NUM):
-        super(GRU4Rec, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num)
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len):
+        super(GRU4Rec, self).__init__(feature_size, eb_dim, hidden_size, max_time_len)
 
         # GRU
         with tf.name_scope('rnn'):
@@ -136,8 +120,8 @@ class GRU4Rec(PointBaseModel):
         self.build_logloss()
 
 class Caser(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num = NEG_SAMPLE_NUM):
-        super(Caser, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num)
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len):
+        super(Caser, self).__init__(feature_size, eb_dim, hidden_size, max_time_len)
         
         with tf.name_scope('user_seq_cnn'):
             # horizontal filters
@@ -162,8 +146,8 @@ class Caser(PointBaseModel):
         self.build_logloss()
 
 class ARNN(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num = NEG_SAMPLE_NUM):
-        super(ARNN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num)
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len):
+        super(ARNN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len)
         self.user_seq_mask = tf.sequence_mask(self.user_seq_length_ph, tf.shape(self.user_seq)[1], dtype=tf.float32) # [B, T]
         self.user_seq_mask = tf.expand_dims(self.user_seq_mask, -1) # [B, T, 1]
         with tf.name_scope('user_seq_gru'):
@@ -197,8 +181,8 @@ class ARNN(PointBaseModel):
         return atten_output_sum, atten_output, score
 
 class SVDpp(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num = NEG_SAMPLE_NUM):
-        super(SVDpp, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, neg_sample_num)
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len):
+        super(SVDpp, self).__init__(feature_size, eb_dim, hidden_size, max_time_len)
         # SVDFeature
         # with tf.name_scope('user_feature_rep'):
         #     self.user_feat_w_list = []

@@ -15,7 +15,9 @@ random.seed(1111)
 EMBEDDING_SIZE = 16
 HIDDEN_SIZE = 16 * 2
 EVAL_BATCH_SIZE = 1000
-NEG_SAMPLE_NUM = 9
+TRAIN_NEG_SAMPLE_NUM = 9
+TEST_NEG_SAMPLE_NUM = 9
+
 
 # for CCMR
 FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
@@ -54,14 +56,14 @@ def restore(data_set, target_file_test, user_seq_file_test,
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
         logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, 'restore')
-        p = 1. / (1 + NEG_SAMPLE_NUM)
+        p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
         rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
         print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, logloss, rig, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
 
 def get_ndcg(preds, target_iids):
-    preds = np.array(preds).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
-    target_iids = np.array(target_iids).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
-    pos_iids = np.array(target_iids).reshape(-1, NEG_SAMPLE_NUM + 1)[:,0].flatten().tolist()
+    preds = np.array(preds).reshape(-1, TEST_NEG_SAMPLE_NUM + 1).tolist()
+    target_iids = np.array(target_iids).reshape(-1, TEST_NEG_SAMPLE_NUM + 1).tolist()
+    pos_iids = np.array(target_iids).reshape(-1, TEST_NEG_SAMPLE_NUM + 1)[:,0].flatten().tolist()
     ndcg_val = []
     for i in range(len(preds)):
         ranklist = list(reversed(np.take(target_iids[i], np.argsort(preds[i]))))
@@ -87,9 +89,9 @@ def getMRR(ranklist, target_item):
     return 0
 
 def get_ranking_quality(preds, target_iids):
-    preds = np.array(preds).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
-    target_iids = np.array(target_iids).reshape(-1, NEG_SAMPLE_NUM + 1).tolist()
-    pos_iids = np.array(target_iids).reshape(-1, NEG_SAMPLE_NUM + 1)[:,0].flatten().tolist()
+    preds = np.array(preds).reshape(-1, TEST_NEG_SAMPLE_NUM + 1).tolist()
+    target_iids = np.array(target_iids).reshape(-1, TEST_NEG_SAMPLE_NUM + 1).tolist()
+    pos_iids = np.array(target_iids).reshape(-1, TEST_NEG_SAMPLE_NUM + 1)[:,0].flatten().tolist()
     ndcg_5_val = []
     ndcg_10_val = []
     hr_1_val = []
@@ -115,7 +117,7 @@ def eval(model, sess, target_file, max_time_len, reg_lambda, user_seq_file, mode
     target_iids = []
     losses = []
 
-    data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, target_file, user_seq_file)
+    data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, target_file, user_seq_file, TEST_NEG_SAMPLE_NUM)
     t = time.time()
     for batch_data in data_loader:
         pred, label, loss = model.eval(sess, batch_data, reg_lambda)
@@ -176,12 +178,12 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
 
         print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
         early_stop = False
-        eval_iter_num = (dataset_size // 5) // (train_batch_size / 10)
+        eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
         for epoch in range(5):
             if early_stop:
                 break
-            data_loader = DataLoaderUserSeq(train_batch_size, max_time_len, target_file_train, user_seq_file_train)
+            data_loader = DataLoaderUserSeq(train_batch_size, max_time_len, target_file_train, user_seq_file_train, TRAIN_NEG_SAMPLE_NUM)
             for batch_data in data_loader:
                 if early_stop:
                     break

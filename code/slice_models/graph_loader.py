@@ -5,7 +5,6 @@ import time
 import numpy as np
 import multiprocessing
 
-NEG_SAMPLE_NUM = 9
 WORKER_N = 5
 
 # CCMR dataset parameters
@@ -65,8 +64,8 @@ class GraphHandler(object):
         self.dummy_node = np.zeros(self.obj_per_time_slice).tolist()
         
     def gen_node_neighbor(self, start_node_doc, time_slice):
-        node_1hop_list = start_node_doc['1hop_pos'][time_slice]
-        node_2hop_list = start_node_doc['2hop_pos'][time_slice]
+        node_1hop_list = start_node_doc['1hop'][time_slice]
+        node_2hop_list = start_node_doc['2hop'][time_slice]
         
         result = []
 
@@ -122,15 +121,16 @@ class GraphHandler(object):
 
 class GraphLoader(object):
     def __init__(self, graph_handler_params, batch_size, target_file, start_time, 
-                pred_time, worker_n, max_q_size = 10, wait_time = 0.01):
+                pred_time, worker_n, neg_sample_num, max_q_size = 10, wait_time = 0.01):
         self.batch_size = batch_size
         self.max_q_size = max_q_size
         self.wait_time = wait_time
         self.worker_n = worker_n
         self.pred_time = pred_time
         self.start_time = start_time
-        if self.batch_size % 10 != 0:
-            print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
+        self.neg_sample_num = neg_sample_num
+        if self.batch_size % self.neg_sample_num != 0:
+            print('batch size should be time of {}'.format(1 + self.neg_sample_num))
             exit(1)
         self.batch_size2line_num = int(self.batch_size / 10)
         with open(target_file, 'r') as f:
@@ -169,7 +169,7 @@ class GraphLoader(object):
             for line in lines:
                 line_list = line[:-1].split(',')
                 uids.append(line_list[0])
-                iids += line_list[1:]
+                iids += line_list[1:(1 + self.neg_sample_num)]
             uids = [int(uid) for uid in uids]
             iids = [int(iid) for iid in iids]
             while self.work.qsize() >= self.max_q_size:
@@ -199,7 +199,7 @@ class GraphLoader(object):
 
             for i in range(len(uids)):
                 user_1hop, user_2hop = graph_handler.gen_user_history(uids[i], self.pred_time)
-                for j in range(i * (NEG_SAMPLE_NUM + 1), (i + 1) * (NEG_SAMPLE_NUM + 1)):
+                for j in range(i * (self.neg_sample_num + 1), (i + 1) * (self.neg_sample_num + 1)):
                     item_1hop, item_2hop = graph_handler.gen_item_history(iids[j], self.pred_time)
                     user_1hop_batch.append(user_1hop)
                     user_2hop_batch.append(user_2hop)
@@ -208,7 +208,7 @@ class GraphLoader(object):
                     
                     target_user_batch.append(uids[i])
                     target_item_batch.append(iids[j])
-                    if j % (NEG_SAMPLE_NUM + 1) == 0:
+                    if j % (self.neg_sample_num + 1) == 0:
                         label_batch.append(1)
                     else:
                         label_batch.append(0)
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
     #     graph_handler.gen_item_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_40_hot.txt', START_TIME_CCMR, 40, None, None, 5)
+    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_40_hot.txt', START_TIME_CCMR, 40, 5, 1)
     
     t = time.time()
     st = time.time()

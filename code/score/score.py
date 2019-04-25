@@ -3,7 +3,7 @@ from tensorflow.python.ops.rnn_cell import GRUCell
 import numpy as np
 
 '''
-Slice Based Models: SCORE, RRN, GCMC
+SCOREBASE Models: SCORE
 '''
 class SCOREBASE(object):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
