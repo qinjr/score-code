@@ -310,7 +310,7 @@ if __name__ == '__main__':
     dataset = sys.argv[1]
     if dataset == 'CCMR':
         # CCMR
-        tg = TargetGen(DATA_DIR_CCMR + 'user_neg_dict.pkl', 'ccmr_1hop', user_num = USER_NUM_CCMR,
+        tg = TargetGen(None, 'ccmr_1hop', user_num = USER_NUM_CCMR,
                     item_num = ITEM_NUM_CCMR, user_per_collection = USER_PER_COLLECTION_CCMR,
                     item_per_collection = ITEM_PER_COLLECTION_CCMR, start_time = START_TIME_CCMR, 
                     start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
