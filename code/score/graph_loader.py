@@ -5,7 +5,6 @@ import time
 import numpy as np
 import multiprocessing
 
-NEG_SAMPLE_NUM = 9
 WORKER_N = 5
 
 # CCMR dataset parameters
@@ -67,153 +66,108 @@ class GraphHandler(object):
         self.dummy_node = np.zeros(self.obj_per_time_slice).tolist()
 
     def gen_node_neighbor_is(self, start_node_doc, time_slice):
-        node_1hop_list_pos = start_node_doc['1hop_pos'][time_slice]
-        node_1hop_list_neg = start_node_doc['1hop_neg'][time_slice]
-        node_2hop_list_pos = start_node_doc['2hop_pos'][time_slice]
-        node_2hop_list_neg = start_node_doc['2hop_neg'][time_slice]
-        degree_list_pos = start_node_doc['degrees_pos'][time_slice]
-        degree_list_neg = start_node_doc['degrees_neg'][time_slice]
+        node_1hop_list = start_node_doc['1hop'][time_slice]
+        node_2hop_list = start_node_doc['2hop'][time_slice]
+        degree_list = start_node_doc['degrees'][time_slice]
         
         result = []
         
-        if node_1hop_list_pos != []:
-            if len(node_1hop_list_pos) > self.obj_per_time_slice:
-                result.append(node_1hop_list_pos[:self.obj_per_time_slice])
+        if node_1hop_list != []:
+            if len(node_1hop_list) > self.obj_per_time_slice:
+                result.append(node_1hop_list[:self.obj_per_time_slice])
             else:
-                for i in range(self.obj_per_time_slice - len(node_1hop_list_pos)):
-                    node_1hop_list_pos.append(node_1hop_list_pos[i % len(node_1hop_list_pos)])
-                result.append(node_1hop_list_pos)
+                for i in range(self.obj_per_time_slice - len(node_1hop_list)):
+                    node_1hop_list.append(node_1hop_list[i % len(node_1hop_list)])
+                result.append(node_1hop_list)
         else:
             result.append(self.dummy_node)
         
-        if node_1hop_list_neg != []:
-            if len(node_1hop_list_neg) > self.obj_per_time_slice:
-                result.append(node_1hop_list_neg[:self.obj_per_time_slice])
-            else:
-                for i in range(self.obj_per_time_slice - len(node_1hop_list_neg)):
-                    node_1hop_list_neg.append(node_1hop_list_neg[i % len(node_1hop_list_neg)])
-                result.append(node_1hop_list_neg)
-        else:
-            result.append(self.dummy_node)      
-        
-        if node_2hop_list_pos != []:
-            p_distri = (1 / (np.array(degree_list_pos) - 1))
+        if node_2hop_list != []:
+            p_distri = (1 / (np.array(degree_list) - 1))
             p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-            node_2hop_list_pos = np.random.choice(node_2hop_list_pos, self.obj_per_time_slice, p=p_distri).tolist()
-            result.append(node_2hop_list_pos)
+            node_2hop_list = np.random.choice(node_2hop_list, self.obj_per_time_slice, p=p_distri).tolist()
+            result.append(node_2hop_list)
         else:
             result.append(self.dummy_node)
         
-        if node_2hop_list_neg != []:
-            p_distri = (1 / (np.array(degree_list_neg) - 1))
-            p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
-            node_2hop_list_neg = np.random.choice(node_2hop_list_neg, self.obj_per_time_slice, p=p_distri).tolist()
-            result.append(node_2hop_list_neg)
-        else:
-            result.append(self.dummy_node)
-        return result
     
     def gen_node_neighbor_rs(self, start_node_doc, time_slice):
-        node_1hop_list_pos = start_node_doc['1hop_pos'][time_slice]
-        node_1hop_list_neg = start_node_doc['1hop_neg'][time_slice]
-        node_2hop_list_pos = start_node_doc['2hop_pos'][time_slice]
-        node_2hop_list_neg = start_node_doc['2hop_neg'][time_slice]
-        degree_list_pos = start_node_doc['degrees_pos'][time_slice]
-        degree_list_neg = start_node_doc['degrees_neg'][time_slice]
+        node_1hop_list = start_node_doc['1hop'][time_slice]
+        node_2hop_list = start_node_doc['2hop'][time_slice]
+        degree_list = start_node_doc['degrees'][time_slice]
         
         result = []
         
-        if node_1hop_list_pos != []:
-            if len(node_1hop_list_pos) > self.obj_per_time_slice:
-                result.append(node_1hop_list_pos[:self.obj_per_time_slice])
+        if node_1hop_list != []:
+            if len(node_1hop_list) > self.obj_per_time_slice:
+                result.append(node_1hop_list[:self.obj_per_time_slice])
             else:
-                for i in range(self.obj_per_time_slice - len(node_1hop_list_pos)):
-                    node_1hop_list_pos.append(node_1hop_list_pos[i % len(node_1hop_list_pos)])
-                result.append(node_1hop_list_pos)
+                for i in range(self.obj_per_time_slice - len(node_1hop_list)):
+                    node_1hop_list.append(node_1hop_list[i % len(node_1hop_list)])
+                result.append(node_1hop_list)
         else:
             result.append(self.dummy_node)
+          
         
-        if node_1hop_list_neg != []:
-            if len(node_1hop_list_neg) > self.obj_per_time_slice:
-                result.append(node_1hop_list_neg[:self.obj_per_time_slice])
-            else:
-                for i in range(self.obj_per_time_slice - len(node_1hop_list_neg)):
-                    node_1hop_list_neg.append(node_1hop_list_neg[i % len(node_1hop_list_neg)])
-                result.append(node_1hop_list_neg)
-        else:
-            result.append(self.dummy_node)      
-        
-        if node_2hop_list_pos != []:
-            node_2hop_list_pos = np.random.choice(node_2hop_list_pos, self.obj_per_time_slice).tolist()
-            result.append(node_2hop_list_pos)
+        if node_2hop_list != []:
+            node_2hop_list = np.random.choice(node_2hop_list, self.obj_per_time_slice).tolist()
+            result.append(node_2hop_list)
         else:
             result.append(self.dummy_node)
-        
-        if node_2hop_list_neg != []:
-            node_2hop_list_neg = np.random.choice(node_2hop_list_neg, self.obj_per_time_slice).tolist()
-            result.append(node_2hop_list_neg)
-        else:
-            result.append(self.dummy_node)
+
         return result
 
     def gen_user_history(self, start_uid, pred_time):
-        user_1hop_pos, user_1hop_neg, user_2hop_pos, user_2hop_neg = [], [], [], []
+        user_1hop, user_2hop = [], []
         # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
         for i in range(self.start_time, pred_time):
             if self.mode == 'is':
-                user_1hop_t_pos, user_1hop_t_neg, user_2hop_t_pos, user_2hop_t_neg = self.gen_node_neighbor_is(start_node_doc, i)
+                user_1hop_t, user_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
-                user_1hop_t_pos, user_1hop_t_neg, user_2hop_t_pos, user_2hop_t_neg = self.gen_node_neighbor_rs(start_node_doc, i)
+                user_1hop_t, user_2hop_t = self.gen_node_neighbor_rs(start_node_doc, i)
             else:
                 print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
-            user_1hop_pos.append(user_1hop_t_pos)
-            user_1hop_neg.append(user_1hop_t_neg)
-            user_2hop_pos.append(user_2hop_t_pos)
-            user_2hop_neg.append(user_2hop_t_neg)
+            user_1hop.append(user_1hop_t)
+            user_2hop.append(user_2hop_t)
 
         for i in range(self.time_slice_num - pred_time - 1):
-            user_1hop_pos.append(user_1hop_pos[-1])
-            user_1hop_neg.append(user_1hop_neg[-1])
-            user_2hop_pos.append(user_2hop_pos[-1])
-            user_2hop_neg.append(user_2hop_neg[-1])
+            user_1hop.append(user_1hop[-1])
+            user_2hop.append(user_2hop[-1])
         # print('gen_user_history time: {}'.format(time.time() - t))
-        return user_1hop_pos, user_1hop_neg, user_2hop_pos, user_2hop_neg
+        return user_1hop, user_2hop
 
     def gen_item_history(self, start_iid, pred_time):
-        item_1hop_pos, item_1hop_neg, item_2hop_pos, item_2hop_neg = [], [], [], []
+        item_1hop, item_2hop = [], []
         # t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // self.item_per_collection].find({'iid':start_iid})[0]
         for i in range(self.start_time, pred_time):
             if self.mode == 'is':
-                item_1hop_t_pos, item_1hop_t_neg, item_2hop_t_pos, item_2hop_t_neg = self.gen_node_neighbor_is(start_node_doc, i)
+                item_1hop_t, item_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
-                item_1hop_t_pos, item_1hop_t_neg, item_2hop_t_pos, item_2hop_t_neg = self.gen_node_neighbor_rs(start_node_doc, i)
+                item_1hop_t, item_2hop_t = self.gen_node_neighbor_rs(start_node_doc, i)
             else:
                 print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
-            item_1hop_pos.append(item_1hop_t_pos)
-            item_1hop_neg.append(item_1hop_t_neg)
-            item_2hop_pos.append(item_2hop_t_pos)
-            item_2hop_neg.append(item_2hop_t_neg)
+            item_1hop.append(item_1hop_t)
+            item_2hop.append(item_2hop_t)
         for i in range(self.time_slice_num - pred_time - 1):
-            item_1hop_pos.append(item_1hop_pos[-1])
-            item_1hop_neg.append(item_1hop_neg[-1])
-            item_2hop_pos.append(item_2hop_pos[-1])
-            item_2hop_neg.append(item_2hop_neg[-1])
+            item_1hop.append(item_1hop[-1])
+            item_2hop.append(item_2hop[-1])
         # print('gen_item_history time: {}'.format(time.time() - t))
-        return item_1hop_pos, item_1hop_neg, item_2hop_pos, item_2hop_neg
+        return item_1hop, item_2hop
 
 class GraphLoader(object):
     def __init__(self, graph_handler_params, batch_size, target_file, start_time, 
-                pred_time, worker_n, max_q_size = 10, wait_time = 0.01):
+                pred_time, worker_n, neg_sample_num, max_q_size = 10, wait_time = 0.01):
         self.batch_size = batch_size
         self.max_q_size = max_q_size
         self.wait_time = wait_time
         self.worker_n = worker_n
         self.pred_time = pred_time
         self.start_time = start_time
-        if self.batch_size % 10 != 0:
-            print('batch size should be time of {}'.format(1 + NEG_SAMPLE_NUM))
+        self.neg_sample_num = neg_sample_num
+        if self.batch_size % (1 + self.neg_sample_num) != 0:
+            print('batch size should be time of {}'.format(1 + self.neg_sample_num))
             exit(1)
         self.batch_size2line_num = int(self.batch_size / 10)
         with open(target_file, 'r') as f:
@@ -252,7 +206,7 @@ class GraphLoader(object):
             for line in lines:
                 line_list = line[:-1].split(',')
                 uids.append(line_list[0])
-                iids += line_list[1:]
+                iids += line_list[1:(1 + self.neg_sample_num)]
             uids = [int(uid) for uid in uids]
             iids = [int(iid) for iid in iids]
             while self.work.qsize() >= self.max_q_size:
@@ -271,44 +225,36 @@ class GraphLoader(object):
                 uids, iids = self.work.get(timeout=self.wait_time)
             except:
                 continue
-            user_1hop_pos_batch = []
-            user_2hop_pos_batch = []
-            item_1hop_pos_batch = []
-            item_2hop_pos_batch = []
-            user_1hop_neg_batch = []
-            user_2hop_neg_batch = []
-            item_1hop_neg_batch = []
-            item_2hop_neg_batch = []
-
+            user_1hop_batch = []
+            user_2hop_batch = []
+            item_1hop_batch = []
+            item_2hop_batch = []
+            
             target_user_batch = []
             target_item_batch = []
             label_batch = []
             length_batch = []
 
             for i in range(len(uids)):
-                user_1hop_pos, user_1hop_neg, user_2hop_pos, user_2hop_neg = graph_handler.gen_user_history(uids[i], self.pred_time)
-                for j in range(i * (NEG_SAMPLE_NUM + 1), (i + 1) * (NEG_SAMPLE_NUM + 1)):
-                    item_1hop_pos, item_1hop_neg, item_2hop_pos, item_2hop_neg = graph_handler.gen_item_history(iids[j], self.pred_time)
+                user_1hop, user_2hop = graph_handler.gen_user_history(uids[i], self.pred_time)
+                for j in range(i * (self.neg_sample_num + 1), (i + 1) * (self.neg_sample_num + 1)):
+                    item_1hop, item_2hop = graph_handler.gen_item_history(iids[j], self.pred_time)
                     
-                    user_1hop_pos_batch.append(user_1hop_pos)
-                    user_1hop_neg_batch.append(user_1hop_neg)
-                    user_2hop_pos_batch.append(user_2hop_pos)
-                    user_2hop_neg_batch.append(user_2hop_neg)
+                    user_1hop_batch.append(user_1hop)
+                    user_2hop_batch.append(user_2hop)
 
-                    item_1hop_pos_batch.append(item_1hop_pos)
-                    item_1hop_neg_batch.append(item_1hop_neg)
-                    item_2hop_pos_batch.append(item_2hop_pos)
-                    item_2hop_neg_batch.append(item_2hop_neg)
+                    item_1hop_batch.append(item_1hop)
+                    item_2hop_batch.append(item_2hop)
                     
                     target_user_batch.append(uids[i])
                     target_item_batch.append(iids[j])
                     
-                    if j % (NEG_SAMPLE_NUM + 1) == 0:
+                    if j % (self.neg_sample_num + 1) == 0:
                         label_batch.append(1)
                     else:
                         label_batch.append(0)
                     length_batch.append(self.pred_time - self.start_time)
-            self.results.put((user_1hop_pos_batch, user_2hop_pos_batch, item_1hop_pos_batch, item_2hop_pos_batch, user_1hop_neg_batch, user_2hop_neg_batch, item_1hop_neg_batch, item_2hop_neg_batch, target_user_batch, target_item_batch, label_batch, length_batch))
+            self.results.put((user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch, length_batch))
         with self.worker_stop.get_lock():
             self.worker_stop.value += 1
 
@@ -337,7 +283,7 @@ if __name__ == "__main__":
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
     #     graph_handler.gen_item_history(i, 40)
-    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_40_hot.txt', START_TIME_CCMR, 40, 5)
+    graph_loader = GraphLoader(graph_handler_params, 100, DATA_DIR_CCMR + 'target_40_hot.txt', START_TIME_CCMR, 40, 5, 2)
     
     t = time.time()
     st = time.time()
