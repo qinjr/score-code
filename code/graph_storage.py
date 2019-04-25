@@ -45,17 +45,6 @@ USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
 TIME_SLICE_NUM_Tmall = 14
 
-# ML parameters
-DATA_DIR_ML = '../../score-data/ML/feateng/'
-USER_PER_COLLECTION_ML = 20
-ITEM_PER_COLLECTION_ML = 20
-START_TIME_ML = 0
-MAX_1HOP_ML = 100
-MAX_2HOP_ML = 100
-USER_NUM_ML = 6040
-ITEM_NUM_ML = 3952
-TIME_SLICE_NUM_ML = 9
-
 
 class GraphStore(object):
     def __init__(self, rating_file, user_per_collection = USER_PER_COLLECTION_CCMR, 
@@ -316,35 +305,25 @@ if __name__ == "__main__":
         gs.construct_coll_1hop()
         gs.construct_coll_2hop()
         gs.cal_stat()
+    elif dataset == 'Taobao':
+        # For Taobao
+        gs = GraphStore(DATA_DIR_Taobao + 'remaped_user_behavior.txt', user_per_collection = USER_PER_COLLECTION_Taobao, 
+                    item_per_collection = ITEM_PER_COLLECTION_Taobao,  start_time = START_TIME_Taobao,   
+                    max_1hop = MAX_1HOP_Taobao, max_2hop = MAX_2HOP_Taobao, user_num = USER_NUM_Taobao,
+                    item_num = ITEM_NUM_Taobao, db_1hop = 'taobao_1hop', db_2hop = 'taobao_2hop',
+                    time_slice_num = TIME_SLICE_NUM_Taobao)
+        gs.construct_coll_1hop()
+        gs.construct_coll_2hop()
+        gs.cal_stat()
+    elif dataset == 'Tmall':
+        # For Tmall
+        gs = GraphStore(DATA_DIR_Tmall + 'remaped_user_behavior.csv', user_per_collection = USER_PER_COLLECTION_Tmall, 
+                    item_per_collection = ITEM_PER_COLLECTION_Tmall,  start_time = START_TIME_Tmall,   
+                    max_1hop = MAX_1HOP_Tmall, max_2hop = MAX_2HOP_Tmall, user_num = USER_NUM_Tmall,
+                    item_num = ITEM_NUM_Tmall, db_1hop = 'tmall_1hop', db_2hop = 'tmall_2hop',
+                    time_slice_num = TIME_SLICE_NUM_Tmall)
+        gs.construct_coll_1hop()
+        gs.construct_coll_2hop()
+        gs.cal_stat()
     else:
         print('WRONG DATASET: {}'.format(dataset))
-    
-    # # For Taobao
-    # gs = GraphStore(DATA_DIR_Taobao + 'remaped_user_behavior.txt', user_per_collection = USER_PER_COLLECTION_Taobao, 
-    #             item_per_collection = ITEM_PER_COLLECTION_Taobao,  start_time = START_TIME_Taobao,   
-    #             max_1hop = MAX_1HOP_Taobao, max_2hop = MAX_2HOP_Taobao, user_num = USER_NUM_Taobao,
-    #             item_num = ITEM_NUM_Taobao, db_1hop = 'taobao_1hop', db_2hop = 'taobao_2hop',
-    #             time_slice_num = TIME_SLICE_NUM_Taobao)
-    # gs.construct_coll_1hop()
-    # gs.construct_coll_2hop()
-    # gs.cal_stat()
-
-    # # For Tmall
-    # gs = GraphStore(DATA_DIR_Tmall + 'remaped_user_behavior.csv', user_per_collection = USER_PER_COLLECTION_Tmall, 
-    #             item_per_collection = ITEM_PER_COLLECTION_Tmall,  start_time = START_TIME_Tmall,   
-    #             max_1hop = MAX_1HOP_Tmall, max_2hop = MAX_2HOP_Tmall, user_num = USER_NUM_Tmall,
-    #             item_num = ITEM_NUM_Tmall, db_1hop = 'tmall_1hop', db_2hop = 'tmall_2hop',
-    #             time_slice_num = TIME_SLICE_NUM_Tmall)
-    # gs.construct_coll_1hop()
-    # gs.construct_coll_2hop()
-    # gs.cal_stat()
-
-    # # For ML
-    # gs = GraphStore(DATA_DIR_ML + 'remaped_ratings.txt', user_per_collection = USER_PER_COLLECTION_ML, 
-    #             item_per_collection = ITEM_PER_COLLECTION_ML,  start_time = START_TIME_ML,   
-    #             max_1hop = MAX_1HOP_ML, max_2hop = MAX_2HOP_ML, user_num = USER_NUM_ML,
-    #             item_num = ITEM_NUM_ML, db_1hop = 'ml_1hop', db_2hop = 'ml_2hop',
-    #             time_slice_num = TIME_SLICE_NUM_ML)
-    # gs.construct_coll_1hop()
-    # gs.construct_coll_2hop()
-    # gs.cal_stat()
