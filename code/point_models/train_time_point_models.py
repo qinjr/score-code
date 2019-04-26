@@ -239,14 +239,14 @@ if __name__ == '__main__':
     data_set = sys.argv[3]
 
     if data_set == 'ccmr':
-        target_file_train = DATA_DIR_CCMR + 'target_40_hot_train.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot_test.txt'
-        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq.txt'
-        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
+        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39_sample.txt'
+        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
-        dataset_size = 300000
+        dataset_size = 262255
     elif data_set == 'taobao':
         target_file_train = DATA_DIR_Taobao + 'target_train4point_model_sample.txt'
         target_file_test = DATA_DIR_Taobao + 'target_17_hot_sample.txt'

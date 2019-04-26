@@ -256,16 +256,16 @@ if __name__ == '__main__':
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
                                 USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR]
-        target_file_train = DATA_DIR_CCMR + 'target_40_hot_train.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot_test.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
         start_time = START_TIME_CCMR
-        pred_time_train = 40
+        pred_time_train = 39
         pred_time_test = 40
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
-        dataset_size = 300000
+        dataset_size = 262255
     elif data_set == 'taobao':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
