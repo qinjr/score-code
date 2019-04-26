@@ -315,8 +315,8 @@ if __name__ == '__main__':
                     item_per_collection = ITEM_PER_COLLECTION_CCMR, start_time = START_TIME_CCMR, 
                     start_time_idx = START_TIME_IDX_CCMR, time_delta = TIME_DELTA_CCMR)
         # tg.gen_pop_items(DATA_DIR_CCMR + 'pop_items.pkl', 10)
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40, DATA_DIR_CCMR + 'pop_items.pkl')
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_39.txt', 39, DATA_DIR_CCMR + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_40.txt', 40, None)
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_CCMR + 'target_39.txt', 39, None)
         # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict_40.pkl', DATA_DIR_CCMR + 'item_hist_dict_40.pkl', 40)
         # tg.gen_user_item_hist_dict_ccmr(DATA_DIR_CCMR + 'rating_pos.csv', DATA_DIR_CCMR + 'user_hist_dict_39.pkl', DATA_DIR_CCMR + 'item_hist_dict_39.pkl', 39)
         tg.filter_target_file(DATA_DIR_CCMR + 'target_40.txt', DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'target_40_cold.txt', DATA_DIR_CCMR + 'user_hist_dict_40.pkl')
