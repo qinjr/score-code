@@ -246,7 +246,7 @@ if __name__ == '__main__':
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
-        dataset_size = 262255
+        dataset_size = 262239
     elif data_set == 'taobao':
         target_file_train = DATA_DIR_Taobao + 'target_train4point_model_sample.txt'
         target_file_test = DATA_DIR_Taobao + 'target_17_hot_sample.txt'
@@ -270,8 +270,8 @@ if __name__ == '__main__':
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambda = 1e-2
-    hyper_paras = [(100, 5e-4), (200, 1e-3)]
+    reg_lambda = 1e-3
+    hyper_paras = [(100, 5e-5), (200, 1e-4)]
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper
