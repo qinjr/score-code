@@ -246,7 +246,7 @@ if __name__ == '__main__':
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
-        dataset_size = 262239
+        dataset_size = 262090
     elif data_set == 'taobao':
         target_file_train = DATA_DIR_Taobao + 'target_train4point_model_sample.txt'
         target_file_test = DATA_DIR_Taobao + 'target_17_hot_sample.txt'
