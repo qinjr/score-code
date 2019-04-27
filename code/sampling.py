@@ -44,8 +44,8 @@ if __name__ == "__main__":
         sample_files(DATA_DIR_Taobao + 'target_17_hot.txt', DATA_DIR_Taobao + 'test_user_hist_seq_17.txt', DATA_DIR_Taobao + 'target_17_hot_sample.txt', DATA_DIR_Taobao + 'test_user_hist_seq_17_sample.txt', 3)
     elif dataset == 'tmall':
         # CCMR
-        sample_files(DATA_DIR_Tmall + 'target_10_hot.txt', DATA_DIR_Tmall + 'train_user_hist_seq_10.txt', DATA_DIR_Tmall + 'target_10_hot_sample.txt', DATA_DIR_Tmall + 'train_user_hist_seq_10_sample.txt', 2)
-        sample_files(DATA_DIR_Tmall + 'target_11_hot.txt', DATA_DIR_Tmall + 'test_user_hist_seq_11.txt', DATA_DIR_Tmall + 'target_11_hot_sample.txt', DATA_DIR_Tmall + 'test_user_hist_seq_11_sample.txt', 3)
+        sample_files(DATA_DIR_Tmall + 'target_10_hot.txt', DATA_DIR_Tmall + 'train_user_hist_seq_10.txt', DATA_DIR_Tmall + 'target_10_hot_sample.txt', DATA_DIR_Tmall + 'train_user_hist_seq_10_sample.txt', 1)
+        sample_files(DATA_DIR_Tmall + 'target_11_hot.txt', DATA_DIR_Tmall + 'test_user_hist_seq_11.txt', DATA_DIR_Tmall + 'target_11_hot_sample.txt', DATA_DIR_Tmall + 'test_user_hist_seq_11_sample.txt', 6)
     else:
         print('WRONG DATASET: {}'.format(dataset))
 
