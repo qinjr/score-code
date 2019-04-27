@@ -37,7 +37,7 @@ if __name__ == "__main__":
     if dataset == 'ccmr':
         # CCMR
         sample_files(DATA_DIR_CCMR + 'target_39_hot.txt', DATA_DIR_CCMR + 'train_user_hist_seq_39.txt', DATA_DIR_CCMR + 'target_39_hot_sample.txt', DATA_DIR_CCMR + 'train_user_hist_seq_39_sample.txt', 2)
-        sample_files(DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'test_user_hist_seq_40.txt', DATA_DIR_CCMR + 'target_40_hot_sample.txt', DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt', 3)
+        sample_files(DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'test_user_hist_seq_40.txt', DATA_DIR_CCMR + 'target_40_hot_sample.txt', DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt', 10)
     elif dataset == 'taobao':
         # CCMR
         sample_files(DATA_DIR_Taobao + 'target_16_hot.txt', DATA_DIR_Taobao + 'train_user_hist_seq_16.txt', DATA_DIR_Taobao + 'target_16_hot_sample.txt', DATA_DIR_Taobao + 'train_user_hist_seq_16_sample.txt', 2)
