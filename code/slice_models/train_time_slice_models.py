@@ -226,6 +226,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 if len(test_losses) > 2 and epoch > 0:
                     if (test_losses[-1] > test_losses[-2] and test_losses[-2] > test_losses[-3]):
                         early_stop = True
+            epoch += 1  
 
         # generate log
         if not os.path.exists('logs_{}/'.format(data_set)):
