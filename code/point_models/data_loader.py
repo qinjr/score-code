@@ -4,7 +4,7 @@ import numpy as np
 
 
 DATA_DIR_CCMR = '../../../score-data/CCMR/feateng/'
-MAX_LEN_CCMR = 100
+MAX_LEN_CCMR = 300
 
 DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
 MAX_LEN_Taobao = 300
@@ -38,7 +38,7 @@ class DataLoaderUserSeq(object):
                 raise StopIteration
             user_seq_line = self.user_seq_f.readline()
             target_line_split_list = target_line[:-1].split(',')
-            uid, iids = target_line_split_list[0], target_line_split_list[1:(1 + self.neg_sample_num)]
+            uid, iids = target_line_split_list[0], target_line_split_list[1:(2 + self.neg_sample_num)]
             
             user_seq_list = [iid for iid in user_seq_line[:-1].split(',')]
             user_seq_one = []

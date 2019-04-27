@@ -15,7 +15,7 @@ random.seed(1111)
 EMBEDDING_SIZE = 16
 HIDDEN_SIZE = 16 * 2
 EVAL_BATCH_SIZE = 1000
-TRAIN_NEG_SAMPLE_NUM = 19
+TRAIN_NEG_SAMPLE_NUM = 1
 TEST_NEG_SAMPLE_NUM = 19
 
 
@@ -271,7 +271,7 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     reg_lambda = 1e-3
-    hyper_paras = [(100, 5e-5), (200, 1e-4)]
+    hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper
