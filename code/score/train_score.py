@@ -63,7 +63,7 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     else:
         print('WRONG MODEL TYPE')
         exit(1)
-    model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
+    model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
     
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:

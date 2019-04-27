@@ -7,7 +7,7 @@ import multiprocessing
 import datetime
 import sys
 
-NEG_SAMPLE_NUM = 9
+NEG_SAMPLE_NUM = 19
 SECONDS_PER_DAY = 24*3600
 # CCMR dataset parameters
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
