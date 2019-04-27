@@ -267,7 +267,7 @@ if __name__ == '__main__':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, START_TIME_Taobao, \
-                                USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao]
+                                USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao, 'is']
         target_file_train = DATA_DIR_Taobao + 'target_16_hot_train_sample.txt'
         target_file_test = DATA_DIR_Taobao + 'target_17_hot_test_sample.txt'
         start_time = START_TIME_Taobao
@@ -282,7 +282,7 @@ if __name__ == '__main__':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
                                 USER_NUM_Tmall, ITEM_NUM_Tmall, START_TIME_Tmall, \
-                                USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall]
+                                USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall, 'is']
         target_file_train = DATA_DIR_Tmall + 'target_10_hot_sample.txt'
         target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
         start_time = START_TIME_Tmall
@@ -292,7 +292,7 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_Tmall
         max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
-        dataset_size = 262988
+        dataset_size = 228213
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()

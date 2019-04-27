@@ -210,7 +210,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                             os.makedirs('save_model_{}/{}/'.format(data_set, model_name))
                         save_path = 'save_model_{}/{}/ckpt'.format(data_set, model_name)
                         model.save(sess, save_path)
-                        
+
                     if len(test_losses) > 2 and epoch > 0:
                         if (test_losses[-1] > test_losses[-2] and test_losses[-2] > test_losses[-3]):
                             early_stop = True
@@ -264,7 +264,7 @@ if __name__ == '__main__':
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = MAX_LEN_Tmall
-        dataset_size = 262988
+        dataset_size = 228213
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()

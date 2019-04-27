@@ -295,7 +295,7 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_Tmall
         max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
-        dataset_size = 262988
+        dataset_size = 228213
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
