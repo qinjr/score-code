@@ -300,7 +300,7 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     reg_lambda = 5e-4
-    hyper_paras = [(100, 5e-4), (200, 1e-3)]
+    hyper_paras = [(100, 1e-4), (200, 5e-4)]
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper
