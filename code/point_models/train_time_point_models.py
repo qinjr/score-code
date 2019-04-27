@@ -259,8 +259,8 @@ if __name__ == '__main__':
     elif data_set == 'tmall':
         target_file_train = DATA_DIR_Tmall + 'target_10_hot_sample.txt'
         target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
-        user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_sample.txt'
-        user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_sample.txt'
+        user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_10_sample.txt'
+        user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_11_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = MAX_LEN_Tmall
