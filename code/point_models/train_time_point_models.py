@@ -210,8 +210,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                             os.makedirs('save_model_{}/{}/'.format(data_set, model_name))
                         save_path = 'save_model_{}/{}/ckpt'.format(data_set, model_name)
                         model.save(sess, save_path)
-                    print('epoch: {}'.format(epoch))
-                    print(test_losses)
+                        
                     if len(test_losses) > 2 and epoch > 0:
                         if (test_losses[-1] > test_losses[-2] and test_losses[-2] > test_losses[-3]):
                             early_stop = True

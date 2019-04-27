@@ -17,7 +17,7 @@ class DataLoaderUserSeq(object):
         if self.batch_size % (1 + self.neg_sample_num) != 0:
             print('batch size should be time of {}'.format(1 + self.neg_sample_num))
             exit(1)
-        self.batch_size2line_num = int(self.batch_size / 10)
+        self.batch_size2line_num = int(self.batch_size / (1 + self.neg_sample_num))
 
         self.target_f = open(target_file)
         self.user_seq_f = open(user_seq_file)
