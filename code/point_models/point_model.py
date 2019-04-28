@@ -214,7 +214,7 @@ class SVDpp(PointBaseModel):
         self.neighbor = tf.reduce_sum(self.user_seq_rep, axis=1)
         # self.norm_neighbor = self.neighbor / tf.sqrt(tf.expand_dims(tf.norm(self.user_seq_rep, 1, (1, 2)), 1))
 
-        self.latent_score = tf.reduce_sum(self.target_item_rep * (self.target_user_rep + self.norm_neighbor), 1)
+        self.latent_score = tf.reduce_sum(self.target_item_rep * (self.target_user_rep + self.neighbor), 1)
         self.user_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_user_ph), [-1,])
         self.item_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_item_ph), [-1,])
         # self.average = 0.5
