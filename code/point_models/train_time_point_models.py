@@ -55,10 +55,10 @@ def restore(data_set, target_file_test, user_seq_file_test,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, 'restore')
-        p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
-        rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
-        print('RESTORE, LOSS TEST: %.4f  LOGLOSS TEST: %.4f  RIG TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, logloss, rig, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
+        _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+        # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
+        # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
+        print('RESTORE, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
 
 def get_ndcg(preds, target_iids):
     preds = np.array(preds).reshape(-1, TEST_NEG_SAMPLE_NUM + 1).tolist()
@@ -111,7 +111,7 @@ def get_ranking_quality(preds, target_iids):
     return np.mean(ndcg_5_val), np.mean(ndcg_10_val), np.mean(hr_1_val), np.mean(hr_5_val), np.mean(hr_10_val), np.mean(mrr_val)
 
 
-def eval(model, sess, target_file, max_time_len, reg_lambda, user_seq_file, mode = 'train'):
+def eval(model, sess, target_file, max_time_len, reg_lambda, user_seq_file):
     preds = []
     labels = []
     target_iids = []
@@ -128,14 +128,14 @@ def eval(model, sess, target_file, max_time_len, reg_lambda, user_seq_file, mode
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     loss = sum(losses) / len(losses)
-    if mode == 'train':
-        ndcg = get_ndcg(preds, target_iids)
-        print("EVAL TIME: %.4fs" % (time.time() - t))
-        return logloss, auc, ndcg, loss
-    elif mode == 'restore':
-        ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
-        print("EVAL TIME: %.4fs" % (time.time() - t))
-        return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
+    # if mode == 'train':
+    #     ndcg = get_ndcg(preds, target_iids)
+    #     print("EVAL TIME: %.4fs" % (time.time() - t))
+    #     return logloss, auc, ndcg, loss
+    # elif mode == 'restore':
+    ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
+    print("EVAL TIME: %.4fs" % (time.time() - t))
+    return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
 
 def train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
         model_type, train_batch_size, feature_size, 
@@ -161,22 +161,32 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         sess.run(tf.local_variables_initializer())
 
         train_losses_step = []
-        
         train_losses = []
-        test_loglosses = []
-        test_aucs = []
-        test_ndcgs = []
+        
+        # test_loglosses = []
+        # test_aucs = []
+        test_ndcgs_5 = []
+        test_ndcgs_10 = []
+        test_hrs_1 = []
+        test_hrs_5 = []
+        test_hrs_10 = []
+        test_mrrs = []
         test_losses = []
 
         # before training process
         step = 0
-        test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test)
-        test_loglosses.append(test_logloss)
-        test_aucs.append(test_auc)
-        test_ndcgs.append(test_ndcg)
+        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+        # test_loglosses.append(test_logloss)
+        # test_aucs.append(test_auc)
+        test_ndcgs_5.append(test_ndcg_5)
+        test_ndcgs_10.append(test_ndcg_10)
+        test_hrs_1.append(test_hr_1)
+        test_hrs_5.append(test_hr_5)
+        test_hrs_10.append(test_hr_10)
+        test_mrrs.append(test_mrr)
         test_losses.append(test_loss)
 
-        print("STEP %d LOSS TRAIN: NaN  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, test_loss, test_logloss, test_auc, test_ndcg))
+        print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
@@ -195,15 +205,21 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                     train_loss = sum(train_losses_step) / len(train_losses_step)
                     train_losses.append(train_loss)
                     train_losses_step = []
-                    test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test)
-
-                    test_loglosses.append(test_logloss)
-                    test_aucs.append(test_auc)
-                    test_ndcgs.append(test_ndcg)
+                    
+                    # test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+                    # test_loglosses.append(test_logloss)
+                    # test_aucs.append(test_auc)
+                    test_ndcgs_5.append(test_ndcg_5)
+                    test_ndcgs_10.append(test_ndcg_10)
+                    test_hrs_1.append(test_hr_1)
+                    test_hrs_5.append(test_hr_5)
+                    test_hrs_10.append(test_hr_10)
+                    test_mrrs.append(test_mrr)
                     test_losses.append(test_loss)
-
-                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  LOGLOSS TEST: %.4f  AUC TEST: %.4f  NDCG@5 TEST: %.4f" % (step, train_loss, test_loss, test_logloss, test_auc, test_ndcg))
-                    if test_losses[-1] < min(test_losses[:-1]):
+                    
+                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, train_loss, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
+                    if test_mrrs[-1] > min(test_mrrs[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
@@ -211,8 +227,10 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                         save_path = 'save_model_{}/{}/ckpt'.format(data_set, model_name)
                         model.save(sess, save_path)
 
-                    if len(test_losses) > 2 and epoch > 0:
-                        if (test_losses[-1] > test_losses[-2] and test_losses[-2] > test_losses[-3]):
+                    if len(test_mrrs) > 2 and epoch > 0:
+                        if (test_mrrs[-1] < test_mrrs[-2] and test_mrrs[-2] < test_mrrs[-3]):
+                            early_stop = True
+                        if (test_mrr[-1] - test_mrr[-2]) <= 0.001 and (test_mrr[-2] - test_mrr[-3]) <= 0.001:
                             early_stop = True
 
         # generate log
@@ -221,14 +239,17 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         model_name = '{}_{}_{}'.format(model_type, lr, reg_lambda)
 
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
-            dump_tuple = (train_losses, test_losses, test_loglosses, test_aucs, test_ndcgs)
+            dump_tuple = (train_losses, test_losses, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrrs)
             pkl.dump(dump_tuple, f)
         with open('logs_{}/{}.result'.format(data_set, model_name), 'w') as f:
-            index = np.argmin(test_losses)
-            f.write('Result Test AUC: {}\n'.format(test_aucs[index]))
-            f.write('Result Test Logloss: {}\n'.format(test_loglosses[index]))
-            f.write('Result Test NDCG@5: {}\n'.format(test_ndcgs[index]))
-        return 
+            index = np.argmax(test_mrrs)
+            f.write('Result Test NDCG@5: {}\n'.format(test_ndcgs_5[index]))
+            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs_10[index]))
+            f.write('Result Test HR@1: {}\n'.format(test_hrs_1[index]))
+            f.write('Result Test HR@5: {}\n'.format(test_hrs_5[index]))
+            f.write('Result Test HR@10: {}\n'.format(test_hrs_10[index]))
+            f.write('Result Test MRR: {}\n'.format(test_mrrs[index]))
+        return
         
 if __name__ == '__main__':
     if len(sys.argv) < 4:
@@ -271,7 +292,7 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     reg_lambda = 1e-3
-    hyper_paras = [(100, 1e-4), (200, 5e-4)]
+    hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper

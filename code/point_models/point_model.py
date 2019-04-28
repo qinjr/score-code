@@ -220,5 +220,5 @@ class SVDpp(PointBaseModel):
         self.average = 0.2
         self.y_pred = tf.nn.sigmoid(self.average + self.latent_score)
         
-        self.build_logloss()
+        self.build_mseloss()
     
