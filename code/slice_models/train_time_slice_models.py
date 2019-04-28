@@ -202,7 +202,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
-        for epoch in range(5):
+        for epoch in range(10):
             if early_stop:
                 break
             graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, WORKER_N, TRAIN_NEG_SAMPLE_NUM)
