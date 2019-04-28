@@ -69,6 +69,19 @@ class PointBaseModel(object):
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         self.train_step = self.optimizer.minimize(self.loss)
     
+    def build_bprloss(self):
+        self.pred_reshape = tf.reshape(self.y_pred, [-1, 1 + 1])
+        self.pred_pos = self.pred_reshape[:, 0]#tf.tile(tf.expand_dims(self.pred_reshape[:, 0], 1), [1, 1 + 1])
+        self.pred_neg = self.pred_reshape[:, 1]
+        self.loss = tf.reduce_mean(tf.log(tf.nn.sigmoid(self.pred_pos - self.pred_neg)))
+        # regularization term
+        for v in tf.trainable_variables():
+            if 'bias' not in v.name and 'emb' not in v.name:
+                self.loss += self.reg_lambda * tf.nn.l2_loss(v)
+        # optimizer and training step
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+        self.train_step = self.optimizer.minimize(self.loss)
+
     def train(self, sess, batch_data, lr, reg_lambda):
         loss, _ = sess.run([self.loss, self.train_step], feed_dict = {
                 self.user_seq_ph : batch_data[0],
@@ -220,5 +233,5 @@ class SVDpp(PointBaseModel):
         # self.average = 0.5
         self.y_pred = tf.nn.sigmoid(self.user_bias + self.item_bias + self.latent_score)
         
-        self.build_logloss()
+        self.build_bprloss()
     
