@@ -190,7 +190,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
-        for epoch in range(5):
+        for epoch in range(10):
             if early_stop:
                 break
             data_loader = DataLoaderUserSeq(train_batch_size, max_time_len, target_file_train, user_seq_file_train, TRAIN_NEG_SAMPLE_NUM)
