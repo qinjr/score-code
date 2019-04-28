@@ -239,7 +239,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     if len(test_mrrs) > 2 and epoch > 0:
                         if (test_mrrs[-1] < test_mrrs[-2] and test_mrrs[-2] < test_mrrs[-3]):
                             early_stop = True
-                        if (test_mrr[-1] - test_mrr[-2]) <= 0.001 and (test_mrr[-2] - test_mrr[-3]) <= 0.001:
+                        if (test_mrrs[-1] - test_mrrs[-2]) <= 0.001 and (test_mrrs[-2] - test_mrrs[-3]) <= 0.001:
                             early_stop = True
         # generate log
         if not os.path.exists('logs_{}/'.format(data_set)):
