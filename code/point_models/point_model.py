@@ -202,7 +202,7 @@ class SVDpp(PointBaseModel):
         #         self.target_item_rep += self.target_item[:,i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
         #         self.user_seq_rep += self.user_seq[:, :, i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
         
-        user and item bias
+        # user and item bias
         with tf.name_scope('b'):
             self.item_user_bias = tf.get_variable('item_b', [feature_size, 1])
         self.target_user_rep = self.target_user[:, :eb_dim]
