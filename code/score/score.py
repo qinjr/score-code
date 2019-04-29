@@ -170,7 +170,7 @@ class SCORE(SCOREBASE):
         # build loss
         self.build_logloss()
         self.build_l2norm()
-        self.auxloss = 0
+        self.auxloss = self.loss
         self.build_train_step()
 
 class SCORE_CONCAT(SCOREBASE):
@@ -198,7 +198,7 @@ class SCORE_CONCAT(SCOREBASE):
         # build loss
         self.build_logloss()
         self.build_l2norm()
-        self.auxloss = 0
+        self.auxloss = self.loss
         self.build_train_step()
 
 class SCORE_V2(SCOREBASE):
