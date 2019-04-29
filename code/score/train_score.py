@@ -55,7 +55,7 @@ ITEM_NUM_Tmall = 1090390
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, model_type, train_batch_size, feature_size, eb_dim, 
-        hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda):
+        hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda, mu):
     print('restore begin')
     graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
@@ -63,16 +63,16 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     else:
         print('WRONG MODEL TYPE')
         exit(1)
-    model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
+    model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda, mu)
     
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+        _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss, auxloss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
         # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
         # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
-        print('RESTORE, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
+        print('RESTORE, LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, auxloss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
 
 def get_ndcg(preds, target_iids):
     preds = np.array(preds).reshape(-1, TEST_NEG_SAMPLE_NUM + 1).tolist()
@@ -125,23 +125,25 @@ def get_ranking_quality(preds, target_iids):
     return np.mean(ndcg_5_val), np.mean(ndcg_10_val), np.mean(hr_1_val), np.mean(hr_5_val), np.mean(hr_10_val), np.mean(mrr_val)
 
 def eval(model, sess, graph_handler_params, target_file, start_time, pred_time, 
-        reg_lambda):
+        reg_lambda, mu):
     preds = []
     labels = []
     target_iids = []
     losses = []
-
+    auxlosses = []
     graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, WORKER_N, TEST_NEG_SAMPLE_NUM)
     t = time.time()
     for batch_data in graph_loader:
-        pred, label, loss = model.eval(sess, batch_data, reg_lambda)
+        pred, label, loss, auxloss = model.eval(sess, batch_data, reg_lambda, mu)
         preds += pred
         labels += label
         losses.append(loss)
+        auxlosses.append(auxloss)
         target_iids += np.array(batch_data[5]).tolist()
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     loss = sum(losses) / len(losses)
+    auxloss = sum(auxlosses) / len(auxlosses)
     # if mode == 'train':
     #     ndcg = get_ndcg(preds, target_iids)
     #     print("EVAL TIME: %.4fs" % (time.time() - t))
@@ -149,14 +151,16 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time,
     # elif mode == 'restore':
     ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
     print("EVAL TIME: %.4fs" % (time.time() - t))
-    return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
+    return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss, auxloss
     
 def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
         pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
-        eb_dim, hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size):
+        eb_dim, hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda, mu, dataset_size):
     graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    if model_type == 'SCORE_V':
+        model = SCORE_V2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -181,10 +185,11 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         test_hrs_10 = []
         test_mrrs = []
         test_losses = []
+        test_auxlosses = []
 
         # before training process
         step = 0
-        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss, test_auxloss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
         # test_loglosses.append(test_logloss)
         # test_aucs.append(test_auc)
         test_ndcgs_5.append(test_ndcg_5)
@@ -194,8 +199,9 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         test_hrs_10.append(test_hr_10)
         test_mrrs.append(test_mrr)
         test_losses.append(test_loss)
+        test_auxlosses.append(test_auxloss)
 
-        print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
+        print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_auxloss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
@@ -207,7 +213,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 if early_stop:
                     break
 
-                loss = model.train(sess, batch_data, lr, reg_lambda)
+                loss = model.train(sess, batch_data, lr, reg_lambda, mu)
                 step += 1
                 train_losses_step.append(loss)
                 if step % eval_iter_num == 0:
@@ -216,7 +222,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     train_losses_step = []
 
                     # test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
-                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss, test_auxloss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
                     # test_loglosses.append(test_logloss)
                     # test_aucs.append(test_auc)
                     test_ndcgs_5.append(test_ndcg_5)
@@ -226,11 +232,12 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     test_hrs_10.append(test_hr_10)
                     test_mrrs.append(test_mrr)
                     test_losses.append(test_loss)
+                    test_auxlosses.append(test_auxloss)
                     
-                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, train_loss, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
+                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, train_loss, test_loss, test_auxloss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
                     if test_mrrs[-1] > min(test_mrrs[:-1]):
                         # save model
-                        model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
+                        model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda, mu)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
                             os.makedirs('save_model_{}/{}/'.format(data_set, model_name))
                         save_path = 'save_model_{}/{}/ckpt'.format(data_set, model_name)
@@ -244,7 +251,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         # generate log
         if not os.path.exists('logs_{}/'.format(data_set)):
             os.makedirs('logs_{}/'.format(data_set))
-        model_name = '{}_{}_{}'.format(model_type, lr, reg_lambda)
+        model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda, mu)
 
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
             dump_tuple = (train_losses, test_losses, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrrs)
@@ -319,15 +326,16 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     reg_lambda = 1e-3
+    mu = 1
     hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper
         train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
                 pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
-                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size)
+                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, mu, dataset_size)
         
         restore(data_set, target_file_test, graph_handler_params, start_time,
                 pred_time_test, model_type, train_batch_size, feature_size, 
                 EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
-                lr, reg_lambda)
+                lr, reg_lambda, mu)

@@ -28,8 +28,9 @@ class SCOREBASE(object):
 
             # lr
             self.lr = tf.placeholder(tf.float32, [])
-            # regularization term
+            # regularization term and auxloss mu
             self.reg_lambda = tf.placeholder(tf.float32, [], name='lambda')
+            self.mu = tf.placeholder(tf.float32, [], name='mu')
             # keep prob
             self.keep_prob = tf.placeholder(tf.float32, [])
         
@@ -77,7 +78,7 @@ class SCOREBASE(object):
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         self.train_step = self.optimizer.minimize(self.loss)
     
-    def train(self, sess, batch_data, lr, reg_lambda):
+    def train(self, sess, batch_data, lr, reg_lambda, mu):
         loss, _ = sess.run([self.loss, self.train_step], feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
@@ -89,12 +90,13 @@ class SCOREBASE(object):
                 self.length_ph : batch_data[7],
                 self.lr : lr,
                 self.reg_lambda : reg_lambda,
+                self.mu : mu,
                 self.keep_prob : 0.8
             })
         return loss
     
-    def eval(self, sess, batch_data, reg_lambda):
-        pred, label, loss = sess.run([self.y_pred, self.label_ph, self.loss], feed_dict = {
+    def eval(self, sess, batch_data, reg_lambda, mu):
+        pred, label, loss, auxloss = sess.run([self.y_pred, self.label_ph, self.loss, self.auxloss], feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
                 self.item_1hop_ph : batch_data[2],
@@ -104,10 +106,11 @@ class SCOREBASE(object):
                 self.label_ph : batch_data[6],
                 self.length_ph : batch_data[7],
                 self.reg_lambda : reg_lambda,
+                self.mu : mu,
                 self.keep_prob : 1.
             })
         
-        return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss
+        return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss, auxloss
 
     def save(self, sess, path):
         saver = tf.train.Saver()
@@ -142,8 +145,8 @@ class SCORE(SCOREBASE):
         user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei = self.co_attention(self.user_1hop, self.item_2hop)
         user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei = self.co_attention(self.user_2hop, self.item_1hop)
 
-        user_side = tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
-        item_side = tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
+        user_side = user_1hop_seq + user_2hop_seq#tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
+        item_side = item_1hop_seq + item_2hop_seq#tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
 
         # RNN
         with tf.name_scope('rnn'):
@@ -160,4 +163,49 @@ class SCORE(SCOREBASE):
         self.build_logloss()
         self.build_l2norm()
         self.build_train_step()
+
+class SCORE_V2(SCOREBASE):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+                obj_per_time_slice):
+        super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        # co-attention graph aggregator
+        user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei = self.co_attention(self.user_1hop, self.item_2hop)
+        user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei = self.co_attention(self.user_2hop, self.item_1hop)
         
+        self.target_user_t = tf.tile(tf.expand_dims(self.target_user, axis=1), [1, max_time_len, 1])
+        self.target_item_t = tf.tile(tf.expand_dims(self.target_item, axis=1), [1, max_time_len, 1])
+        user_side = self.target_user_t + user_1hop_seq + user_2hop_seq
+        item_side = self.target_item_t + item_1hop_seq + item_2hop_seq
+
+        # RNN
+        with tf.name_scope('rnn'):
+            user_side_rep_t, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
+            item_side_rep_t, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
+
+        self.cond_prob = self.build_cond_prob(user_side_rep_t, item_side_rep_t)
+        self.T = self.length_ph[0]
+        self.y_pred = self.cond_prob[:, self.T - 1]
+
+        self.cond_prob_cumprod = tf.cumprod(self.cond_prob, axis = 1)
+        self.joint_prob = self.cond_prob_cumprod[:, self.T - 1 - 1]
+
+        # build loss
+        self.build_logloss()
+        self.build_l2norm()
+        
+        self.build_auxloss()
+        self.build_train_step()
+
+    def build_cond_prob(self, user_side_rep_t, item_side_rep_t):
+        user_side_rep_t_MLP = tf.layers.dense(user_side_rep_t, 200, activation=tf.nn.relu, name='fc1')
+        item_side_rep_t_MLP = tf.layers.dense(item_side_rep_t, 200, activation=tf.nn.relu, name='fc2')
+        
+        cond_prob = tf.sigmoid(tf.reduce_sum(user_side_rep_t_MLP * item_side_rep_t_MLP, axis=2))
+        return cond_prob
+    
+    def build_auxloss(self):
+        self.zeros = tf.zeros_like(self.label_ph)
+        self.auxloss = tf.losses.log_loss(self.zeros, self.joint_prob)
+        self.loss += self.mu * self.auxloss

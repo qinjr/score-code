@@ -235,7 +235,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         # generate log
         if not os.path.exists('logs_{}/'.format(data_set)):
             os.makedirs('logs_{}/'.format(data_set))
-        model_name = '{}_{}_{}'.format(model_type, lr, reg_lambda)
+        model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
 
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
             dump_tuple = (train_losses, test_losses, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrrs)
