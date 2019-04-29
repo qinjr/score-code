@@ -142,8 +142,8 @@ class SCORE(SCOREBASE):
         user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei = self.co_attention(self.user_1hop, self.item_2hop)
         user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei = self.co_attention(self.user_2hop, self.item_1hop)
 
-        user_side = user_1hop_seq + user_2hop_seq#tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
-        item_side = item_1hop_seq + item_2hop_seq#tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
+        user_side = tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
+        item_side = tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
 
         # RNN
         with tf.name_scope('rnn'):
