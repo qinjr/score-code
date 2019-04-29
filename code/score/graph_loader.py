@@ -26,7 +26,7 @@ USER_NUM_Taobao = 984105
 ITEM_NUM_Taobao = 4067842
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 500
-START_TIME_Taobao = 7
+START_TIME_Taobao = 0
 
 # Tmall dataset parameters
 DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
