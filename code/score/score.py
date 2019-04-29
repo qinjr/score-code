@@ -223,10 +223,10 @@ class SCORE_V2(SCOREBASE):
         inp = tf.concat([user_side_rep_t, item_side_rep_t, self.target_user_t, self.target_item_t], axis=2)
         self.y_preds = self.build_preds(inp)
 
-        self.y_preds = tf.reshape(self.y_preds, [None, max_time_len])
+        self.y_preds = tf.reshape(self.y_preds, [-1, max_time_len])
         self.T = self.length_ph[0]
         self.y_pred = self.y_preds[:, self.T - 1]
-        self.y_pred = tf.reshape(self.y_pred, [None,])
+        self.y_pred = tf.reshape(self.y_pred, [-1,])
 
         self.y_pred_neg = self.y_preds[:, :self.T - 1]
 
