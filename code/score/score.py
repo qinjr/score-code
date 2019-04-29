@@ -63,6 +63,14 @@ class SCOREBASE(object):
         # output
         self.y_pred = tf.reshape(tf.nn.sigmoid(fc3), [-1,])
     
+    def build_mlp_rep(self, inp):
+        with tf.variable_scope('mlp-rep'):
+            bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1', reuse=tf.AUTO_REUSE)
+            fc1 = tf.layers.dense(bn1, 200, activation=tf.nn.relu, name='fc1', reuse=tf.AUTO_REUSE)
+            dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1', reuse=tf.AUTO_REUSE)
+            fc2 = tf.layers.dense(dp1, 16, activation=tf.nn.relu, name='fc2', reuse=tf.AUTO_REUSE)
+        return fc2
+
     def build_logloss(self):
         # loss
         self.log_loss = tf.losses.log_loss(self.label_ph, self.y_pred)
@@ -174,8 +182,8 @@ class SCORE_V2(SCOREBASE):
         
         self.target_user_t = tf.tile(tf.expand_dims(self.target_user, axis=1), [1, max_time_len, 1])
         self.target_item_t = tf.tile(tf.expand_dims(self.target_item, axis=1), [1, max_time_len, 1])
-        user_side = self.target_user_t + user_1hop_seq + user_2hop_seq
-        item_side = self.target_item_t + item_1hop_seq + item_2hop_seq
+        user_side = tf.concat([self.target_user_t, user_1hop_seq + user_2hop_seq], axis=2)
+        item_side = tf.concat([self.target_item_t, item_1hop_seq + item_2hop_seq], axis=2)
 
         # RNN
         with tf.name_scope('rnn'):
@@ -199,8 +207,8 @@ class SCORE_V2(SCOREBASE):
         self.build_train_step()
 
     def build_cond_prob(self, user_side_rep_t, item_side_rep_t):
-        user_side_rep_t_MLP = tf.layers.dense(user_side_rep_t, 200, activation=tf.nn.relu, name='fc1')
-        item_side_rep_t_MLP = tf.layers.dense(item_side_rep_t, 200, activation=tf.nn.relu, name='fc2')
+        user_side_rep_t_MLP = self.build_mlp_rep(user_side_rep_t)
+        item_side_rep_t_MLP = self.build_mlp_rep(item_side_rep_t)
         
         cond_prob = tf.sigmoid(tf.reduce_sum(user_side_rep_t_MLP * item_side_rep_t_MLP, axis=2))
         return cond_prob
