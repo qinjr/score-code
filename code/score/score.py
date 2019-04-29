@@ -167,7 +167,7 @@ class SCORE(SCOREBASE):
 class SCORE_V2(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice):
-        super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        super(SCORE_V2, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
         # co-attention graph aggregator
         user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei = self.co_attention(self.user_1hop, self.item_2hop)
         user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei = self.co_attention(self.user_2hop, self.item_1hop)
