@@ -172,6 +172,33 @@ class SCORE(SCOREBASE):
         self.build_l2norm()
         self.build_train_step()
 
+class SCORE_CONCAT(SCOREBASE):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+                obj_per_time_slice):
+        super(SCORE_CONCAT, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        # co-attention graph aggregator
+        user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei = self.co_attention(self.user_1hop, self.item_2hop)
+        user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei = self.co_attention(self.user_2hop, self.item_1hop)
+
+        user_side = tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
+        item_side = tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
+
+        # RNN
+        with tf.name_scope('rnn'):
+            _, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
+            _, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
+
+        inp = tf.concat([user_side_final_state, item_side_final_state, self.target_item, self.target_user], axis=1)
+
+        # fc layer
+        self.build_fc_net(inp)
+        # build loss
+        self.build_logloss()
+        self.build_l2norm()
+        self.build_train_step()
+
 class SCORE_V2(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice):
