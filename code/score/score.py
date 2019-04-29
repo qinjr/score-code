@@ -222,12 +222,13 @@ class SCORE_V2(SCOREBASE):
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
         self.cond_prob = self.build_cond_prob(user_side_rep_t, item_side_rep_t)
+        self.cond_prob_opp = 1 - self.cond_prob
+        
         self.T = self.length_ph[0]
-        self.y_pred = self.cond_prob[:, self.T - 1]
-
-        self.cond_prob_cumprod = tf.cumprod(self.cond_prob, axis = 1)
-        self.joint_prob = self.cond_prob_cumprod[:, self.T - 1 - 1]
-
+        self.cond_prob_opp_cumprod = tf.cumprod(self.cond_prob_opp, axis = 1)
+        self.joint_prob = self.cond_prob_opp_cumprod[:, self.T - 1 - 1]
+        self.y_pred = self.joint_prob * self.cond_prob[:, self.T - 1]
+        
         # build loss
         self.build_logloss()
         self.build_l2norm()
