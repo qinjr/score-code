@@ -67,7 +67,7 @@ class SCOREBASE(object):
         with tf.variable_scope('mlp-rep'):
             bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1', reuse=tf.AUTO_REUSE)
             fc1 = tf.layers.dense(bn1, 200, activation=tf.nn.relu, name='fc1', reuse=tf.AUTO_REUSE)
-            dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1', reuse=tf.AUTO_REUSE)
+            dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1')
             fc2 = tf.layers.dense(dp1, 16, activation=tf.nn.relu, name='fc2', reuse=tf.AUTO_REUSE)
         return fc2
 
