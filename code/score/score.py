@@ -237,7 +237,7 @@ class SCORE_V2(SCOREBASE):
         self.build_train_step()
     
     def build_auxloss(self):
-        self.zeros = tf.zeros([None, self.T - 1])
+        self.zeros = tf.zeros_like(self.y_pred_neg)
         self.auxloss = tf.losses.log_loss(self.zeros, self.y_pred_neg)
         self.loss += self.mu * self.auxloss
     
