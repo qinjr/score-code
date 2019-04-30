@@ -264,7 +264,7 @@ class SCORE_V2(SCOREBASE):
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
         self.cond_prob = self.build_cond_prob(user_side, item_side)
         self.cond_prob_opp = 1 - self.cond_prob
-        self.T = self.length[0]
+        self.T = self.length_ph[0]
 
         self.cond_prob_cumprod = tf.cumprod(self.cond_prob_opp, axis=1)
         self.S = self.cond_prob_cumprod[:, self.T - 1 - 1]
