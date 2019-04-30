@@ -281,23 +281,7 @@ class SCORE_V2(SCOREBASE):
         user_side_nolin = tf.layers.dense(user_side, user_side.get_shape().as_list()[-1])
         cond_prob = tf.sigmoid(tf.reduce_sum(user_side_nolin * item_side, axis=2))
         return cond_prob
-
-    def train(self, sess, batch_data, lr, reg_lambda, mu):
-        loss, _, cond_prob = sess.run([self.loss, self.train_step, self.cond_prob], feed_dict = {
-                self.user_1hop_ph : batch_data[0],
-                self.user_2hop_ph : batch_data[1],
-                self.item_1hop_ph : batch_data[2],
-                self.item_2hop_ph : batch_data[3],
-                self.target_user_ph : batch_data[4],
-                self.target_item_ph : batch_data[5],
-                self.label_ph : batch_data[6],
-                self.length_ph : batch_data[7],
-                self.lr : lr,
-                self.reg_lambda : reg_lambda,
-                self.mu : mu,
-                self.keep_prob : 0.8
-            })
-        return loss, cond_prob
+        
 
 class SCORE_V3(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
