@@ -278,7 +278,7 @@ class SCORE_V2(SCOREBASE):
         self.build_train_step()
     
     def build_cond_prob(self, user_side, item_side):
-        user_side_nolin = tf.layers.dense(user_side, 4)
+        user_side_nolin = tf.layers.dense(user_side, user_side.get_shape().as_list()[-1])
         cond_prob = tf.sigmoid(tf.reduce_sum(user_side_nolin * item_side, axis=2))
         return cond_prob
 
