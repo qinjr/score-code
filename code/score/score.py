@@ -62,14 +62,6 @@ class SCOREBASE(object):
         fc3 = tf.layers.dense(dp2, 1, activation=None, name='fc3')
         # output
         self.y_pred = tf.reshape(tf.nn.sigmoid(fc3), [-1,])
-    
-    def build_mlp_rep(self, inp):
-        with tf.variable_scope('mlp-rep'):
-            bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1', reuse=tf.AUTO_REUSE)
-            fc1 = tf.layers.dense(bn1, 200, activation=tf.nn.relu, name='fc1', reuse=tf.AUTO_REUSE)
-            dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1')
-            fc2 = tf.layers.dense(dp1, 16, activation=tf.nn.relu, name='fc2', reuse=tf.AUTO_REUSE)
-        return fc2
 
     def build_logloss(self):
         # loss
@@ -261,8 +253,8 @@ class SCORE_V2(SCOREBASE):
         
         self.target_user_t = tf.tile(tf.expand_dims(self.target_user, axis=1), [1, max_time_len, 1])
         self.target_item_t = tf.tile(tf.expand_dims(self.target_item, axis=1), [1, max_time_len, 1])
-        user_side = user_1hop_seq + user_2hop_seq#tf.concat([self.target_user_t, user_1hop_seq + user_2hop_seq], axis=2)
-        item_side = item_1hop_seq + item_2hop_seq#tf.concat([self.target_item_t, item_1hop_seq + item_2hop_seq], axis=2)
+        user_side = self.target_user_t + user_1hop_seq + user_2hop_seq#tf.concat([self.target_user_t, user_1hop_seq + user_2hop_seq], axis=2)
+        item_side = self.target_item_t + item_1hop_seq + item_2hop_seq#tf.concat([self.target_item_t, item_1hop_seq + item_2hop_seq], axis=2)
 
         # RNN
         with tf.name_scope('rnn'):
@@ -270,38 +262,25 @@ class SCORE_V2(SCOREBASE):
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
             item_side_rep_t, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
-        inp = tf.concat([user_side_rep_t, item_side_rep_t, self.target_user_t, self.target_item_t], axis=2)
-        self.y_preds = self.build_preds(inp)
+        self.cond_prob = self.build_cond_prob(user_side, item_side)
+        self.cond_prob_opp = 1 - self.cond_prob
+        self.T = self.length[0]
 
-        self.y_preds = tf.reshape(self.y_preds, [-1, max_time_len])
-        self.T = self.length_ph[0]
-        self.y_pred = self.y_preds[:, self.T - 1]
-        self.y_pred = tf.reshape(self.y_pred, [-1,])
-
-        self.y_pred_neg = self.y_preds[:, :self.T - 1]
+        self.cond_prob_cumprod = tf.cumprod(self.cond_prob_opp, axis=1)
+        self.S = self.cond_prob_cumprod[:, self.T - 1 - 1]
+        self.y_pred = self.cond_prob[:, self.T-1] * self.S
+        self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
+        self.auxloss = self.losses.log_loss(self.zeros_like(self.label_ph), self.S)
+        self.loss += self.mu * self.auxloss
 
         # build loss
-        self.build_logloss()
         self.build_l2norm()
-        self.build_auxloss()
         self.build_train_step()
     
-    def build_auxloss(self):
-        self.zeros = tf.zeros_like(self.y_pred_neg)
-        self.auxloss = tf.losses.log_loss(self.zeros, self.y_pred_neg)
-        self.loss += self.mu * self.auxloss
-    
-    def build_preds(self, inp):
-        bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1')
-        fc1 = tf.layers.dense(bn1, 200, activation=tf.nn.relu, name='fc1')
-        dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1')
-        fc2 = tf.layers.dense(dp1, 80, activation=tf.nn.relu, name='fc2')
-        dp2 = tf.nn.dropout(fc2, self.keep_prob, name='dp2')
-        fc3 = tf.layers.dense(dp2, 1, activation=None, name='fc3')
-        # output
-        y_preds = tf.nn.sigmoid(fc3)
-        return y_preds
-
+    def build_cond_prob(self, user_side, item_side):
+        user_side_nolin = tf.layers.dense(user_side, user_side.get_shape().as_list()[-1], activation=tf.nn.relu)
+        cond_prob = tf.reduce_sum(user_side_nolin * item_side, axis=2)
+        return cond_prob
 
 class SCORE_V3(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
