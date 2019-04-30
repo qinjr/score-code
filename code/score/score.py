@@ -270,7 +270,7 @@ class SCORE_V2(SCOREBASE):
         self.S = self.cond_prob_cumprod[:, self.T - 1 - 1]
         self.y_pred = self.cond_prob[:, self.T-1] * self.S
         self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
-        self.auxloss = tf.losses.log_loss(self.zeros_like(self.label_ph), self.S)
+        self.auxloss = tf.losses.log_loss(tf.zeros_like(self.label_ph), self.S)
         self.loss += self.mu * self.auxloss
 
         # build loss
