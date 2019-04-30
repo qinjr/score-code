@@ -186,7 +186,7 @@ class SCORE_ATT(SCOREBASE):
         
         self.agg = tf.reduce_sum(agg1 + agg2, axis=[2,3])
         mask = (1 - tf.sequence_mask(self.length_ph, max_time_len, dtype=tf.float32)) * (-2 ** 32 + 1)
-        self.agg = tf.expand_dims(tf.nn.softmax(self.agg + mask, axis=1), 2)
+        self.agg = tf.expand_dims(tf.nn.softmax(self.agg + mask), 2)
 
         # RNN
         with tf.name_scope('rnn'):
