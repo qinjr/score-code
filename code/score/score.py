@@ -262,7 +262,7 @@ class SCORE_V2(SCOREBASE):
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
             item_side_rep_t, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
-        self.cond_prob = self.build_cond_prob(user_side, item_side)
+        self.cond_prob = self.build_cond_prob(user_side_rep_t, item_side_rep_t)
         self.cond_prob_opp = 1 - self.cond_prob
         self.T = self.length_ph[0]
 
