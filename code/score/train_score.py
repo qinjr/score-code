@@ -227,7 +227,8 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 if early_stop:
                     break
 
-                loss = model.train(sess, batch_data, lr, reg_lambda, mu)
+                loss, cond_prob = model.train(sess, batch_data, lr, reg_lambda, mu)
+                print(cond_prob)
                 step += 1
                 train_losses_step.append(loss)
                 if step % eval_iter_num == 0:
