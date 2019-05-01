@@ -340,7 +340,7 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     reg_lambda = 1e-3
-    mu = 10
+    mu = 1e-2
     hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:

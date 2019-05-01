@@ -266,11 +266,17 @@ class SCORE_V2(SCOREBASE):
         self.cond_prob_opp = 1 - self.cond_prob
         self.T = self.length_ph[0]
 
-        self.cond_prob_cumprod = tf.cumprod(self.cond_prob_opp, axis=1)
+        self.cond_prob_cumprod = tf.cumprod(self.cond_prob_opp, axis=1, exclusive=True)
+        self.y_preds = self.cond_prob * self.cond_prob_cumprod
+        self.y_pred = tf.reshape(self.y_preds[:,self.T-1], [-1,])
+
+        self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
         self.S = tf.clip_by_value(self.cond_prob_cumprod[:, self.T - 1 - 1], 1e-5, 1.0)
         self.y_pred = tf.clip_by_value(self.cond_prob[:, self.T-1] * self.S, 1e-5, 1.0)
         self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
-        self.auxloss = tf.losses.log_loss(tf.zeros_like(self.label_ph), self.S)
+
+        self.neg_label = tf.zeros_like(self.y_preds)
+        self.auxloss = tf.losses.log_loss(self.neg_label[:,:(self.T-1)], self.y_preds[:, :(self.T-1)])
         self.loss += self.mu * self.auxloss
 
         # build loss
@@ -278,9 +284,17 @@ class SCORE_V2(SCOREBASE):
         self.build_train_step()
     
     def build_cond_prob(self, user_side, item_side):
-        user_side_nolin = tf.layers.dense(user_side, user_side.get_shape().as_list()[-1])
-        cond_prob = tf.sigmoid(tf.reduce_sum(user_side_nolin * item_side, axis=2))
-        return cond_prob
+        inp = tf.concat([user_side, item_side], axis=-1)
+
+        bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1')
+        fc1 = tf.layers.dense(bn1, 200, activation=tf.nn.relu, name='fc1')
+        dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1')
+        fc2 = tf.layers.dense(dp1, 80, activation=tf.nn.relu, name='fc2')
+        dp2 = tf.nn.dropout(fc2, self.keep_prob, name='dp2')
+        fc3 = tf.layers.dense(dp2, 1, activation=tf.sigmoid, name='fc3')
+        # output
+        shape = fc3.get_shape().as_list()
+        return tf.reshape(fc3, [-1, shape[1] * shape[2]])
         
 
 class SCORE_V3(SCOREBASE):
