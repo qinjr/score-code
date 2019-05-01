@@ -314,7 +314,7 @@ class SCORE_V3(SCOREBASE):
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
             item_side_rep_t, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
-            joint_inp = tf.concat([user_side_rep_t, item_side_rep_t, user_side_rep_t * item_side_rep_t])
+            joint_inp = tf.concat([user_side_rep_t, item_side_rep_t, user_side_rep_t * item_side_rep_t], axis=2)
             _, joint_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=joint_inp, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='joint_rnn')
 
