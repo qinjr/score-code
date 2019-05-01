@@ -203,19 +203,19 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
-        # _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss, test_auxloss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
-        # # test_loglosses.append(test_logloss)
-        # # test_aucs.append(test_auc)
-        # test_ndcgs_5.append(test_ndcg_5)
-        # test_ndcgs_10.append(test_ndcg_10)
-        # test_hrs_1.append(test_hr_1)
-        # test_hrs_5.append(test_hr_5)
-        # test_hrs_10.append(test_hr_10)
-        # test_mrrs.append(test_mrr)
-        # test_losses.append(test_loss)
-        # test_auxlosses.append(test_auxloss)
+        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss, test_auxloss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
+        # test_loglosses.append(test_logloss)
+        # test_aucs.append(test_auc)
+        test_ndcgs_5.append(test_ndcg_5)
+        test_ndcgs_10.append(test_ndcg_10)
+        test_hrs_1.append(test_hr_1)
+        test_hrs_5.append(test_hr_5)
+        test_hrs_10.append(test_hr_10)
+        test_mrrs.append(test_mrr)
+        test_losses.append(test_loss)
+        test_auxlosses.append(test_auxloss)
 
-        # print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_auxloss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
+        print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_auxloss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
@@ -227,9 +227,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 if early_stop:
                     break
 
-                loss, auxloss = model.train(sess, batch_data, lr, reg_lambda, mu)
-                print(loss)
-                print(auxloss)
+                loss = model.train(sess, batch_data, lr, reg_lambda, mu)
                 step += 1
                 train_losses_step.append(loss)
                 if step % eval_iter_num == 0:
@@ -342,7 +340,7 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     reg_lambda = 1e-3
-    mu = 1
+    mu = 10
     hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:

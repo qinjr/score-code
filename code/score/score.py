@@ -267,12 +267,10 @@ class SCORE_V2(SCOREBASE):
         self.T = self.length_ph[0]
 
         self.cond_prob_cumprod = tf.cumprod(self.cond_prob_opp, axis=1)
-        self.S = self.cond_prob_cumprod[:, self.T - 1 - 1]
-        self.y_pred = self.cond_prob[:, self.T-1] * self.S
-        self.y_pred_reshape = tf.reshape(self.y_pred, [-1, 1 + 1])
-        self.y_pred_log = tf.log(tf.clip_by_value(self.y_pred_reshape, 1e-10, 1.0))
-        self.loss = -tf.reduce_sum(self.y_pred_log[:,0] - self.y_pred_log[:,1])
-        self.auxloss = tf.reduce_sum(tf.log(tf.clip_by_value(self.S, 1e-10, 1.0)))#tf.losses.log_loss(tf.zeros_like(self.label_ph), self.S)
+        self.S = tf.clip_by_value(self.cond_prob_cumprod[:, self.T - 1 - 1], 1e-5, 1.0)
+        self.y_pred = tf.clip_by_value(self.cond_prob[:, self.T-1] * self.S, 1e-5, 1.0)
+        self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
+        self.auxloss = tf.losses.log_loss(tf.zeros_like(self.label_ph), self.S)
         self.loss += self.mu * self.auxloss
 
         # build loss
@@ -283,23 +281,7 @@ class SCORE_V2(SCOREBASE):
         user_side_nolin = tf.layers.dense(user_side, user_side.get_shape().as_list()[-1])
         cond_prob = tf.sigmoid(tf.reduce_sum(user_side_nolin * item_side, axis=2))
         return cond_prob
-
-    def train(self, sess, batch_data, lr, reg_lambda, mu):
-        loss, _, auxloss = sess.run([self.loss, self.train_step, self.auxloss], feed_dict = {
-                self.user_1hop_ph : batch_data[0],
-                self.user_2hop_ph : batch_data[1],
-                self.item_1hop_ph : batch_data[2],
-                self.item_2hop_ph : batch_data[3],
-                self.target_user_ph : batch_data[4],
-                self.target_item_ph : batch_data[5],
-                self.label_ph : batch_data[6],
-                self.length_ph : batch_data[7],
-                self.lr : lr,
-                self.reg_lambda : reg_lambda,
-                self.mu : mu,
-                self.keep_prob : 0.8
-            })
-        return loss, auxloss
+        
 
 class SCORE_V3(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
