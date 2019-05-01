@@ -271,9 +271,6 @@ class SCORE_V2(SCOREBASE):
         self.y_pred = tf.reshape(self.y_preds[:,self.T-1], [-1,])
 
         self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
-        self.S = tf.clip_by_value(self.cond_prob_cumprod[:, self.T - 1 - 1], 1e-5, 1.0)
-        self.y_pred = tf.clip_by_value(self.cond_prob[:, self.T-1] * self.S, 1e-5, 1.0)
-        self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
 
         self.neg_label = tf.zeros_like(self.y_preds)
         self.auxloss = tf.losses.log_loss(self.neg_label[:,:(self.T-1)], self.y_preds[:, :(self.T-1)])
