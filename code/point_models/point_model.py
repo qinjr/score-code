@@ -240,12 +240,12 @@ class SASRec(PointBaseModel):
         super(SASRec, self).__init__(feature_size, eb_dim, hidden_size, max_time_len)
 
         self.mask = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph, max_time_len, dtype=tf.float32), axis=-1)
-        self.mask_1 = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph - 1, max_time_len, dtype=tf.float32), axis=-1)
-        self.get_mask = self.mask - self.mask_1
+        # self.mask_1 = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph - 1, max_time_len, dtype=tf.float32), axis=-1)
+        # self.get_mask = self.mask - self.mask_1
         self.user_seq = self.user_seq * self.mask
         
         self.user_seq = self.multihead_attention(self.normalize(self.user_seq), self.user_seq)
-        self.seq_rep = tf.reduce_sum(self.user_seq * self.get_mask, axis=1)
+        self.seq_rep = tf.reduce_sum(self.user_seq * self.mask, axis=1)
         inp = tf.concat([self.seq_rep, self.target_item, self.target_user], axis=1)
 
         # fc layer
