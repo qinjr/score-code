@@ -310,12 +310,15 @@ class SCORE_V3(SCOREBASE):
 
         # RNN
         with tf.name_scope('rnn'):
-            _, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
+            user_side_rep_t, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
-            _, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
+            item_side_rep_t, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
+            joint_inp = tf.concat([user_side_rep_t, item_side_rep_t, user_side_rep_t * item_side_rep_t])
+            _, joint_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=joint_inp, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='joint_rnn')
 
-        inp = tf.concat([user_side_final_state, item_side_final_state], axis=1)
+        inp = tf.concat([user_side_final_state, item_side_final_state, joint_final_state], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
