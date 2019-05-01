@@ -353,7 +353,7 @@ class SCORE_JOINT_ATT(SCOREBASE):
             joint_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=joint_inp, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='joint_rnn')
 
-        joint_final_state = tf.reduce_sum(self.agg * joint_rep_t)
+        joint_final_state = tf.reduce_sum(self.agg * joint_rep_t, axis=1)
         inp = joint_final_state
 
         # fc layer
