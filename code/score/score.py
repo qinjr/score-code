@@ -349,7 +349,7 @@ class SCORE_JOINT_ATT(SCOREBASE):
 
         # joint RNN
         with tf.name_scope('rnn'):
-            joint_inp = tf.concat([user_side_rep_t, item_side_rep, user_side_rep * item_side_rep_t, user_side_rep + item_side_rep_t], axis=2)
+            joint_inp = tf.concat([user_side, item_side, user_side * item_side, user_side + item_side], axis=2)
             joint_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=joint_inp, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='joint_rnn')
 
