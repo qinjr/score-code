@@ -215,7 +215,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         # test_losses.append(test_loss)
         # test_auxlosses.append(test_auxloss)
 
-        print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_auxloss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
+        # print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_auxloss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
