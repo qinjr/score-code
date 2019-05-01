@@ -203,17 +203,17 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
 
         # before training process
         step = 0
-        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss, test_auxloss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
-        # test_loglosses.append(test_logloss)
-        # test_aucs.append(test_auc)
-        test_ndcgs_5.append(test_ndcg_5)
-        test_ndcgs_10.append(test_ndcg_10)
-        test_hrs_1.append(test_hr_1)
-        test_hrs_5.append(test_hr_5)
-        test_hrs_10.append(test_hr_10)
-        test_mrrs.append(test_mrr)
-        test_losses.append(test_loss)
-        test_auxlosses.append(test_auxloss)
+        # _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss, test_auxloss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda, mu)
+        # # test_loglosses.append(test_logloss)
+        # # test_aucs.append(test_auc)
+        # test_ndcgs_5.append(test_ndcg_5)
+        # test_ndcgs_10.append(test_ndcg_10)
+        # test_hrs_1.append(test_hr_1)
+        # test_hrs_5.append(test_hr_5)
+        # test_hrs_10.append(test_hr_10)
+        # test_mrrs.append(test_mrr)
+        # test_losses.append(test_loss)
+        # test_auxlosses.append(test_auxloss)
 
         print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_auxloss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
         early_stop = False
@@ -227,7 +227,9 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                 if early_stop:
                     break
 
-                loss = model.train(sess, batch_data, lr, reg_lambda, mu)
+                loss, auxloss = model.train(sess, batch_data, lr, reg_lambda, mu)
+                print(loss)
+                print(auxloss)
                 step += 1
                 train_losses_step.append(loss)
                 if step % eval_iter_num == 0:
