@@ -256,7 +256,7 @@ class SASRec(PointBaseModel):
                             queries, 
                             keys, 
                             num_units=None, 
-                            num_heads=4, 
+                            num_heads=2, 
                             scope="multihead_attention", 
                             reuse=None):
         '''Applies multihead attention.
