@@ -68,6 +68,8 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
         model = SCORE_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     elif model_type == 'SCORE_V3':
         model = SCORE_V3(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'SCORE_JOINT_ATT':
+        model = SCORE_JOINT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -175,6 +177,8 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         model = SCORE_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     elif model_type == 'SCORE_V3':
         model = SCORE_V3(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'SCORE_JOINT_ATT':
+        model = SCORE_JOINT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
