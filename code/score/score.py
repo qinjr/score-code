@@ -379,3 +379,81 @@ class SCORE_JOINT_ATT(SCOREBASE):
         seq2_result = tf.reduce_sum(seq2 * seq2_weights, axis=2)
 
         return seq1_result, seq2_result, seq1_weights, seq2_weights, product
+
+class SCORE_NEW(SCOREBASE):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
+                obj_per_time_slice):
+        super(SCORE_NEW, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        # co-attention graph aggregator
+        user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei, affinity1 = self.co_attention_parallel(self.user_1hop, self.item_2hop)
+        user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei, affinity2 = self.co_attention_parallel(self.user_2hop, self.item_1hop)
+        user_side = user_1hop_seq + user_2hop_seq
+        item_side = item_1hop_seq + item_2hop_seq
+
+        # dual RNN
+        with tf.name_scope('rnn'):
+            user_side_rep_t, user_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
+            item_side_rep_t, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
+                                                        sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
+        joint_rep_t = tf.concat([user_side_rep_t, item_side_rep_t], axis=2)
+        
+        # attention using affinity matrix
+        joint_affinity = affinity1 + affinity2
+        attention = self.affinity2attention(joint_affinity)
+        
+        # prediction
+        final_rep = tf.reduce_sum(joint_rep_t * attention, axis=1)
+        inp = tf.concat([final_rep, self.target_item, self.target_user], aixs=1)
+
+        # fc layer
+        self.build_fc_net(inp)
+        # build loss
+        self.build_logloss()
+        self.build_l2norm()
+        self.auxloss = self.loss
+        self.build_train_step()
+    
+    def affinity2attention(self, affinity):
+        with tf.variable_scope('affinity2attention'):
+            attention = tf.layers.dense(affinity, 1, use_bias=False, name='affinity2attention_1', reuse=tf.AUTO_REUSE) #[B, T, K, 1]
+            shape = attention.get_shape().as_list()
+            attention = tf.reshape(attention, [shape[0], shape[1], shape[2]])
+            
+            attention = tf.layers.dense(affinity, 1, use_bias=False, name='affinity2attention_2', reuse=tf.AUTO_REUSE) #[B, T, 1]
+            shape = attention.get_shape().as_list()
+            attention = tf.reshape(attention, [shape[0], shape[1]]) #[B, T]
+
+            attention = tf.expand_dims(tf.nn.softmax(attention), -1)
+            return attention
+
+
+    def co_attention_parallel(self, seq1, seq2):
+        with tf.variable_scope('co-attention'):
+            seq1_mlp = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], activation=tf.nn.tanh, use_bias=False, name='co_atten_dense_1', reuse=tf.AUTO_REUSE)
+            seq1_mlp = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], use_bias=False, name='co_atten_dense_2', reuse=tf.AUTO_REUSE)
+            seq2_mlp = tf.layers.dense(seq2, seq2.get_shape().as_list()[-1], activation=tf.nn.tanh, use_bias=False, name='co_atten_dense_3', reuse=tf.AUTO_REUSE)
+        
+            affinity = tf.matmul(seq1_mlp, tf.transpose(seq2_mlp, [0, 1, 3, 2]))
+            
+            # linear projection
+            seq1_lin = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], use_bias=False, name='lin_1', reuse=tf.AUTO_REUSE)
+            seq2_lin = tf.layers.dense(seq2, seq2.get_shape().as_list()[-1], use_bias=False, name='lin_2', reuse=tf.AUTO_REUSE)
+
+            # weight and weighted sum
+            seq1_wei = tf.nn.tanh(seq1_lin + tf.matmul(affinity, seq2_lin)) #[B, T ,K, D]
+            seq1_wei = tf.layers.dense(seq1_wei, 1, use_bias=False, name='seq1_wei', reuse=tf.AUTO_REUSE)
+            seq1_shape = seq1.get_shape().as_list()
+            seq1_wei = tf.reshape(seq1_wei, [seq1_shape[0], seq1_shape[1], seq1_shape[2]])
+            seq1_wei = tf.expand_dims(tf.nn.softmax(seq1_wei), -1)
+            seq1_wei_sum = tf.reduce_sum(seq1 * seq1_wei, axis=2)
+
+            seq2_wei = tf.nn.tanh(seq2_lin + tf.matmul(tf.transpose(affinity, [0, 1, 3, 2]), seq1_lin)) #[B, T ,K, D]
+            seq2_wei = tf.layers.dense(seq2_wei, 1, use_bias=False, name='seq2_wei', reuse=tf.AUTO_REUSE)
+            seq2_shape = seq2.get_shape().as_list()
+            seq2_wei = tf.reshape(seq2_wei, [seq2_shape[0], seq2_shape[1], seq2_shape[2]])
+            seq2_wei = tf.expand_dims(tf.nn.softmax(seq2_wei), -1)
+            seq2_wei_sum = tf.reduce_sum(seq2 * seq2_wei, axis=2)
+
+            return seq1_wei_sum, seq2_wei_sum, seq1_wei, seq2_wei, affinity
+
