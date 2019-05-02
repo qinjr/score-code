@@ -272,10 +272,10 @@ if __name__ == '__main__':
         max_time_len = MAX_LEN_CCMR
         dataset_size = 262090
     elif data_set == 'taobao':
-        target_file_train = DATA_DIR_Taobao + 'target_train4point_model_sample.txt'
-        target_file_test = DATA_DIR_Taobao + 'target_17_hot_sample.txt'
-        user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq_sample.txt'
-        user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq_sample.txt'
+        target_file_train = DATA_DIR_Taobao + 'target_7_hot_sample.txt'
+        target_file_test = DATA_DIR_Taobao + 'target_8_hot_sample.txt'
+        user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq_7_sample.txt'
+        user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq_8_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = MAX_LEN_Taobao

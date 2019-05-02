@@ -292,11 +292,11 @@ if __name__ == '__main__':
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, START_TIME_Taobao,
                                 USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao]
-        target_file_train = DATA_DIR_Taobao + 'target_16_hot_train_sample.txt'
-        target_file_test = DATA_DIR_Taobao + 'target_17_hot_test_sample.txt'
+        target_file_train = DATA_DIR_Taobao + 'target_7_hot_sample.txt'
+        target_file_test = DATA_DIR_Taobao + 'target_8_hot_sample.txt'
         start_time = START_TIME_Taobao
-        pred_time_train = 16
-        pred_time_test = 17
+        pred_time_train = 7
+        pred_time_test = 8
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
