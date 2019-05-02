@@ -404,7 +404,7 @@ class SCORE_NEW(SCOREBASE):
         
         # prediction
         final_rep = tf.reduce_sum(joint_rep_t * attention, axis=1)
-        inp = tf.concat([final_rep, self.target_item, self.target_user], aixs=1)
+        inp = tf.concat([final_rep, self.target_item, self.target_user], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
