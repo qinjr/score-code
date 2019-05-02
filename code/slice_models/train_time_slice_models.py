@@ -231,7 +231,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     test_losses.append(test_loss)
                     
                     print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, train_loss, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
-                    if test_mrrs[-1] > min(test_mrrs[:-1]):
+                    if test_mrrs[-1] > max(test_mrrs[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
@@ -323,7 +323,7 @@ if __name__ == '__main__':
 
     ################################## training hyper params ##################################
     reg_lambda = 5e-4
-    hyper_paras = [(200, 1e-3)]#[(100, 5e-4), (200, 1e-3)]
+    hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper

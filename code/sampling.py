@@ -40,8 +40,8 @@ if __name__ == "__main__":
         sample_files(DATA_DIR_CCMR + 'target_40_hot.txt', DATA_DIR_CCMR + 'test_user_hist_seq_40.txt', DATA_DIR_CCMR + 'target_40_hot_sample.txt', DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt', 10)
     elif dataset == 'taobao':
         # CCMR
-        sample_files(DATA_DIR_Taobao + 'target_16_hot.txt', DATA_DIR_Taobao + 'train_user_hist_seq_16.txt', DATA_DIR_Taobao + 'target_16_hot_sample.txt', DATA_DIR_Taobao + 'train_user_hist_seq_16_sample.txt', 2)
-        sample_files(DATA_DIR_Taobao + 'target_17_hot.txt', DATA_DIR_Taobao + 'test_user_hist_seq_17.txt', DATA_DIR_Taobao + 'target_17_hot_sample.txt', DATA_DIR_Taobao + 'test_user_hist_seq_17_sample.txt', 3)
+        sample_files(DATA_DIR_Taobao + 'target_7_hot.txt', DATA_DIR_Taobao + 'train_user_hist_seq_7.txt', DATA_DIR_Taobao + 'target_7_hot_sample.txt', DATA_DIR_Taobao + 'train_user_hist_seq_7_sample.txt', 2)
+        sample_files(DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'test_user_hist_seq_8.txt', DATA_DIR_Taobao + 'target_8_hot_sample.txt', DATA_DIR_Taobao + 'test_user_hist_seq_8_sample.txt', 6)
     elif dataset == 'tmall':
         # CCMR
         sample_files(DATA_DIR_Tmall + 'target_10_hot.txt', DATA_DIR_Tmall + 'train_user_hist_seq_10.txt', DATA_DIR_Tmall + 'target_10_hot_sample.txt', DATA_DIR_Tmall + 'train_user_hist_seq_10_sample.txt', 1)

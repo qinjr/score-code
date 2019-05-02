@@ -89,8 +89,8 @@ if __name__ == "__main__":
     elif dataset == 'taobao':
         # Taobao
         # gen_point_models_target_train(DATA_DIR_Taobao + 'target_17_hot.txt', DATA_DIR_Taobao + 'target_train4point_model.txt', DATA_DIR_Taobao + 'user_hist_dict_17.pkl', DATA_DIR_Taobao + 'pop_items.pkl')
-        gen_user_hist_seq_file(DATA_DIR_Taobao + 'target_16_hot.txt', DATA_DIR_Taobao + 'train_user_hist_seq_16.txt', DATA_DIR_Taobao + 'user_hist_dict_16.pkl', MAX_LEN_Taobao)
-        gen_user_hist_seq_file(DATA_DIR_Taobao + 'target_17_hot.txt', DATA_DIR_Taobao + 'test_user_hist_seq_17.txt', DATA_DIR_Taobao + 'user_hist_dict_17.pkl', MAX_LEN_Taobao)
+        gen_user_hist_seq_file(DATA_DIR_Taobao + 'target_7_hot.txt', DATA_DIR_Taobao + 'train_user_hist_seq_7.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', MAX_LEN_Taobao)
+        gen_user_hist_seq_file(DATA_DIR_Taobao + 'target_8_hot.txt', DATA_DIR_Taobao + 'test_user_hist_seq_8.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', MAX_LEN_Taobao)
     elif dataset == 'tmall':
         # Tmall
         # gen_point_models_target_train(DATA_DIR_Tmall + 'target_11_hot.txt', DATA_DIR_Tmall + 'target_train4point_model.txt', DATA_DIR_Tmall + 'user_hist_dict_11.pkl', DATA_DIR_Tmall + 'pop_items.pkl')
