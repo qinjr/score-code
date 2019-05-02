@@ -401,7 +401,7 @@ class SCORE_NEW(SCOREBASE):
         # attention using affinity matrix
         joint_affinity = affinity1 + affinity2
         attention = self.affinity2attention(joint_affinity)
-        
+        print(attention.get_shape().as_list())
         # prediction
         final_rep = tf.reduce_sum(joint_rep_t * attention, axis=1)
         inp = tf.concat([final_rep, self.target_item, self.target_user], aixs=1)
@@ -419,13 +419,14 @@ class SCORE_NEW(SCOREBASE):
             attention = tf.layers.dense(affinity, 1, use_bias=False, name='affinity2attention_1', reuse=tf.AUTO_REUSE) #[B, T, K, 1]
             shape = attention.get_shape().as_list()
             attention = tf.reshape(attention, [-1, shape[1], shape[2]])
-            
+            print(attention.get_shape().as_list())
             attention = tf.layers.dense(affinity, 1, use_bias=False, name='affinity2attention_2', reuse=tf.AUTO_REUSE) #[B, T, 1]
             attention = tf.nn.softmax(attention, dim=1)
             # shape = attention.get_shape().as_list()
             # attention = tf.reshape(attention, [shape[0], shape[1]]) #[B, T]
 
             # attention = tf.expand_dims(tf.nn.softmax(attention), -1)
+            print(attention.get_shape().as_list())
             return attention
 
 
