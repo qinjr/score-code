@@ -279,7 +279,7 @@ if __name__ == '__main__':
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = MAX_LEN_Taobao
-        dataset_size = 234484
+        dataset_size = 250000
     elif data_set == 'tmall':
         target_file_train = DATA_DIR_Tmall + 'target_10_hot_sample.txt'
         target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'

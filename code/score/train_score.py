@@ -322,7 +322,7 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_Taobao
         max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
-        dataset_size = 234484
+        dataset_size = 250000
     elif data_set == 'tmall':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
