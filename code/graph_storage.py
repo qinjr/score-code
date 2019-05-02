@@ -33,7 +33,7 @@ MAX_1HOP_Taobao = 50
 MAX_2HOP_Taobao = 50
 USER_NUM_Taobao = 984105
 ITEM_NUM_Taobao = 4067842
-TIME_SLICE_NUM_Taobao = 18
+TIME_SLICE_NUM_Taobao = 9
 
 # Tmall parameters
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'

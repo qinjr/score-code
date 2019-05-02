@@ -33,7 +33,7 @@ ITEM_NUM_CCMR = 190129
 
 # for Taobao
 OBJ_PER_TIME_SLICE_Taobao = 10
-TIME_SLICE_NUM_Taobao = 18
+TIME_SLICE_NUM_Taobao = 9
 START_TIME_Taobao = 0
 FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
 DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
