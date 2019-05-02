@@ -272,7 +272,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda, mu)
 
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
-            dump_tuple = (train_losses, test_losses, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrrs)
+            dump_tuple = (train_losses, test_losses, test_ndcgs_5, test_ndcgs_10, test_hrs_1, test_hrs_5, test_hrs_10, test_mrrs)
             pkl.dump(dump_tuple, f)
         with open('logs_{}/{}.result'.format(data_set, model_name), 'w') as f:
             index = np.argmax(test_mrrs)
