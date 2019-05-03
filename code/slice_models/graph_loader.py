@@ -10,7 +10,7 @@ WORKER_N = 5
 # CCMR dataset parameters
 DATA_DIR_CCMR = '../../../score-data/CCMR/feateng/'
 TIME_SLICE_NUM_CCMR = 41
-OBJ_PER_TIME_SLICE_CCMR = 5
+OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 USER_PER_COLLECTION_CCMR = 1000
@@ -21,7 +21,7 @@ START_TIME_CCMR = 0
 # Taobao dataset parameters
 DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
 TIME_SLICE_NUM_Taobao = 9
-OBJ_PER_TIME_SLICE_Taobao = 5
+OBJ_PER_TIME_SLICE_Taobao = 10
 USER_NUM_Taobao = 984105
 ITEM_NUM_Taobao = 4067842
 USER_PER_COLLECTION_Taobao = 500
