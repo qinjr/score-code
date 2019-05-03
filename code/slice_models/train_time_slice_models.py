@@ -277,7 +277,7 @@ if __name__ == '__main__':
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
                                 USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR]
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot_sample.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
         target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
         start_time = START_TIME_CCMR
         pred_time_train = 39
@@ -292,7 +292,7 @@ if __name__ == '__main__':
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, START_TIME_Taobao,
                                 USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao]
-        target_file_train = DATA_DIR_Taobao + 'target_7_hot_sample.txt'
+        target_file_train = DATA_DIR_Taobao + 'target_7_hot.txt'
         target_file_test = DATA_DIR_Taobao + 'target_8_hot_sample.txt'
         start_time = START_TIME_Taobao
         pred_time_train = 7
@@ -307,7 +307,7 @@ if __name__ == '__main__':
         graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
                                 USER_NUM_Tmall, ITEM_NUM_Tmall, START_TIME_Tmall, \
                                 USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall]
-        target_file_train = DATA_DIR_Tmall + 'target_10_hot_sample.txt'
+        target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
         target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
         start_time = START_TIME_Tmall
         pred_time_train = 10
