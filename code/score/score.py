@@ -170,15 +170,15 @@ class SCORE_ATT(SCOREBASE):
                 obj_per_time_slice):
         super(SCORE_ATT, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
         # co-attention graph aggregator
-        user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei, agg1 = self.co_attention_agg(self.user_1hop, self.item_2hop)
-        user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei, agg2 = self.co_attention_agg(self.user_2hop, self.item_1hop)
+        user_1hop_seq, item_2hop_seq, self.user_1hop_wei, self.item_2hop_wei, affinity1 = self.co_attention(self.user_1hop, self.item_2hop)
+        user_2hop_seq, item_1hop_seq, self.user_2hop_wei, self.item_1hop_wei, affinity2 = self.co_attention(self.user_2hop, self.item_1hop)
 
         user_side = user_1hop_seq + user_2hop_seq#tf.concat([user_1hop_seq, user_2hop_seq], axis=2)
         item_side = item_1hop_seq + item_2hop_seq#tf.concat([item_1hop_seq, item_2hop_seq], axis=2)
         
-        self.agg = tf.reduce_sum(agg1 + agg2, axis=[2,3])
+        self.attention = tf.reduce_sum(affinity1 + affinity2, axis=[2,3])
         mask = (1 - tf.sequence_mask(self.length_ph, max_time_len, dtype=tf.float32)) * (-2 ** 32 + 1)
-        self.agg = tf.expand_dims(tf.nn.softmax(self.agg + mask), 2)
+        self.attention = tf.expand_dims(tf.nn.softmax(self.attention + mask), 2)
 
         # RNN
         with tf.name_scope('rnn'):
@@ -186,8 +186,8 @@ class SCORE_ATT(SCOREBASE):
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
             item_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
-        user_side_final_state = tf.reduce_sum(user_side_rep_t * self.agg, axis=1)
-        item_side_final_state = tf.reduce_sum(item_side_rep_t * self.agg, axis=1)
+        user_side_final_state = tf.reduce_sum(user_side_rep_t * self.attention, axis=1)
+        item_side_final_state = tf.reduce_sum(item_side_rep_t * self.attention, axis=1)
 
         inp = tf.concat([user_side_final_state, item_side_final_state, self.target_item, self.target_user], axis=1)
 
@@ -199,21 +199,21 @@ class SCORE_ATT(SCOREBASE):
         self.auxloss = self.loss
         self.build_train_step()
 
-    def co_attention_agg(self, seq1, seq2):
+    def co_attention(self, seq1, seq2):
         with tf.variable_scope('co-attention'):
-            seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False, name='co_atten_dense_1', reuse=tf.AUTO_REUSE)
-            seq1 = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], use_bias=False, name='co_atten_dense_2', reuse=tf.AUTO_REUSE)
-            seq2 = tf.layers.dense(seq2, seq2.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False, name='co_atten_dense_3', reuse=tf.AUTO_REUSE)
+            seq1_mlp = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False, name='co_atten_dense_1', reuse=tf.AUTO_REUSE)
+            seq1_mlp = tf.layers.dense(seq1, seq1.get_shape().as_list()[-1], use_bias=False, name='co_atten_dense_2', reuse=tf.AUTO_REUSE)
+            seq2_mlp = tf.layers.dense(seq2, seq2.get_shape().as_list()[-1], activation=tf.nn.relu, use_bias=False, name='co_atten_dense_3', reuse=tf.AUTO_REUSE)
         
-        product = tf.matmul(seq1, tf.transpose(seq2, [0, 1, 3, 2]))
+        affinity = tf.matmul(seq1_mlp, tf.transpose(seq2_mlp, [0, 1, 3, 2]))
 
-        seq1_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(product, axis=3)), axis=3)
-        seq2_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(product, axis=2)), axis=3)
+        seq1_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(affinity, axis=3)), axis=3)
+        seq2_weights = tf.expand_dims(tf.nn.softmax(tf.reduce_max(affinity, axis=2)), axis=3)
 
         seq1_result = tf.reduce_sum(seq1 * seq1_weights, axis=2) #[B, T, D]
         seq2_result = tf.reduce_sum(seq2 * seq2_weights, axis=2)
 
-        return seq1_result, seq2_result, seq1_weights, seq2_weights, product
+        return seq1_result, seq2_result, seq1_weights, seq2_weights, affinity
 
 class SCORE_CONCAT(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
