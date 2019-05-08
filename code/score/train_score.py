@@ -78,6 +78,9 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
         model = SCORE_GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     elif model_type == 'SCORE_GAT_ATT':
         model = SCORE_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'SCORE_GAT_ATT_RS':
+        model = SCORE_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        graph_handler_params[-1] = 'rs'
     elif model_type == 'SCORE_ORI_GAT_ATT':
         model = SCORE_ORI_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     elif model_type == 'SCORE_GAT_ATT_1HOP':
@@ -199,6 +202,9 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         model = SCORE_GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     elif model_type == 'SCORE_GAT_ATT':
         model = SCORE_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'SCORE_GAT_ATT_RS':
+        model = SCORE_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        graph_handler_params[-1] = 'rs'
     elif model_type == 'SCORE_ORI_GAT_ATT':
         model = SCORE_ORI_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     elif model_type == 'SCORE_GAT_ATT_1HOP':
