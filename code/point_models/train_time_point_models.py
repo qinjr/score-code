@@ -34,7 +34,7 @@ FEAT_SIZE_Tmall = 1529672
 DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
 MAX_LEN_Tmall = 300
 
-def restore(data_set, target_file_test, user_seq_file_test,
+def restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
         lr, reg_lambda):
     print('restore begin')
@@ -48,6 +48,8 @@ def restore(data_set, target_file_test, user_seq_file_test,
         model = SVDpp(feature_size, eb_dim, hidden_size, max_time_len)
     elif model_type == 'SASRec': 
         model = SASRec(feature_size, eb_dim, hidden_size, max_time_len)
+    elif model_type == 'DELF': 
+        model = DELF(feature_size, eb_dim, hidden_size, max_time_len)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -57,7 +59,7 @@ def restore(data_set, target_file_test, user_seq_file_test,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test)
+        _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
         # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
         # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
         print('RESTORE, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
@@ -113,20 +115,26 @@ def get_ranking_quality(preds, target_iids):
     return np.mean(ndcg_5_val), np.mean(ndcg_10_val), np.mean(hr_1_val), np.mean(hr_5_val), np.mean(hr_10_val), np.mean(mrr_val)
 
 
-def eval(model, sess, target_file, max_time_len, reg_lambda, user_seq_file):
+def eval(model_type, model, sess, target_file, max_time_len, reg_lambda, user_seq_file, item_seq_file):
     preds = []
     labels = []
     target_iids = []
     losses = []
-
-    data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, target_file, user_seq_file, TEST_NEG_SAMPLE_NUM)
+    if model_type == 'DELF':
+        data_loader = DataLoaderDualSeq(EVAL_BATCH_SIZE, max_time_len, target_file, user_seq_file, item_seq_file, TEST_NEG_SAMPLE_NUM)
+    else:    
+        data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, target_file, user_seq_file, TEST_NEG_SAMPLE_NUM)
+    
     t = time.time()
     for batch_data in data_loader:
         pred, label, loss = model.eval(sess, batch_data, reg_lambda)
         preds += pred
         labels += label
         losses.append(loss)
-        target_iids += np.array(batch_data[3]).tolist()
+        if model_type == 'DELF':
+            target_iids += np.array(batch_data[5]).tolist()
+        else:
+            target_iids += np.array(batch_data[3]).tolist()
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     loss = sum(losses) / len(losses)
@@ -140,7 +148,7 @@ def eval(model, sess, target_file, max_time_len, reg_lambda, user_seq_file):
     return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
 
 def train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
-        model_type, train_batch_size, feature_size, 
+        item_seq_file_train, item_seq_file_test, model_type, train_batch_size, feature_size, 
         eb_dim, hidden_size, max_time_len, lr, reg_lambda, dataset_size):
     if model_type == 'GRU4Rec':
         model = GRU4Rec(feature_size, eb_dim, hidden_size, max_time_len)
@@ -152,6 +160,8 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         model = SVDpp(feature_size, eb_dim, hidden_size, max_time_len)
     elif model_type == 'SASRec': 
         model = SASRec(feature_size, eb_dim, hidden_size, max_time_len)
+    elif model_type == 'DELF': 
+        model = DELF(feature_size, eb_dim, hidden_size, max_time_len)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -179,7 +189,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
 
         # before training process
         step = 0
-        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test)
+        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
         # test_loglosses.append(test_logloss)
         # test_aucs.append(test_auc)
         test_ndcgs_5.append(test_ndcg_5)
@@ -197,7 +207,11 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         for epoch in range(10):
             if early_stop:
                 break
-            data_loader = DataLoaderUserSeq(train_batch_size, max_time_len, target_file_train, user_seq_file_train, TRAIN_NEG_SAMPLE_NUM)
+            if model_type == 'DELF':
+                data_loader = DataLoaderDualSeq(EVAL_BATCH_SIZE, max_time_len, target_file_train, user_seq_file_train, item_seq_file_train, TEST_NEG_SAMPLE_NUM)
+            else:    
+                data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, target_file_train, user_seq_file_train, TEST_NEG_SAMPLE_NUM)
+            
             for batch_data in data_loader:
                 if early_stop:
                     break
@@ -210,7 +224,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                     train_losses.append(train_loss)
                     train_losses_step = []
                     
-                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test)
+                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
                     # test_loglosses.append(test_logloss)
                     # test_aucs.append(test_auc)
                     test_ndcgs_5.append(test_ndcg_5)
@@ -267,6 +281,8 @@ if __name__ == '__main__':
         target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
         user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39.txt'
         user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt'
+        item_seq_file_train = DATA_DIR_CCMR + 'train_item_hist_seq_39.txt'
+        item_seq_file_test = DATA_DIR_CCMR + 'test_item_hist_seq_40_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
@@ -276,6 +292,8 @@ if __name__ == '__main__':
         target_file_test = DATA_DIR_Taobao + 'target_8_hot_sample.txt'
         user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq_7.txt'
         user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq_8_sample.txt'
+        item_seq_file_train = DATA_DIR_Taobao + 'train_item_hist_seq_7.txt'
+        item_seq_file_test = DATA_DIR_Taobao + 'test_item_hist_seq_8_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = MAX_LEN_Taobao
@@ -285,6 +303,8 @@ if __name__ == '__main__':
         target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
         user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_10.txt'
         user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_11_sample.txt'
+        item_seq_file_train = DATA_DIR_Tmall + 'train_item_hist_seq_10.txt'
+        item_seq_file_test = DATA_DIR_Tmall + 'test_item_hist_seq_11_sample.txt'
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = MAX_LEN_Tmall
@@ -300,9 +320,9 @@ if __name__ == '__main__':
     for hyper in hyper_paras:
         train_batch_size, lr = hyper
         train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
-                model_type, train_batch_size, feature_size, 
+                item_seq_file_train, item_seq_file_test, model_type, train_batch_size, feature_size, 
                 EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, lr, reg_lambda, dataset_size)
         
-        restore(data_set, target_file_test, user_seq_file_test,
+        restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
             model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
             lr, reg_lambda)
