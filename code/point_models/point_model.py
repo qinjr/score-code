@@ -235,23 +235,133 @@ class SVDpp(PointBaseModel):
         
         self.build_logloss()
 
+class DELF(PointBaseModel):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len):
+        super(DELF, self).__init__(feature_size, eb_dim, hidden_size, max_time_len)
+
+        with tf.name_scope('inputs_item'):
+            self.item_seq_ph = tf.placeholder(tf.int32, [None, max_time_len], name='item_seq_ph')
+            self.item_seq_length_ph = tf.placeholder(tf.int32, [None,], name='item_seq_length_ph')
+        
+        with tf.name_scope('embedding_item'):
+            self.item_seq = tf.nn.embedding_lookup(self.emb_mtx, self.item_seq_ph)
+        
+        # sequence mask for user seq and item seq
+        self.user_seq_mask = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph, max_time_len, dtype=tf.float32), 2)
+        self.item_seq_mask = tf.expand_dims(tf.sequence_mask(self.item_seq_length_ph, max_time_len, dtype=tf.float32), 2)
+
+        self.user_rep_item_base = self.attention(self.user_seq, self.user_seq, self.target_item, self.user_seq_mask)
+        self.item_rep_user_base = self.attention(self.item_seq, self.item_seq, self.target_user, self.item_seq_mask)
+    
+        # pairwise interaction layer
+        self.inter1 = self.target_user + self.target_item
+        self.inter2 = self.user_rep_item_base + self.item_rep_user_base
+        self.inter3 = self.target_user + self.item_rep_user_base
+        self.inter4 = self.target_item + self.user_rep_item_base
+
+        # fusion layer
+        f1 = self.fusion_mlp(self.inter1)
+        f2 = self.fusion_mlp(self.inter2)
+        f3 = self.fusion_mlp(self.inter3)
+        f4 = self.fusion_mlp(self.inter4)
+
+        f = f1 + f2 + f3 + f4
+        self.y_pred = tf.reshape(tf.layers.dense(inp, 1, activation=tf.sigmoid), [-1,])
+        self.build_logloss()        
+
+    def fusion_mlp(self, inp):
+        fc1 = tf.layers.dense(inp, 80, activation=tf.nn.relu)
+        fc2 = tf.layers.dense(fc1, 16, activation=tf.nn.relu)
+        return fc2
+
+    def attention(self, key, value, query, mask):
+        # key, value: [B, T, D], query: [B, D], mask: [B, T, 1]
+        _, max_len, k_dim = key.get_shape().as_list()
+        queries = tf.tile(tf.expand_dims(query, 1), [1, max_len, 1]) # [B, T, D]
+        key = tf.layers.dense(key, k_dim, activation=tf.nn.tanh)
+
+        paddings = (1 - mask) * (-2 ** 32 + 1)
+        attention = tf.nn.softmax(tf.reduce_sum(queries * key * mask, axis=2) + paddings, dim=1)
+
+        output = tf.reduce_sum(value * attention, axis=1)
+        return output
+    
+    def train(self, sess, batch_data, lr, reg_lambda):
+        loss, _ = sess.run([self.loss, self.train_step], feed_dict = {
+                self.user_seq_ph : batch_data[0],
+                self.user_seq_length_ph : batch_data[1],
+                self.item_seq_ph : batch_data[2],
+                self.item_seq_length_ph : batch_data[3],
+                self.target_user_ph : batch_data[4],
+                self.target_item_ph : batch_data[5],
+                self.label_ph : batch_data[6],
+                self.lr : lr,
+                self.reg_lambda : reg_lambda,
+                self.keep_prob : 0.8
+            })
+        return loss
+    
+    def eval(self, sess, batch_data, reg_lambda):
+        pred, label, loss = sess.run([self.y_pred, self.label_ph, self.loss], feed_dict = {
+                self.user_seq_ph : batch_data[0],
+                self.user_seq_length_ph : batch_data[1],
+                self.item_seq_ph : batch_data[2],
+                self.item_seq_length_ph : batch_data[3],
+                self.target_user_ph : batch_data[4],
+                self.target_item_ph : batch_data[5],
+                self.label_ph : batch_data[6],
+                self.reg_lambda : reg_lambda,
+                self.keep_prob : 1.
+            })
+        
+        return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss
+
 class SASRec(PointBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len):
         super(SASRec, self).__init__(feature_size, eb_dim, hidden_size, max_time_len)
+        self.user_seq = self.multihead_attention(self.normalize(self.user_seq), self.user_seq)
 
         self.mask = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph, max_time_len, dtype=tf.float32), axis=-1)
-        # self.mask_1 = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph - 1, max_time_len, dtype=tf.float32), axis=-1)
-        # self.get_mask = self.mask - self.mask_1
-        self.user_seq = self.user_seq * self.mask
-        
-        self.user_seq = self.multihead_attention(self.normalize(self.user_seq), self.user_seq)
-        self.seq_rep = tf.reduce_sum(self.user_seq * self.mask, axis=1)
-        inp = tf.concat([self.seq_rep, self.target_item, self.target_user], axis=1)
+        self.mask_1 = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph - 1, max_time_len, dtype=tf.float32), axis=-1)
+        self.get_mask = self.mask - self.mask_1
+        self.seq_rep = self.user_seq * self.mask
 
-        # fc layer
-        self.build_fc_net(inp)
-        self.build_logloss()
-    
+        # pos and neg for sequence
+        self.pos = self.user_seq[:, 1:, :]
+        self.neg = self.user_seq[:, 2:, :]
+        self.pos_seq_rep = tf.concat([self.pos, self.user_seq[:, 1:, :]], axis=2)
+        self.neg_seq_rep = tf.concat([self.neg, self.user_seq[:, 2:, :]], axis=2)
+        
+        self.preds_pos = self.build_fc_net(self.pos_seq_rep)
+        self.preds_neg = self.build_fc_net(self.neg_seq_rep)
+        self.label_pos = tf.ones_like(self.pred_pos)
+        self.label_neg = tf.ones_like(self.pred_neg)
+
+        self.loss = tf.losses.log_loss(self.label_pos, self.pred_pos) + tf.losses.log_loss(self.label_neg, self.pred_neg)
+
+        # prediction for target user and item
+        inp = tf.concat([self.seq_rep, self.target_item, self.target_user], axis=1)
+        self.y_pred = self.build_fc_net(inp)
+        self.y_pred = tf.reshape(self.y_pred, [-1,])
+        
+        self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
+        for v in tf.trainable_variables():
+            if 'bias' not in v.name and 'emb' not in v.name:
+                self.loss += self.reg_lambda * tf.nn.l2_loss(v)
+        # optimizer and training step
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+        self.train_step = self.optimizer.minimize(self.loss)
+
+    def build_fc_net(self, inp):
+        with tf.variable_scope('prediction_layer'):
+            bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1')
+            fc1 = tf.layers.dense(bn1, 200, activation=tf.nn.relu, name='fc1', reuse=tf.AUTO_REUSE)
+            dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1')
+            fc2 = tf.layers.dense(dp1, 80, activation=tf.nn.relu, name='fc2', reuse=tf.AUTO_REUSE)
+            dp2 = tf.nn.dropout(fc2, self.keep_prob, name='dp2')
+            fc3 = tf.layers.dense(dp2, 1, activation=None, name='fc3', reuse=tf.AUTO_REUSE)
+        return fc3
+
     def multihead_attention(self,
                             queries, 
                             keys, 
