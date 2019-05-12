@@ -62,7 +62,7 @@ def obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
         print('WRONG MODEL TYPE')
         exit(1)
     
-    model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
+    model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
@@ -112,7 +112,7 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     else:
         print('WRONG MODEL TYPE')
         exit(1)
-    model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
+    model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
     
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
@@ -293,7 +293,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  AUXLOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, train_loss, test_loss, test_auxloss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
                     if test_mrrs[-1] > max(test_mrrs[:-1]):
                         # save model
-                        model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
+                        model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
                             os.makedirs('save_model_{}/{}/'.format(data_set, model_name))
                         save_path = 'save_model_{}/{}/ckpt'.format(data_set, model_name)
@@ -307,7 +307,7 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         # generate log
         if not os.path.exists('logs_{}/'.format(data_set)):
             os.makedirs('logs_{}/'.format(data_set))
-        model_name = '{}_{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
+        model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
 
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
             dump_tuple = (train_losses, test_losses, test_ndcgs_5, test_ndcgs_10, test_hrs_1, test_hrs_5, test_hrs_10, test_mrrs)
