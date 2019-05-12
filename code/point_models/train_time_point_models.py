@@ -59,7 +59,7 @@ def restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
         print('restore eval begin')
-        _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
+        _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model_type, model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
         # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
         # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
         print('RESTORE, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
@@ -189,7 +189,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
 
         # before training process
         step = 0
-        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
+        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model_type, model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
         # test_loglosses.append(test_logloss)
         # test_aucs.append(test_auc)
         test_ndcgs_5.append(test_ndcg_5)
@@ -224,7 +224,7 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                     train_losses.append(train_loss)
                     train_losses_step = []
                     
-                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
+                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model_type, model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
                     # test_loglosses.append(test_logloss)
                     # test_aucs.append(test_auc)
                     test_ndcgs_5.append(test_ndcg_5)

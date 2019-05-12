@@ -150,5 +150,5 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
 
 
 if __name__ == "__main__":
-    # join_user_profile(RAW_DIR + 'user_info_format1.csv', RAW_DIR + 'user_log_format1.csv', RAW_DIR + 'joined_user_behavior.csv')
-    preprocess_raw_data(RAW_DIR + 'joined_user_behavior.csv', FEATENG_DIR + 'remaped_user_behavior.csv', FEATENG_DIR + 'remap_dict.pkl', FEATENG_DIR + 'time_distri.png', FEATENG_DIR + 'user_feat_dict.pkl', FEATENG_DIR + 'item_feat_dict.pkl')
+    join_user_profile(RAW_DIR + 'user_info_format1.csv', RAW_DIR + 'user_log_format1.csv', FEATENG_DIR + 'joined_user_behavior.csv')
+    preprocess_raw_data(FEATENG_DIR + 'joined_user_behavior.csv', FEATENG_DIR + 'remaped_user_behavior.csv', FEATENG_DIR + 'remap_dict.pkl', FEATENG_DIR + 'time_distri.png', FEATENG_DIR + 'user_feat_dict.pkl', FEATENG_DIR + 'item_feat_dict.pkl')

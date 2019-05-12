@@ -182,13 +182,22 @@ def gen_user_neg(in_file, out_file):
     with open(out_file, 'wb') as f:
         pkl.dump(user_neg_dict, f)
 
+def simplify_data(in_file, out_file):
+    newlines = []
+    with open(in_file, 'r') as f:
+        for line in f:
+            newlines.append(','.join(line.split(',')[:4]) + '\n')
+    with open(out_file, 'w') as f:
+        f.writelines(newlines)
+    print('simplify finished')
 
 if __name__ == "__main__":
-    # pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
+    # simplify_data(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_logs.csv')
+    # pos_neg_split(FEATENG_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
     # time2idx(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_pos_idx.csv')
     # time2idx(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'rating_neg_idx.csv')
     # time_distri(FEATENG_DIR + 'rating_pos_idx.csv', FEATENG_DIR + 'time_distri.png')
     # movie_feat_info(RAW_DIR + 'movie_info_colname.csv')
-    # remap_ids(FEATENG_DIR + 'rating_pos_idx.csv', FEATENG_DIR + 'remap_rating_pos_idx.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
-    # remap_ids(FEATENG_DIR + 'rating_neg_idx.csv', FEATENG_DIR + 'remap_rating_neg_idx.csv')
+    remap_ids(FEATENG_DIR + 'rating_pos_idx.csv', FEATENG_DIR + 'remap_rating_pos_idx.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
+    remap_ids(FEATENG_DIR + 'rating_neg_idx.csv', FEATENG_DIR + 'remap_rating_neg_idx.csv')
     gen_user_neg(FEATENG_DIR + 'remap_rating_neg_idx.csv', FEATENG_DIR + 'user_neg_dict.pkl')

@@ -266,7 +266,7 @@ class DELF(PointBaseModel):
         f4 = self.fusion_mlp(self.inter4)
 
         f = f1 + f2 + f3 + f4
-        self.y_pred = tf.reshape(tf.layers.dense(inp, 1, activation=tf.sigmoid), [-1,])
+        self.y_pred = tf.reshape(tf.layers.dense(f, 1, activation=tf.sigmoid), [-1,])
         self.build_logloss()        
 
     def fusion_mlp(self, inp):
@@ -281,8 +281,7 @@ class DELF(PointBaseModel):
         key = tf.layers.dense(key, k_dim, activation=tf.nn.tanh)
 
         paddings = (1 - mask) * (-2 ** 32 + 1)
-        attention = tf.nn.softmax(tf.reduce_sum(queries * key * mask, axis=2) + paddings, dim=1)
-
+        attention = tf.nn.softmax(tf.expand_dims(tf.reduce_sum(queries * key * mask, axis=2), 2) + paddings, dim=1)
         output = tf.reduce_sum(value * attention, axis=1)
         return output
     
@@ -325,22 +324,26 @@ class SASRec(PointBaseModel):
         self.mask_1 = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph - 1, max_time_len, dtype=tf.float32), axis=-1)
         self.get_mask = self.mask - self.mask_1
         self.seq_rep = self.user_seq * self.mask
+        self.final_pred_rep = tf.reduce_sum(self.user_seq * self.mask, axis=1)
 
         # pos and neg for sequence
         self.pos = self.user_seq[:, 1:, :]
         self.neg = self.user_seq[:, 2:, :]
-        self.pos_seq_rep = tf.concat([self.pos, self.user_seq[:, 1:, :]], axis=2)
-        self.neg_seq_rep = tf.concat([self.neg, self.user_seq[:, 2:, :]], axis=2)
+        
+        self.target_user_t = tf.tile(tf.expand_dims(self.target_user, 1), [1, max_time_len, 1])
+
+        self.pos_seq_rep = tf.concat([self.seq_rep[:, 1:, :], self.pos, self.target_user_t[:, 1:, :]], axis=2)
+        self.neg_seq_rep = tf.concat([self.seq_rep[:, 2:, :], self.neg, self.target_user_t[:, 2:, :]], axis=2)
         
         self.preds_pos = self.build_fc_net(self.pos_seq_rep)
         self.preds_neg = self.build_fc_net(self.neg_seq_rep)
-        self.label_pos = tf.ones_like(self.pred_pos)
-        self.label_neg = tf.ones_like(self.pred_neg)
+        self.label_pos = tf.ones_like(self.preds_pos)
+        self.label_neg = tf.zeros_like(self.preds_neg)
 
-        self.loss = tf.losses.log_loss(self.label_pos, self.pred_pos) + tf.losses.log_loss(self.label_neg, self.pred_neg)
+        self.loss = tf.losses.log_loss(self.label_pos, self.preds_pos) + tf.losses.log_loss(self.label_neg, self.preds_neg)
 
         # prediction for target user and item
-        inp = tf.concat([self.seq_rep, self.target_item, self.target_user], axis=1)
+        inp = tf.concat([self.final_pred_rep, self.target_item, self.target_user], axis=1)
         self.y_pred = self.build_fc_net(inp)
         self.y_pred = tf.reshape(self.y_pred, [-1,])
         
@@ -354,8 +357,7 @@ class SASRec(PointBaseModel):
 
     def build_fc_net(self, inp):
         with tf.variable_scope('prediction_layer'):
-            bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1')
-            fc1 = tf.layers.dense(bn1, 200, activation=tf.nn.relu, name='fc1', reuse=tf.AUTO_REUSE)
+            fc1 = tf.layers.dense(inp, 200, activation=tf.nn.relu, name='fc1', reuse=tf.AUTO_REUSE)
             dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1')
             fc2 = tf.layers.dense(dp1, 80, activation=tf.nn.relu, name='fc2', reuse=tf.AUTO_REUSE)
             dp2 = tf.nn.dropout(fc2, self.keep_prob, name='dp2')
