@@ -158,7 +158,7 @@ class SCORE(SCOREBASE):
 
         # HOP:1
         user_1hop_co_attention = self.co_attention(self.user_1hop, self.user_1hop, item_side)
-        user_1hop_co_attention = self.co_attention(self.item_1hop, self.item_1hop, user_side)
+        item_1hop_co_attention = self.co_attention(self.item_1hop, self.item_1hop, user_side)
         user_side += user_1hop_co_attention
         item_side += item_1hop_co_attention
         
