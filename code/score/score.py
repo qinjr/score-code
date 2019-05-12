@@ -28,9 +28,8 @@ class SCOREBASE(object):
 
             # lr
             self.lr = tf.placeholder(tf.float32, [])
-            # regularization term and auxloss mu
+            # regularization term
             self.reg_lambda = tf.placeholder(tf.float32, [], name='lambda')
-            self.mu = tf.placeholder(tf.float32, [], name='mu')
             # keep prob
             self.keep_prob = tf.placeholder(tf.float32, [])
         
@@ -78,7 +77,7 @@ class SCOREBASE(object):
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         self.train_step = self.optimizer.minimize(self.loss)
     
-    def train(self, sess, batch_data, lr, reg_lambda, mu):
+    def train(self, sess, batch_data, lr, reg_lambda):
         loss, _ = sess.run([self.loss, self.train_step], feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
@@ -90,12 +89,11 @@ class SCOREBASE(object):
                 self.length_ph : batch_data[7],
                 self.lr : lr,
                 self.reg_lambda : reg_lambda,
-                self.mu : mu,
                 self.keep_prob : 0.8
             })
         return loss
     
-    def eval(self, sess, batch_data, reg_lambda, mu):
+    def eval(self, sess, batch_data, reg_lambda):
         pred, label, loss, auxloss = sess.run([self.y_pred, self.label_ph, self.loss, self.auxloss], feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
@@ -106,7 +104,6 @@ class SCOREBASE(object):
                 self.label_ph : batch_data[6],
                 self.length_ph : batch_data[7],
                 self.reg_lambda : reg_lambda,
-                self.mu : mu,
                 self.keep_prob : 1.
             })
         
