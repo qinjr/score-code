@@ -121,7 +121,7 @@ class SCOREBASE(object):
         saver.restore(sess, save_path=path)
         print('model restored from {}'.format(path))
     
-    def co_attenion(self, key, value, query):
+    def co_attention(self, key, value, query):
         # key/value: [B, T, K, D], query: [B, T, D]
         key_shape = key.get_shape().as_list()
         query = tf.expand_dims(query, 2) # [B, T, 1, D]
@@ -157,16 +157,16 @@ class SCORE(SCOREBASE):
         item_side = self.target_item_t
 
         # HOP:1
-        user_1hop_co_attenion = self.co_attenion(self.user_1hop, self.user_1hop, item_side)
-        item_1hop_co_attenion = self.co_attenion(self.item_1hop, self.item_1hop, user_side)
+        user_1hop_co_attention = self.co_attention(self.user_1hop, self.user_1hop, item_side)
+        user_1hop_co_attention = self.co_attention(self.item_1hop, self.item_1hop, user_side)
         user_side += user_1hop_co_attention
         item_side += item_1hop_co_attention
         
         # HOP:2
-        user_2hop_co_attenion = self.co_attenion(self.user_2hop, self.user_2hop, item_side)
-        item_2hop_co_attenion = self.co_attenion(self.item_2hop, self.item_2hop, user_side)
-        user_side += user_2hop_co_attenion
-        item_side += item_2hop_co_attenion
+        user_2hop_co_attention = self.co_attention(self.user_2hop, self.user_2hop, item_side)
+        item_2hop_co_attention = self.co_attention(self.item_2hop, self.item_2hop, user_side)
+        user_side += user_2hop_co_attention
+        item_side += item_2hop_co_attention
         
         # RNN
         with tf.name_scope('rnn'):
@@ -198,16 +198,16 @@ class No_Att(SCOREBASE):
         item_side = self.target_item_t
 
         # HOP:1
-        user_1hop_co_attenion = self.co_attenion(self.user_1hop, self.user_1hop, item_side)
-        item_1hop_co_attenion = self.co_attenion(self.item_1hop, self.item_1hop, user_side)
-        user_side += user_1hop_co_attenion
-        item_side += item_1hop_co_attenion
+        user_1hop_co_attention = self.co_attention(self.user_1hop, self.user_1hop, item_side)
+        item_1hop_co_attention = self.co_attention(self.item_1hop, self.item_1hop, user_side)
+        user_side += user_1hop_co_attention
+        item_side += item_1hop_co_attention
         
         # HOP:2
-        user_2hop_co_attenion = self.co_attenion(self.user_2hop, self.user_2hop, item_side)
-        item_2hop_co_attenion = self.co_attenion(self.item_2hop, self.item_2hop, user_side)
-        user_side += user_2hop_co_attenion
-        item_side += item_2hop_co_attenion
+        user_2hop_co_attention = self.co_attention(self.user_2hop, self.user_2hop, item_side)
+        item_2hop_co_attention = self.co_attention(self.item_2hop, self.item_2hop, user_side)
+        user_side += user_2hop_co_attention
+        item_side += item_2hop_co_attention
         
         # RNN
         with tf.name_scope('rnn'):
@@ -237,10 +237,10 @@ class SCORE_1HOP(SCOREBASE):
         item_side = self.target_item_t
 
         # HOP:1
-        user_1hop_co_attenion = self.co_attenion(self.user_1hop, self.user_1hop, item_side)
-        item_1hop_co_attenion = self.co_attenion(self.item_1hop, self.item_1hop, user_side)
-        user_side += user_1hop_co_attenion
-        item_side += item_1hop_co_attenion
+        user_1hop_co_attention = self.co_attention(self.user_1hop, self.user_1hop, item_side)
+        item_1hop_co_attention = self.co_attention(self.item_1hop, self.item_1hop, user_side)
+        user_side += user_1hop_co_attention
+        item_side += item_1hop_co_attention
         
         # RNN
         with tf.name_scope('rnn'):
