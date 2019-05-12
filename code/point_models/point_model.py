@@ -361,7 +361,7 @@ class SASRec(PointBaseModel):
             dp1 = tf.nn.dropout(fc1, self.keep_prob, name='dp1')
             fc2 = tf.layers.dense(dp1, 80, activation=tf.nn.relu, name='fc2', reuse=tf.AUTO_REUSE)
             dp2 = tf.nn.dropout(fc2, self.keep_prob, name='dp2')
-            fc3 = tf.layers.dense(dp2, 1, activation=None, name='fc3', reuse=tf.AUTO_REUSE)
+            fc3 = tf.layers.dense(dp2, 1, activation=tf.sigmoid, name='fc3', reuse=tf.AUTO_REUSE)
         return fc3
 
     def multihead_attention(self,
