@@ -58,17 +58,8 @@ def obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
         hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda):
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'No_Att':
-        model = No_Att(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'GAT':
-        model = GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_1HOP':
-        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_RS':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-        graph_handler_params[-1] = 'rs'
     else:
-        print('WRONG MODEL TYPE')
+        print('WRONG MODEL TYPE, has to be SCORE')
         exit(1)
     
     model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)

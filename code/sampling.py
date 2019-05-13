@@ -10,7 +10,7 @@ DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 # Tmall dataset parameters
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
 
-ramdom.seed(11)
+random.seed(11)
 
 def sample_files(target_file, 
                 user_seq_file, 
