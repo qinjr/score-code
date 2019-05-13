@@ -79,7 +79,7 @@ def obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
     # different interaction set size
     candi_size = [1, 5, 10, 15, 20]
     for size in candi_size:
-        graph_handler_params[2] = candi_size
+        graph_handler_params[2] = size
         _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
         # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
         # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
