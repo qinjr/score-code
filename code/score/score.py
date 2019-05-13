@@ -94,7 +94,7 @@ class SCOREBASE(object):
         return loss
     
     def eval(self, sess, batch_data, reg_lambda):
-        pred, label, loss, auxloss = sess.run([self.y_pred, self.label_ph, self.loss, self.auxloss], feed_dict = {
+        pred, label, loss = sess.run([self.y_pred, self.label_ph, self.loss], feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
                 self.item_1hop_ph : batch_data[2],
@@ -107,7 +107,7 @@ class SCOREBASE(object):
                 self.keep_prob : 1.
             })
         
-        return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss, auxloss
+        return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss
 
     def save(self, sess, path):
         saver = tf.train.Saver()
@@ -181,7 +181,6 @@ class SCORE(SCOREBASE):
         # build loss
         self.build_logloss()
         self.build_l2norm()
-        self.auxloss = self.loss
         self.build_train_step()
 
 class No_Att(SCOREBASE):
@@ -220,7 +219,6 @@ class No_Att(SCOREBASE):
         # build loss
         self.build_logloss()
         self.build_l2norm()
-        self.auxloss = self.loss
         self.build_train_step()
 
 class SCORE_1HOP(SCOREBASE):
@@ -255,7 +253,6 @@ class SCORE_1HOP(SCOREBASE):
         # build loss
         self.build_logloss()
         self.build_l2norm()
-        self.auxloss = self.loss
         self.build_train_step()
 
 class GAT(SCOREBASE):
@@ -296,7 +293,6 @@ class GAT(SCOREBASE):
         # build loss
         self.build_logloss()
         self.build_l2norm()
-        self.auxloss = self.loss
         self.build_train_step()
 
     def lrelu(self, x, alpha=0.2):
