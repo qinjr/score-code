@@ -56,8 +56,17 @@ ITEM_NUM_Tmall = 1090390
 def obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, model_type, train_batch_size, feature_size, eb_dim, 
         hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda):
-    if model_type == 'SCORE_GAT_ATT':
-        model = SCORE_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    if model_type == 'SCORE':
+        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'No_Att':
+        model = No_Att(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'GAT':
+        model = GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'SCORE_1HOP':
+        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'SCORE_RS':
+        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        graph_handler_params[-1] = 'rs'
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -84,31 +93,15 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
     graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_V2':
-        model = SCORE_V2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_CONCAT':
-        model = SCORE_CONCAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_ATT':
-        model = SCORE_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_ATT_GAT':
-        model = SCORE_ATT_GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_V3':
-        model = SCORE_V3(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_NEW':
-        model = SCORE_NEW(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_NEW_BASE':
-        model = SCORE_NEW_BASE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_GAT':
-        model = SCORE_GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_GAT_ATT':
-        model = SCORE_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_GAT_ATT_RS':
-        model = SCORE_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'No_Att':
+        model = No_Att(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'GAT':
+        model = GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'SCORE_1HOP':
+        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+    elif model_type == 'SCORE_RS':
+        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
         graph_handler_params[-1] = 'rs'
-    elif model_type == 'SCORE_ORI_GAT_ATT':
-        model = SCORE_ORI_GAT_ATT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_GAT_ATT_1HOP':
-        model = SCORE_GAT_ATT_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
