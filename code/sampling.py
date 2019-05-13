@@ -10,6 +10,8 @@ DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 # Tmall dataset parameters
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
 
+ramdom.seed(11)
+
 def sample_files(target_file, 
                 user_seq_file, 
                 item_seq_file, 
@@ -63,7 +65,7 @@ if __name__ == "__main__":
                     DATA_DIR_CCMR + 'test_item_hist_seq_40_sample.txt', 
                     10)
     elif dataset == 'taobao':
-        # CCMR
+        # Taobao
         sample_files(DATA_DIR_Taobao + 'target_7_hot.txt', 
                     DATA_DIR_Taobao + 'train_user_hist_seq_7.txt', 
                     DATA_DIR_Taobao + 'train_item_hist_seq_7.txt', 
@@ -79,7 +81,7 @@ if __name__ == "__main__":
                     DATA_DIR_Taobao + 'test_item_hist_seq_8_sample.txt', 
                     20)
     elif dataset == 'tmall':
-        # CCMR
+        # Tmall
         sample_files(DATA_DIR_Tmall + 'target_10_hot.txt', 
                     DATA_DIR_Tmall + 'train_user_hist_seq_10.txt', 
                     DATA_DIR_Tmall + 'train_item_hist_seq_10.txt', 
