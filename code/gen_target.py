@@ -7,6 +7,8 @@ import multiprocessing
 import datetime
 import sys
 
+random.seed(11)
+
 NEG_SAMPLE_NUM = 99
 SECONDS_PER_DAY = 24*3600
 # CCMR dataset parameters
@@ -41,7 +43,6 @@ ITEM_PER_COLLECTION_Tmall = 250
 START_TIME_Tmall = int(time.mktime(datetime.datetime.strptime('2015-5-1', "%Y-%m-%d").timetuple()))
 START_TIME_IDX_Tmall = 0
 TIME_DELTA_Tmall = 15
-
 
 class TargetGen(object):
     def __init__(self, user_neg_dict_file, db_name, user_num, item_num, user_per_collection,

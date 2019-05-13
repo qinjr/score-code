@@ -313,11 +313,7 @@ class GAT(SCOREBASE):
         atten = tf.nn.softmax(atten, dim=2) #[B, T, K, 1]
         res = tf.reduce_sum(atten * value, axis=2)
         return res
-    
-    def self_attention(self, key, value, query, d):
-        attention = tf.nn.softmax(tf.matmul(query, tf.transpose(key, [0,2,1])) / tf.sqrt(tf.convert_to_tensor(d)), dim=-1)
-        wei_sum = tf.matmul(attention, value)
-        return wei_sum, attention
+
     
     def link_attention(self, key, value, query):
         attention_inp = tf.concat([key, query], axis=-1)
