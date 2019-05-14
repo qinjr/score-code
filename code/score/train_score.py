@@ -66,15 +66,14 @@ def obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
-    
-    # different interaction set size
-    candi_size = [1, 5, 10, 15, 20]
-    for size in candi_size:
-        graph_handler_params[2] = size
-        _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
-        # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
-        # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
-        print('Performance of size: %d, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (size, loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
+        # different interaction set size
+        candi_size = [1, 5, 10, 15, 20]
+        for size in candi_size:
+            graph_handler_params[2] = size
+            _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
+            # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
+            # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
+            print('Performance of size: %d, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (size, loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
 
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
