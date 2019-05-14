@@ -367,7 +367,7 @@ if __name__ == '__main__':
                 EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
                 lr, reg_lambda)
         
-        obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
-                pred_time_test, model_type, train_batch_size, feature_size, 
-                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
-                lr, reg_lambda)
+        # obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
+        #         pred_time_test, model_type, train_batch_size, feature_size, 
+        #         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
+        #         lr, reg_lambda)
