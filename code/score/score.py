@@ -133,14 +133,13 @@ class SCOREBASE(object):
     def lrelu(self, x, alpha=0.2):
         return tf.nn.relu(x) - alpha * tf.nn.relu(-x)
     
-    def interactive_attention(self, key, value, query):
+    def interactive_attention(self, key, query):
         attention_inp = tf.concat([key, query], axis=-1)
         attention = tf.layers.dense(attention_inp, 10, activation=tf.nn.tanh)
         attention = tf.layers.dense(attention, 1, activation=tf.nn.tanh)
         attention = tf.nn.softmax(attention, dim=1)
 
-        wei_sum = tf.reduce_sum(value * value, axis=1)
-        return wei_sum, attention
+        return attention
 
 
 class SCORE(SCOREBASE):
@@ -172,8 +171,9 @@ class SCORE(SCOREBASE):
             item_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        user_side_final_state, self.user_side_atten = self.interactive_attention(item_side_rep_t, user_side_rep_t, user_side_rep_t)
-        item_side_final_state, self.item_side_atten = self.interactive_attention(user_side_rep_t, item_side_rep_t, item_side_rep_t)
+        self.inter_att = self.interactive_attention(user_side_rep_t, item_side_rep_t)
+        user_side_final_state = user_side_rep_t * self.inter_att
+        item_side_final_state = item_side_rep_t * self.inter_att
         inp = tf.concat([user_side_final_state, item_side_final_state, self.target_user, self.target_item], axis=1)
 
         # fc layer
@@ -244,8 +244,9 @@ class SCORE_1HOP(SCOREBASE):
             item_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        user_side_final_state, self.user_side_atten = self.link_attention(item_side_rep_t, user_side_rep_t, user_side_rep_t)
-        item_side_final_state, self.item_side_atten = self.link_attention(user_side_rep_t, item_side_rep_t, item_side_rep_t)
+        self.inter_att = self.interactive_attention(user_side_rep_t, item_side_rep_t)
+        user_side_final_state = user_side_rep_t * self.inter_att
+        item_side_final_state = item_side_rep_t * self.inter_att
         inp = tf.concat([user_side_final_state, item_side_final_state, self.target_user, self.target_item], axis=1)
 
         # fc layer
@@ -284,8 +285,9 @@ class GAT(SCOREBASE):
             item_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        user_side_final_state, self.user_side_atten = self.link_attention(item_side_rep_t, user_side_rep_t, user_side_rep_t)
-        item_side_final_state, self.item_side_atten = self.link_attention(user_side_rep_t, item_side_rep_t, item_side_rep_t)
+        self.inter_att = self.interactive_attention(user_side_rep_t, item_side_rep_t)
+        user_side_final_state = user_side_rep_t * self.inter_att
+        item_side_final_state = item_side_rep_t * self.inter_att
         inp = tf.concat([user_side_final_state, item_side_final_state, self.target_user, self.target_item], axis=1)
 
         # fc layer
@@ -309,13 +311,3 @@ class GAT(SCOREBASE):
         atten = tf.nn.softmax(atten, dim=2) #[B, T, K, 1]
         res = tf.reduce_sum(atten * value, axis=2)
         return res
-
-    
-    def link_attention(self, key, value, query):
-        attention_inp = tf.concat([key, query], axis=-1)
-        attention = tf.layers.dense(attention_inp, 10, activation=tf.nn.tanh)
-        attention = tf.layers.dense(attention, 1, activation=tf.nn.tanh)
-        attention = tf.nn.softmax(attention, dim=1)
-
-        wei_sum = tf.reduce_sum(value * value, axis=1)
-        return wei_sum, attention
