@@ -332,7 +332,7 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_Taobao
         max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
-        dataset_size = 938046
+        dataset_size = 937858#938046
     elif data_set == 'tmall':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
@@ -347,13 +347,13 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_Tmall
         max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
-        dataset_size = 228213
+        dataset_size = 219912#228213
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambda = 5e-4
+    reg_lambda = 1e-3
     hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:

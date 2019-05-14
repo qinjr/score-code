@@ -297,7 +297,7 @@ if __name__ == '__main__':
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = MAX_LEN_Taobao
-        dataset_size = 938046
+        dataset_size = 937858#938046
     elif data_set == 'tmall':
         target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
         target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
@@ -308,7 +308,7 @@ if __name__ == '__main__':
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = MAX_LEN_Tmall
-        dataset_size = 228213
+        dataset_size = 219912#228213
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
