@@ -328,9 +328,9 @@ if __name__ == '__main__':
                     item_num = ITEM_NUM_Taobao, user_per_collection = USER_PER_COLLECTION_Taobao,
                     item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
                     start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
-        # tg.gen_pop_items(DATA_DIR_Taobao + 'pop_items.pkl', 3)
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_7.txt', 7, None)
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8, None)
+        tg.gen_pop_items(DATA_DIR_Taobao + 'pop_items.pkl', 4)
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_7.txt', 7, DATA_DIR_Taobao + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8, DATA_DIR_Taobao + 'pop_items.pkl')
         # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', DATA_DIR_Taobao + 'item_hist_dict_7.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 7)
         # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', DATA_DIR_Taobao + 'item_hist_dict_8.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 8)
         tg.filter_target_file(DATA_DIR_Taobao + 'target_7.txt', DATA_DIR_Taobao + 'target_7_hot.txt', DATA_DIR_Taobao + 'target_7_cold.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl')
@@ -341,9 +341,9 @@ if __name__ == '__main__':
                     item_num = ITEM_NUM_Tmall, user_per_collection = USER_PER_COLLECTION_Tmall,
                     item_per_collection = ITEM_PER_COLLECTION_Tmall, start_time = START_TIME_Tmall, 
                     start_time_idx = START_TIME_IDX_Tmall, time_delta = TIME_DELTA_Tmall)
-        # tg.gen_pop_items(DATA_DIR_Tmall + 'pop_items.pkl', 4)
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_10.txt', 10, None)
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_11.txt', 11, None)
+        tg.gen_pop_items(DATA_DIR_Tmall + 'pop_items.pkl', 6)
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_10.txt', 10, DATA_DIR_Tmall + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_11.txt', 11, DATA_DIR_Tmall + 'pop_items.pkl')
         # tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_10.pkl', DATA_DIR_Tmall + 'item_hist_dict_10.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 10)
         # tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_11.pkl', DATA_DIR_Tmall + 'item_hist_dict_11.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 11)
         tg.filter_target_file(DATA_DIR_Tmall + 'target_10.txt', DATA_DIR_Tmall + 'target_10_hot.txt', DATA_DIR_Tmall + 'target_10_cold.txt', DATA_DIR_Tmall + 'user_hist_dict_10.pkl')
