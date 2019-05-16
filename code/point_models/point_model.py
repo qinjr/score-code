@@ -29,9 +29,9 @@ class PointBaseModel(object):
         # embedding
         with tf.name_scope('embedding'):
             self.emb_mtx = tf.get_variable('emb_mtx', [feature_size, eb_dim], initializer=tf.truncated_normal_initializer)
-            # self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
-            # self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
-            # self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
+            self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
+            self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
+            self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
 
             self.user_seq = tf.nn.embedding_lookup(self.emb_mtx, self.user_seq_ph)
             self.target_item = tf.nn.embedding_lookup(self.emb_mtx, self.target_item_ph)
