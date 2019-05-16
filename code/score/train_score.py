@@ -353,7 +353,7 @@ if __name__ == '__main__':
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambda = 1e-3
+    reg_lambda = 0#1e-3
     hyper_paras = [(100, 5e-4), (200, 1e-3)]
 
     for hyper in hyper_paras:
