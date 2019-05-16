@@ -347,7 +347,7 @@ class SASRec(PointBaseModel):
         self.y_pred = self.build_fc_net(inp)
         self.y_pred = tf.reshape(self.y_pred, [-1,])
         
-        self.loss = tf.losses.log_loss(self.label_ph, self.y_pred)
+        self.loss += tf.losses.log_loss(self.label_ph, self.y_pred)
         for v in tf.trainable_variables():
             if 'bias' not in v.name and 'emb' not in v.name:
                 self.loss += self.reg_lambda * tf.nn.l2_loss(v)
