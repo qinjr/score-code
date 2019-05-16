@@ -79,7 +79,7 @@ if __name__ == "__main__":
                     DATA_DIR_Taobao + 'target_8_hot_sample.txt', 
                     DATA_DIR_Taobao + 'test_user_hist_seq_8_sample.txt', 
                     DATA_DIR_Taobao + 'test_item_hist_seq_8_sample.txt', 
-                    20)
+                    30)
     elif dataset == 'tmall':
         # Tmall
         sample_files(DATA_DIR_Tmall + 'target_10_hot.txt', 
