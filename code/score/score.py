@@ -133,12 +133,12 @@ class SCOREBASE(object):
     def lrelu(self, x, alpha=0.2):
         return tf.nn.relu(x) - alpha * tf.nn.relu(-x)
     
-    def interactive_attention(self, key, query):
+    def interactive_attention(self, key, query, mask):
         attention_inp = tf.concat([key, query, key * query, key - query], axis=-1)
-        attention = tf.layers.dense(attention_inp, 80, activation=tf.nn.tanh)
-        attention = tf.layers.dense(attention_inp, 40, activation=tf.nn.tanh)
+        attention = tf.layers.dense(attention_inp, 20, activation=tf.nn.tanh)
         attention = tf.layers.dense(attention, 1, activation=tf.nn.tanh)
-        attention = tf.nn.softmax(attention, dim=1)
+        padding = (1 - mask) * (-2**32+1)
+        attention = tf.nn.softmax(attention + padding, dim=1)
 
         return attention
 
@@ -147,6 +147,8 @@ class SCORE(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice):
         super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        self.mask = tf.expand_dims(tf.sequence_mask(self.length_ph, max_time_len, dtype=tf.float32), axis=-1)
+
         # HOP:0
         self.target_user_t = tf.tile(tf.expand_dims(self.target_user, axis=1), [1, max_time_len, 1])
         self.target_item_t = tf.tile(tf.expand_dims(self.target_item, axis=1), [1, max_time_len, 1])
@@ -167,15 +169,18 @@ class SCORE(SCOREBASE):
         
         # RNN
         with tf.name_scope('rnn'):
-            user_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
+            user_side_rep_t, user_side_rep_last = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
-            item_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
+            item_side_rep_t, item_side_rep_last = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        self.inter_att = self.interactive_attention(user_side_rep_t, item_side_rep_t)
+        joint_rep_last_t = tf.tile(tf.expand_dims(tf.concat([user_side_rep_last, item_side_rep_last], axis=1), 1), [1, max_time_len, 1])
+        joint_rep_t = tf.concat([user_side_rep_t, item_side_rep_t], axis=2)
+
+        self.inter_att = self.interactive_attention(joint_rep_last_t, joint_rep_t, self.mask)
         user_side_final_state = tf.reduce_sum(user_side_rep_t * self.inter_att, axis=1)
         item_side_final_state = tf.reduce_sum(item_side_rep_t * self.inter_att, axis=1)
-        inp = tf.concat([user_side_final_state, item_side_final_state, self.target_user, self.target_item], axis=1)
+        inp = tf.concat([user_side_final_state, item_side_final_state, user_side_rep_last, item_side_rep_last], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
@@ -183,6 +188,19 @@ class SCORE(SCOREBASE):
         self.build_logloss()
         self.build_l2norm()
         self.build_train_step()
+    
+    def get_inter_att(self, sess, batch_data):
+        att = sess.run([self.inter_att], feed_dict = {
+                self.user_1hop_ph : batch_data[0],
+                self.user_2hop_ph : batch_data[1],
+                self.item_1hop_ph : batch_data[2],
+                self.item_2hop_ph : batch_data[3],
+                self.target_user_ph : batch_data[4],
+                self.target_item_ph : batch_data[5],
+                self.label_ph : batch_data[6],
+                self.length_ph : batch_data[7]
+            })
+        return att
 
 class No_Att(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
@@ -213,7 +231,7 @@ class No_Att(SCOREBASE):
             item_side_rep_t, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        inp = tf.concat([user_side_final_state, item_side_final_state, self.target_user, self.target_item], axis=1)
+        inp = tf.concat([user_side_final_state, item_side_final_state], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
@@ -225,7 +243,9 @@ class No_Att(SCOREBASE):
 class SCORE_1HOP(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice):
-        super(SCORE_1HOP, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        super(SCORE, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        self.mask = tf.expand_dims(tf.sequence_mask(self.length_ph, max_time_len, dtype=tf.float32), axis=-1)
+
         # HOP:0
         self.target_user_t = tf.tile(tf.expand_dims(self.target_user, axis=1), [1, max_time_len, 1])
         self.target_item_t = tf.tile(tf.expand_dims(self.target_item, axis=1), [1, max_time_len, 1])
@@ -240,15 +260,18 @@ class SCORE_1HOP(SCOREBASE):
         
         # RNN
         with tf.name_scope('rnn'):
-            user_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
+            user_side_rep_t, user_side_rep_last = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
-            item_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
+            item_side_rep_t, item_side_rep_last = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        self.inter_att = self.interactive_attention(user_side_rep_t, item_side_rep_t)
+        joint_rep_last_t = tf.tile(tf.expand_dims(tf.concat([user_side_rep_last, item_side_rep_last], axis=1), 1), [1, max_time_len, 1])
+        joint_rep_t = tf.concat([user_side_rep_t, item_side_rep_t], axis=2)
+
+        self.inter_att = self.interactive_attention(joint_rep_last_t, joint_rep_t, self.mask)
         user_side_final_state = tf.reduce_sum(user_side_rep_t * self.inter_att, axis=1)
         item_side_final_state = tf.reduce_sum(item_side_rep_t * self.inter_att, axis=1)
-        inp = tf.concat([user_side_final_state, item_side_final_state, self.target_user, self.target_item], axis=1)
+        inp = tf.concat([user_side_final_state, item_side_final_state, user_side_rep_last, item_side_rep_last], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
@@ -256,11 +279,25 @@ class SCORE_1HOP(SCOREBASE):
         self.build_logloss()
         self.build_l2norm()
         self.build_train_step()
+    
+    def get_inter_att(self, sess, batch_data):
+        att = sess.run([self.inter_att], feed_dict = {
+                self.user_1hop_ph : batch_data[0],
+                self.user_2hop_ph : batch_data[1],
+                self.item_1hop_ph : batch_data[2],
+                self.item_2hop_ph : batch_data[3],
+                self.target_user_ph : batch_data[4],
+                self.target_item_ph : batch_data[5],
+                self.label_ph : batch_data[6],
+                self.length_ph : batch_data[7]
+            })
+        return att
 
 class GAT(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
                 obj_per_time_slice):
         super(GAT, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        self.mask = tf.expand_dims(tf.sequence_mask(self.length_ph, max_time_len, dtype=tf.float32), axis=-1)
         # HOP:0
         self.target_user_t = tf.tile(tf.expand_dims(self.target_user, axis=1), [1, max_time_len, 1])
         self.target_item_t = tf.tile(tf.expand_dims(self.target_item, axis=1), [1, max_time_len, 1])
@@ -281,15 +318,18 @@ class GAT(SCOREBASE):
         
         # RNN
         with tf.name_scope('rnn'):
-            user_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
+            user_side_rep_t, user_side_rep_last = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=user_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_user_side')
-            item_side_rep_t, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
+            item_side_rep_t, item_side_rep_last = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        self.inter_att = self.interactive_attention(user_side_rep_t, item_side_rep_t)
+        joint_rep_last_t = tf.tile(tf.expand_dims(tf.concat([user_side_rep_last, item_side_rep_last], axis=1), 1), [1, max_time_len, 1])
+        joint_rep_t = tf.concat([user_side_rep_t, item_side_rep_t], axis=2)
+
+        self.inter_att = self.interactive_attention(joint_rep_last_t, joint_rep_t, self.mask)
         user_side_final_state = tf.reduce_sum(user_side_rep_t * self.inter_att, axis=1)
         item_side_final_state = tf.reduce_sum(item_side_rep_t * self.inter_att, axis=1)
-        inp = tf.concat([user_side_final_state, item_side_final_state, self.target_user, self.target_item], axis=1)
+        inp = tf.concat([user_side_final_state, item_side_final_state, user_side_rep_last, item_side_rep_last], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
