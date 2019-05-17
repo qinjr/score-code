@@ -30,7 +30,7 @@ START_TIME_Taobao = 0
 
 # Tmall dataset parameters
 DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
-TIME_SLICE_NUM_Tmall = 13
+TIME_SLICE_NUM_Tmall = 12
 OBJ_PER_TIME_SLICE_Tmall = 10
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
@@ -121,7 +121,7 @@ class GraphHandler(object):
         user_1hop, user_2hop = [], []
         # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
-        for i in range(self.start_time, pred_time + 1):
+        for i in range(self.start_time, pred_time):
             if self.mode == 'is':
                 user_1hop_t, user_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
@@ -141,7 +141,7 @@ class GraphHandler(object):
         item_1hop, item_2hop = [], []
         # t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // self.item_per_collection].find({'iid':start_iid})[0]
-        for i in range(self.start_time, pred_time + 1):
+        for i in range(self.start_time, pred_time):
             if self.mode == 'is':
                 item_1hop_t, item_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
@@ -252,7 +252,7 @@ class GraphLoader(object):
                         label_batch.append(1)
                     else:
                         label_batch.append(0)
-                    length_batch.append(self.pred_time - self.start_time + 1)
+                    length_batch.append(self.pred_time - self.start_time)
             self.results.put((user_1hop_batch, user_2hop_batch, item_1hop_batch, item_2hop_batch, target_user_batch, target_item_batch, label_batch, length_batch))
         with self.worker_stop.get_lock():
             self.worker_stop.value += 1
