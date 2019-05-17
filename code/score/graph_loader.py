@@ -121,7 +121,7 @@ class GraphHandler(object):
         user_1hop, user_2hop = [], []
         # t = time.time()
         start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
-        for i in range(self.start_time, pred_time):
+        for i in range(self.start_time, pred_time + 1):
             if self.mode == 'is':
                 user_1hop_t, user_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
@@ -141,7 +141,7 @@ class GraphHandler(object):
         item_1hop, item_2hop = [], []
         # t = time.time()
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // self.item_per_collection].find({'iid':start_iid})[0]
-        for i in range(self.start_time, pred_time):
+        for i in range(self.start_time, pred_time + 1):
             if self.mode == 'is':
                 item_1hop_t, item_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
