@@ -231,7 +231,7 @@ class No_Att(SCOREBASE):
             item_side_rep_t, item_side_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        inp = tf.concat([user_side_final_state, item_side_final_state], axis=1)
+        inp = tf.concat([user_side_final_state, item_side_final_state, self.target_user, self.target_item], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
