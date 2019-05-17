@@ -44,7 +44,7 @@ ITEM_NUM_Taobao = 4067842
 
 # for Tmall
 OBJ_PER_TIME_SLICE_Tmall = 10
-TIME_SLICE_NUM_Tmall = 13
+TIME_SLICE_NUM_Tmall = 12
 START_TIME_Tmall = 0
 FEAT_SIZE_Tmall = 1529672
 DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
@@ -284,7 +284,7 @@ if __name__ == '__main__':
         pred_time_test = 40
         # model parameter
         feature_size = FEAT_SIZE_CCMR
-        max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
+        max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
         dataset_size = 524676
     elif data_set == 'taobao':
@@ -299,7 +299,7 @@ if __name__ == '__main__':
         pred_time_test = 8
         # model parameter
         feature_size = FEAT_SIZE_Taobao
-        max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
+        max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
         dataset_size = 937858#938046
     elif data_set == 'tmall':
@@ -314,7 +314,7 @@ if __name__ == '__main__':
         pred_time_test = 11
         # model parameter
         feature_size = FEAT_SIZE_Tmall
-        max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
+        max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
         dataset_size = 219912#228213
     else:
