@@ -323,13 +323,13 @@ class GAT(SCOREBASE):
             item_side_rep_t, item_side_rep_last = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        joint_rep_last_t = tf.tile(tf.expand_dims(tf.concat([user_side_rep_last, item_side_rep_last], axis=1), 1), [1, max_time_len, 1])
-        joint_rep_t = tf.concat([user_side_rep_t, item_side_rep_t], axis=2)
+        joint_rep_last_t = tf.tile(tf.expand_dims(user_side_rep_last * item_side_rep_last, 1), [1, max_time_len, 1])
+        joint_rep_t = user_side_rep_t * item_side_rep_t
 
         self.inter_att = self.interactive_attention(joint_rep_last_t, joint_rep_t, self.mask)
         user_side_final_state = tf.reduce_sum(user_side_rep_t * self.inter_att, axis=1)
         item_side_final_state = tf.reduce_sum(item_side_rep_t * self.inter_att, axis=1)
-        inp = tf.concat([user_side_final_state, item_side_final_state, user_side_rep_last, item_side_rep_last], axis=1)
+        inp = tf.concat([user_side_final_state * item_side_final_state, user_side_rep_last * item_side_rep_last], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
