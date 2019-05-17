@@ -134,8 +134,9 @@ class SCOREBASE(object):
         return tf.nn.relu(x) - alpha * tf.nn.relu(-x)
     
     def interactive_attention(self, key, query):
-        attention_inp = tf.concat([key, query], axis=-1)
-        attention = tf.layers.dense(attention_inp, 10, activation=tf.nn.tanh)
+        attention_inp = tf.concat([key, query, key * query, key - query], axis=-1)
+        attention = tf.layers.dense(attention_inp, 80, activation=tf.nn.tanh)
+        attention = tf.layers.dense(attention_inp, 40, activation=tf.nn.tanh)
         attention = tf.layers.dense(attention, 1, activation=tf.nn.tanh)
         attention = tf.nn.softmax(attention, dim=1)
 
