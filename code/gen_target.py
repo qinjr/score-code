@@ -341,7 +341,7 @@ if __name__ == '__main__':
                     item_num = ITEM_NUM_Tmall, user_per_collection = USER_PER_COLLECTION_Tmall,
                     item_per_collection = ITEM_PER_COLLECTION_Tmall, start_time = START_TIME_Tmall, 
                     start_time_idx = START_TIME_IDX_Tmall, time_delta = TIME_DELTA_Tmall)
-        tg.gen_pop_items(DATA_DIR_Tmall + 'pop_items.pkl', 8)
+        tg.gen_pop_items(DATA_DIR_Tmall + 'pop_items.pkl', 5)
         tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_10.txt', 10, DATA_DIR_Tmall + 'pop_items.pkl')
         tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_11.txt', 11, DATA_DIR_Tmall + 'pop_items.pkl')
         # tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_10.pkl', DATA_DIR_Tmall + 'item_hist_dict_10.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 10)
