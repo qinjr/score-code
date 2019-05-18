@@ -35,9 +35,9 @@ class SliceBaseModel(object):
         # embedding
         with tf.name_scope('embedding'):
             self.emb_mtx = tf.get_variable('emb_mtx', [feature_size, eb_dim], initializer=tf.truncated_normal_initializer)
-            self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
-            self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
-            self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
+            # self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
+            # self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
+            # self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
 
             self.user_1hop = tf.nn.embedding_lookup(self.emb_mtx, self.user_1hop_ph)
             self.user_2hop = tf.nn.embedding_lookup(self.emb_mtx, self.user_2hop_ph)
