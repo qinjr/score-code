@@ -119,6 +119,9 @@ class DataLoaderDualSeq(object):
                     item_seq_one.append(int(uid))
                 if len(item_seq_one) < self.max_len:
                     item_seq_one += [0] * (self.max_len - len(item_seq_one))
+                else:
+                    item_seq_one = item_seq_one[-self.max_len:]
+
                 item_seqs_one.append(item_seq_one)
 
             for j in range(len(iids)):
