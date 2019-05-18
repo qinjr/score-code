@@ -4,13 +4,13 @@ import numpy as np
 
 
 DATA_DIR_CCMR = '../../../score-data/CCMR/feateng/'
-MAX_LEN_CCMR = 300
+MAX_LEN_CCMR = 50
 
 DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
-MAX_LEN_Taobao = 300
+MAX_LEN_Taobao = 50
 
 DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
-MAX_LEN_Tmall = 300
+MAX_LEN_Tmall = 50
 
 class DataLoaderUserSeq(object):
     def __init__(self, batch_size, max_len, target_file, user_seq_file, neg_sample_num):
@@ -48,8 +48,10 @@ class DataLoaderUserSeq(object):
             
             for iid in user_seq_list:
                 user_seq_one.append(int(iid))
-            for p in range(self.max_len - len(user_seq_one)):
-                user_seq_one.append(0)
+            if len(user_seq_one) < self.max_len:
+                user_seq_one += [0] * (self.max_len - len(user_seq_one))
+            else:
+                user_seq_one = user_seq_one[-self.max_len:]
 
             for j in range(len(iids)):
                 if j == 0:
@@ -108,6 +110,8 @@ class DataLoaderDualSeq(object):
                 user_seq_one.append(int(iid))
             if len(user_seq_one) < self.max_len:
                 user_seq_one += [0] * (self.max_len - len(user_seq_one))
+            else:
+                user_seq_one = user_seq_one[-self.max_len:]
 
             for seq in item_seqs_list:
                 item_seq_one = []
