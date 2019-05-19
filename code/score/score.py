@@ -176,13 +176,13 @@ class SCORE(SCOREBASE):
             item_side_rep_t, item_side_rep_last = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=item_side, 
                                                         sequence_length=self.length_ph, dtype=tf.float32, scope='gru_item_side')
 
-        query_t = tf.concat([self.target_user_t, self.target_item_t, self.target_user_t + self.target_item_t, self.target_user_t * self.target_item_t], axis=2)
-        key_t = tf.concat([user_side_rep_t, item_side_rep_t, user_side_rep_t + item_side_rep_t, user_side_rep_t * item_side_rep_t], axis=2)
-
+        query_t = self.target_user_t * self.target_item_t#tf.concat([self.target_user_t, self.target_item_t, self.target_user_t + self.target_item_t, self.target_user_t * self.target_item_t], axis=2)
+        key_t = user_side_rep_t * item_side_rep_t#tf.concat([user_side_rep_t, item_side_rep_t, user_side_rep_t + item_side_rep_t, user_side_rep_t * item_side_rep_t], axis=2)
         self.inter_att = self.interactive_attention(query_t, key_t, self.mask)
         user_side_final_state = tf.reduce_sum(user_side_rep_t * self.inter_att, axis=1)
         item_side_final_state = tf.reduce_sum(item_side_rep_t * self.inter_att, axis=1)
-        inp = tf.concat([user_side_final_state, item_side_final_state, self.target_item, self.target_user], axis=1)
+        self.y_pred = tf.sigmoid(tf.reduce_sum(user_side_final_state * item_side_final_state, axis=1))
+        # inp = tf.concat([user_side_final_state, item_side_final_state, self.target_item, self.target_user], axis=1)
 
         # fc layer
         self.build_fc_net(inp)
