@@ -84,6 +84,8 @@ def visual_analysis(data_set, target_file_test, graph_handler_params, start_time
             print(batch_data[1][0][-3:])
             print(batch_data[2][0][-3:])
             print(batch_data[3][0][-3:])
+            print(batch_data[4][0])
+            print(batch_data[5][0])
             if i == max_num:
                 break
 
