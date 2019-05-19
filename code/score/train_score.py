@@ -53,7 +53,7 @@ ITEM_PER_COLLECTION_Tmall = 250
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
 
-def obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
+def visual_analysis(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, model_type, train_batch_size, feature_size, eb_dim, 
         hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda):
     if model_type == 'SCORE':
@@ -62,18 +62,29 @@ def obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
         print('WRONG MODEL TYPE, has to be SCORE')
         exit(1)
     
-    model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
+    model_name = '{}_{}_{}_{}'.format(model_type, EVAL_BATCH_SIZE, lr, reg_lambda)
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
-        # different interaction set size
-        candi_size = [1, 5, 10, 15, 20]
-        for size in candi_size:
-            graph_handler_params[2] = size
-            _, _, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
-            # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
-            # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
-            print('Performance of size: %d, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (size, loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
+        graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, WORKER_N, TRAIN_NEG_SAMPLE_NUM)
+        i = 0
+        max_num = 5
+        for batch_data in graph_loader:
+            att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = model.get_att(sess, batch_data)
+            att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = att[0, :], atten_user_1[0,:,:], atten_user_2[0,:,:], atten_item_1[0,:,:], atten_item_2[0,:,:]
+            print(att)
+            print(atten_user_1)
+            print(atten_user_2)
+            print(atten_item_1)
+            print(atten_item_2)
+            print(batch_data[0][0,:,:])
+            print(batch_data[1][0,:,:])
+            print(batch_data[2][0,:,:])
+            print(batch_data[3][0,:,:])
+            i += 1
+            if i == max_num:
+                break
+
 
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
@@ -360,16 +371,16 @@ if __name__ == '__main__':
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper
-        train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-                pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
-                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size)
+        # train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
+        #         pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
+        #         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size)
         
-        restore(data_set, target_file_test, graph_handler_params, start_time,
-                pred_time_test, model_type, train_batch_size, feature_size, 
-                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
-                lr, reg_lambda)
-        
-        # obj_per_t_perf(data_set, target_file_test, graph_handler_params, start_time,
+        # restore(data_set, target_file_test, graph_handler_params, start_time,
         #         pred_time_test, model_type, train_batch_size, feature_size, 
         #         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
         #         lr, reg_lambda)
+        
+        visual_analysis(data_set, target_file_test, graph_handler_params, start_time,
+                pred_time_test, model_type, train_batch_size, feature_size, 
+                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
+                lr, reg_lambda)

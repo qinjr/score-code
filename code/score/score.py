@@ -128,7 +128,8 @@ class SCOREBASE(object):
         atten = self.lrelu(atten)
         atten = tf.nn.softmax(atten, dim=2) #[B, T, K, 1]
         res = tf.reduce_sum(atten * value, axis=2)
-        return res
+        atten = tf.reshape(atten, [-1, key_shape[1], key_shape[2]])
+        return res, atten
     
     def lrelu(self, x, alpha=0.2):
         return tf.nn.relu(x) - alpha * tf.nn.relu(-x)
@@ -158,14 +159,14 @@ class SCORE(SCOREBASE):
         item_side = self.target_item_t
 
         # HOP:1
-        user_1hop_co_attention = self.co_attention(self.user_1hop, self.user_1hop, item_side)
-        item_1hop_co_attention = self.co_attention(self.item_1hop, self.item_1hop, user_side)
+        user_1hop_co_attention, self.atten_user_1 = self.co_attention(self.user_1hop, self.user_1hop, item_side)
+        item_1hop_co_attention, self.atten_item_1 = self.co_attention(self.item_1hop, self.item_1hop, user_side)
         user_side = user_1hop_co_attention
         item_side = item_1hop_co_attention
         
         # HOP:2
-        user_2hop_co_attention = self.co_attention(self.user_2hop, self.user_2hop, item_side)
-        item_2hop_co_attention = self.co_attention(self.item_2hop, self.item_2hop, user_side)
+        user_2hop_co_attention, self.atten_user_2 = self.co_attention(self.user_2hop, self.user_2hop, item_side)
+        item_2hop_co_attention, self.atten_item_2 = self.co_attention(self.item_2hop, self.item_2hop, user_side)
         user_side += user_2hop_co_attention
         item_side += item_2hop_co_attention
         
@@ -191,8 +192,8 @@ class SCORE(SCOREBASE):
         self.build_l2norm()
         self.build_train_step()
     
-    def get_inter_att(self, sess, batch_data):
-        att = sess.run([self.inter_att], feed_dict = {
+    def get_att(self, sess, batch_data):
+        att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = sess.run([self.inter_att, self.atten_user_1, self.atten_user_2, self.atten_item_1, self.atten_item_2], feed_dict = {
                 self.user_1hop_ph : batch_data[0],
                 self.user_2hop_ph : batch_data[1],
                 self.item_1hop_ph : batch_data[2],
@@ -202,7 +203,7 @@ class SCORE(SCOREBASE):
                 self.label_ph : batch_data[6],
                 self.length_ph : batch_data[7]
             })
-        return att
+        return att, atten_user_1, atten_user_2, atten_item_1, atten_item_2
 
 class No_Att(SCOREBASE):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
