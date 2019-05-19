@@ -70,7 +70,6 @@ def visual_analysis(data_set, target_file_test, graph_handler_params, start_time
         i = 0
         max_num = 5
         for batch_data in graph_loader:
-            i += 1
             # if i != max_num:
             #     continue
             att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = model.get_att(sess, batch_data)
@@ -86,9 +85,9 @@ def visual_analysis(data_set, target_file_test, graph_handler_params, start_time
             print(batch_data[3][0][-3:])
             print(batch_data[4][0])
             print(batch_data[5][0])
+            i += 1
             if i == max_num:
                 break
-
 
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
