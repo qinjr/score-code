@@ -80,10 +80,10 @@ def visual_analysis(data_set, target_file_test, graph_handler_params, start_time
             print(atten_user_2)
             print(atten_item_1)
             print(atten_item_2)
-            # print(batch_data[0][0,:,:])
-            # print(batch_data[1][0,:,:])
-            # print(batch_data[2][0,:,:])
-            # print(batch_data[3][0,:,:])
+            print(batch_data[0][0])
+            print(batch_data[1][0])
+            print(batch_data[2][0])
+            print(batch_data[3][0])
             if i == max_num:
                 break
 
@@ -386,3 +386,4 @@ if __name__ == '__main__':
                 pred_time_test, model_type, train_batch_size, feature_size, 
                 EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
                 lr, reg_lambda)
+        break
