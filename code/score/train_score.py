@@ -66,7 +66,7 @@ def visual_analysis(data_set, target_file_test, graph_handler_params, start_time
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
-        graph_loader = GraphLoaderGraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, WORKER_N, TRAIN_NEG_SAMPLE_NUM)
+        graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file, start_time, pred_time, WORKER_N, TRAIN_NEG_SAMPLE_NUM)
         i = 0
         max_num = 5
         for batch_data in graph_loader:
