@@ -74,16 +74,16 @@ def visual_analysis(data_set, target_file_test, graph_handler_params, start_time
             if i != max_num:
                 continue
             att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = model.get_att(sess, batch_data)
-            att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = att[0, :], atten_user_1[0,:,:], atten_user_2[0,:,:], atten_item_1[0,:,:], atten_item_2[0,:,:]
+            att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = att[0, -3:], atten_user_1[0,-3:,:], atten_user_2[0,-3:,:], atten_item_1[0,-3:,:], atten_item_2[0,-3:,:]
             print(att)
             print(atten_user_1)
             print(atten_user_2)
             print(atten_item_1)
             print(atten_item_2)
-            print(batch_data[0][0])
-            print(batch_data[1][0])
-            print(batch_data[2][0])
-            print(batch_data[3][0])
+            print(batch_data[0][0][-3:])
+            print(batch_data[1][0][-3:])
+            print(batch_data[2][0][-3:])
+            print(batch_data[3][0][-3:])
             if i == max_num:
                 break
 
