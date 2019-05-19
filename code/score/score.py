@@ -185,7 +185,7 @@ class SCORE(SCOREBASE):
         # inp = tf.concat([user_side_final_state, item_side_final_state, self.target_item, self.target_user], axis=1)
 
         # fc layer
-        self.build_fc_net(inp)
+        # self.build_fc_net(inp)
         # build loss
         self.build_logloss()
         self.build_l2norm()
