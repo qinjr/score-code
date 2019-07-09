@@ -5,8 +5,8 @@ import datetime
 import time
 import matplotlib.pyplot as plt
 
-RAW_DIR = '../../score-data/CCMR/raw_data/'
-FEATENG_DIR = '../../score-data/CCMR/feateng/'
+RAW_DIR = '../score-data/CCMR/raw_data/'
+FEATENG_DIR = '../score-data/CCMR/feateng/'
 
 USER_NUM = 4920695
 ITEM_NUM = 190129
@@ -193,11 +193,11 @@ def simplify_data(in_file, out_file):
 
 if __name__ == "__main__":
     # simplify_data(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_logs.csv')
-    # pos_neg_split(FEATENG_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
-    # time2idx(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_pos_idx.csv')
-    # time2idx(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'rating_neg_idx.csv')
+    pos_neg_split(RAW_DIR + 'rating_logs.csv', FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_neg.csv')
+    time2idx(FEATENG_DIR + 'rating_pos.csv', FEATENG_DIR + 'rating_pos_idx.csv')
+    time2idx(FEATENG_DIR + 'rating_neg.csv', FEATENG_DIR + 'rating_neg_idx.csv')
     # time_distri(FEATENG_DIR + 'rating_pos_idx.csv', FEATENG_DIR + 'time_distri.png')
-    # movie_feat_info(RAW_DIR + 'movie_info_colname.csv')
+    movie_feat_info(RAW_DIR + 'movie_info_colname.csv')
     remap_ids(FEATENG_DIR + 'rating_pos_idx.csv', FEATENG_DIR + 'remap_rating_pos_idx.csv', movie_info_file = RAW_DIR + 'movie_info.csv', new_movie_info_file = FEATENG_DIR + 'remap_movie_info_dict.pkl')
     remap_ids(FEATENG_DIR + 'rating_neg_idx.csv', FEATENG_DIR + 'remap_rating_neg_idx.csv')
     gen_user_neg(FEATENG_DIR + 'remap_rating_neg_idx.csv', FEATENG_DIR + 'user_neg_dict.pkl')

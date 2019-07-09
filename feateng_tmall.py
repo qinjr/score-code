@@ -5,8 +5,8 @@ import datetime
 import time
 import matplotlib.pyplot as plt
 
-RAW_DIR = '../../score-data/Tmall/raw_data/'
-FEATENG_DIR = '../../score-data/Tmall/feateng/'
+RAW_DIR = '../score-data/Tmall/raw_data/'
+FEATENG_DIR = '../score-data/Tmall/feateng/'
 START_TIME = int(time.mktime(datetime.datetime.strptime('2015-5-1', "%Y-%m-%d").timetuple()))
 TIME_DELTA = 15 * 24 * 3600
 

@@ -5,8 +5,8 @@ import datetime
 import time
 import matplotlib.pyplot as plt
 
-RAW_DIR = '../../score-data/Taobao/raw_data/'
-FEATENG_DIR = '../../score-data/Taobao/feateng/'
+RAW_DIR = '../score-data/Taobao/raw_data/'
+FEATENG_DIR = '../score-data/Taobao/feateng/'
 
 START_TIME = int(time.mktime(datetime.datetime.strptime('2017-11-25', "%Y-%m-%d").timetuple()))
 END_TIME = int(time.mktime(datetime.datetime.strptime('2017-12-04', "%Y-%m-%d").timetuple()))
