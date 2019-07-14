@@ -14,7 +14,7 @@ random.seed(11)
 SECONDS_PER_DAY = 24 * 3600
 
 # CCMR parameters
-DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
+DATA_DIR_CCMR = '../score-data/CCMR/feateng/'
 USER_PER_COLLECTION_CCMR = 1000
 ITEM_PER_COLLECTION_CCMR = 100
 START_TIME_CCMR = 0
@@ -25,7 +25,7 @@ ITEM_NUM_CCMR = 190129
 TIME_SLICE_NUM_CCMR = 41
 
 # Taobao parameters
-DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+DATA_DIR_Taobao = '../score-data/Taobao/feateng/'
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 500
 START_TIME_Taobao = 0
@@ -36,7 +36,7 @@ ITEM_NUM_Taobao = 4067842
 TIME_SLICE_NUM_Taobao = 9
 
 # Tmall parameters
-DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
+DATA_DIR_Tmall = '../score-data/Tmall/feateng/'
 USER_PER_COLLECTION_Tmall = 200
 ITEM_PER_COLLECTION_Tmall = 250
 START_TIME_Tmall = 0
