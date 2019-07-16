@@ -18,8 +18,8 @@ DATA_DIR_CCMR = '../score-data/CCMR/feateng/'
 USER_PER_COLLECTION_CCMR = 1000
 ITEM_PER_COLLECTION_CCMR = 100
 START_TIME_CCMR = 0
-MAX_1HOP_CCMR = 50
-MAX_2HOP_CCMR = 50
+MAX_1HOP_CCMR = 10
+MAX_2HOP_CCMR = 100
 USER_NUM_CCMR = 4920695
 ITEM_NUM_CCMR = 190129
 TIME_SLICE_NUM_CCMR = 41
@@ -29,8 +29,8 @@ DATA_DIR_Taobao = '../score-data/Taobao/feateng/'
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 500
 START_TIME_Taobao = 0
-MAX_1HOP_Taobao = 50
-MAX_2HOP_Taobao = 50
+MAX_1HOP_Taobao = 10
+MAX_2HOP_Taobao = 100
 USER_NUM_Taobao = 984105
 ITEM_NUM_Taobao = 4067842
 TIME_SLICE_NUM_Taobao = 9
@@ -40,8 +40,8 @@ DATA_DIR_Tmall = '../score-data/Tmall/feateng/'
 USER_PER_COLLECTION_Tmall = 200
 ITEM_PER_COLLECTION_Tmall = 250
 START_TIME_Tmall = 0
-MAX_1HOP_Tmall = 50
-MAX_2HOP_Tmall = 50
+MAX_1HOP_Tmall = 10
+MAX_2HOP_Tmall = 100
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
 TIME_SLICE_NUM_Tmall = 14
@@ -174,12 +174,14 @@ class GraphStore(object):
                     for uid in uids:
                         user_doc = all_user_docs[uid - 1]
                         degree = len(user_doc['1hop'][t])
-                        if degree > 1 and degree < self.max_2hop:
+                        if degree > 1 and degree <= self.max_1hop:
                             iids_2hop += user_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
-                        elif degree > self.max_2hop:
-                            iids_2hop += user_doc['1hop'][t][:5]
-                            degrees_2hop += [degree] * 5
+                        elif degree > self.max_1hop:
+                            iids_2hop += user_doc['1hop'][t][:self.max_1hop]
+                            degrees_2hop += [degree] * self.max_1hop
+                        else:
+                            continue
 
                     if len(iids_2hop) > self.max_2hop:
                         idx = np.random.choice(np.arange(len(iids_2hop)), len(iids_2hop), replace=False)
@@ -220,12 +222,14 @@ class GraphStore(object):
                     for iid in iids:
                         item_doc = all_item_docs[iid - 1 - self.user_num]
                         degree = len(item_doc['1hop'][t])
-                        if degree > 1 and degree <= self.max_2hop:
+                        if degree > 1 and degree <= self.max_1hop:
                             uids_2hop += item_doc['1hop'][t]
                             degrees_2hop += [degree] * degree
-                        elif degree > self.max_2hop:
-                            uids_2hop += item_doc['1hop'][t][:5]
-                            degrees_2hop += [degree] * 5
+                        elif degree > self.max_1hop:
+                            uids_2hop += item_doc['1hop'][t][:self.max_1hop]
+                            degrees_2hop += [degree] * self.max_1hop
+                        else:
+                            continue
                         
                     if len(uids_2hop) > self.max_2hop:
                         idx = np.random.choice(np.arange(len(uids_2hop)), len(uids_2hop), replace=False)
@@ -305,7 +309,7 @@ if __name__ == "__main__":
                     time_slice_num = TIME_SLICE_NUM_CCMR)
         gs.construct_coll_1hop()
         gs.construct_coll_2hop()
-        gs.cal_stat()
+        # gs.cal_stat()
     elif dataset == 'taobao':
         # For Taobao
         gs = GraphStore(DATA_DIR_Taobao + 'remaped_user_behavior.txt', user_per_collection = USER_PER_COLLECTION_Taobao, 
@@ -315,7 +319,7 @@ if __name__ == "__main__":
                     time_slice_num = TIME_SLICE_NUM_Taobao)
         gs.construct_coll_1hop()
         gs.construct_coll_2hop()
-        gs.cal_stat()
+        # gs.cal_stat()
     elif dataset == 'tmall':
         # For Tmall
         gs = GraphStore(DATA_DIR_Tmall + 'remaped_user_behavior.csv', user_per_collection = USER_PER_COLLECTION_Tmall, 
@@ -325,6 +329,6 @@ if __name__ == "__main__":
                     time_slice_num = TIME_SLICE_NUM_Tmall)
         gs.construct_coll_1hop()
         gs.construct_coll_2hop()
-        gs.cal_stat()
+        # gs.cal_stat()
     else:
         print('WRONG DATASET: {}'.format(dataset))

@@ -25,7 +25,7 @@ OBJ_PER_TIME_SLICE_CCMR = 10
 TIME_SLICE_NUM_CCMR = 41
 START_TIME_CCMR = 0
 FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
-DATA_DIR_CCMR = '../../../score-data/CCMR/feateng/'
+DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 USER_PER_COLLECTION_CCMR = 1000
 ITEM_PER_COLLECTION_CCMR = 100
 USER_NUM_CCMR = 4920695
@@ -36,7 +36,7 @@ OBJ_PER_TIME_SLICE_Taobao = 10
 TIME_SLICE_NUM_Taobao = 9
 START_TIME_Taobao = 0
 FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
-DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 500
 USER_NUM_Taobao = 984105
@@ -47,7 +47,7 @@ OBJ_PER_TIME_SLICE_Tmall = 10
 TIME_SLICE_NUM_Tmall = 12
 START_TIME_Tmall = 0
 FEAT_SIZE_Tmall = 1529672
-DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
+DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
 USER_PER_COLLECTION_Tmall = 200
 ITEM_PER_COLLECTION_Tmall = 250
 USER_NUM_Tmall = 424170
@@ -191,8 +191,8 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time,
     print("EVAL TIME: %.4fs" % (time.time() - t))
     return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
     
-def train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-        pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
+def train(data_set, target_file_train, target_file_validation, graph_handler_params, start_time,
+        pred_time_train, pred_time_validation, model_type, train_batch_size, feature_size, 
         eb_dim, hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size):
     graph_handler_params = graph_handler_params
     if model_type == 'SCORE':
@@ -221,30 +221,28 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         train_losses_step = []
         train_losses = []
 
-        # test_loglosses = []
-        # test_aucs = []
-        test_ndcgs_5 = []
-        test_ndcgs_10 = []
-        test_hrs_1 = []
-        test_hrs_5 = []
-        test_hrs_10 = []
-        test_mrrs = []
-        test_losses = []
+
+        vali_ndcgs_5 = []
+        vali_ndcgs_10 = []
+        vali_hrs_1 = []
+        vali_hrs_5 = []
+        vali_hrs_10 = []
+        vali_mrrs = []
+        vali_losses = []
 
         # before training process
         step = 0
-        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
-        # test_loglosses.append(test_logloss)
-        # test_aucs.append(test_auc)
-        test_ndcgs_5.append(test_ndcg_5)
-        test_ndcgs_10.append(test_ndcg_10)
-        test_hrs_1.append(test_hr_1)
-        test_hrs_5.append(test_hr_5)
-        test_hrs_10.append(test_hr_10)
-        test_mrrs.append(test_mrr)
-        test_losses.append(test_loss)
+        _, _, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr, vali_loss = eval(model, sess, graph_handler_params, target_file_validation, start_time, pred_time_validation, reg_lambda)
+        
+        vali_ndcgs_5.append(vali_ndcg_5)
+        vali_ndcgs_10.append(vali_ndcg_10)
+        vali_hrs_1.append(vali_hr_1)
+        vali_hrs_5.append(vali_hr_5)
+        vali_hrs_10.append(vali_hr_10)
+        vali_mrrs.append(vali_mrr)
+        vali_losses.append(vali_loss)
 
-        print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
+        print("STEP %d  LOSS TRAIN: NULL  LOSS VALI: %.4f  NDCG@5 VALI: %.4f  NDCG@10 VALI: %.4f  HR@1 VALI: %.4f  HR@5 VALI: %.4f  HR@10 VALI: %.4f  MRR VALI: %.4f" % (step, vali_loss, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr))
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
@@ -266,20 +264,18 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                     train_losses.append(train_loss)
                     train_losses_step = []
 
-                    # test_logloss, test_auc, test_ndcg, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
-                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model, sess, graph_handler_params, target_file_test, start_time, pred_time_test, reg_lambda)
-                    # test_loglosses.append(test_logloss)
-                    # test_aucs.append(test_auc)
-                    test_ndcgs_5.append(test_ndcg_5)
-                    test_ndcgs_10.append(test_ndcg_10)
-                    test_hrs_1.append(test_hr_1)
-                    test_hrs_5.append(test_hr_5)
-                    test_hrs_10.append(test_hr_10)
-                    test_mrrs.append(test_mrr)
-                    test_losses.append(test_loss)
+                    _, _, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr, vali_loss = eval(model, sess, graph_handler_params, target_file_validation, start_time, pred_time_validation, reg_lambda)
 
-                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, train_loss, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
-                    if test_mrrs[-1] > max(test_mrrs[:-1]):
+                    vali_ndcgs_5.append(vali_ndcg_5)
+                    vali_ndcgs_10.append(vali_ndcg_10)
+                    vali_hrs_1.append(vali_hr_1)
+                    vali_hrs_5.append(vali_hr_5)
+                    vali_hrs_10.append(vali_hr_10)
+                    vali_mrrs.append(vali_mrr)
+                    vali_losses.append(vali_loss)
+
+                    print("STEP %d  LOSS TRAIN: %.4f  LOSS VALI: %.4f  NDCG@5 VALI: %.4f  NDCG@10 VALI: %.4f  HR@1 VALI: %.4f  HR@5 VALI: %.4f  HR@10 VALI: %.4f  MRR VALI: %.4f" % (step, train_loss, vali_loss, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr))
+                    if vali_mrrs[-1] > max(vali_mrrs[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
@@ -287,10 +283,10 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
                         save_path = 'save_model_{}/{}/ckpt'.format(data_set, model_name)
                         model.save(sess, save_path)
                     
-                    if len(test_mrrs) > 2 and epoch > 0:
-                        if (test_mrrs[-1] < test_mrrs[-2] and test_mrrs[-2] < test_mrrs[-3]):
+                    if len(vali_mrrs) > 2 and epoch > 0:
+                        if (vali_mrrs[-1] < vali_mrrs[-2] and vali_mrrs[-2] < vali_mrrs[-3]):
                             early_stop = True
-                        if (test_mrrs[-1] - test_mrrs[-2]) <= 0.001 and (test_mrrs[-2] - test_mrrs[-3]) <= 0.001:
+                        if (vali_mrrs[-1] - vali_mrrs[-2]) <= 0.001 and (vali_mrrs[-2] - vali_mrrs[-3]) <= 0.001:
                             early_stop = True
         # generate log
         if not os.path.exists('logs_{}/'.format(data_set)):
@@ -298,17 +294,17 @@ def train(data_set, target_file_train, target_file_test, graph_handler_params, s
         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
 
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
-            dump_tuple = (train_losses, test_losses, test_ndcgs_5, test_ndcgs_10, test_hrs_1, test_hrs_5, test_hrs_10, test_mrrs)
+            dump_tuple = (train_losses, vali_losses, vali_ndcgs_5, vali_ndcgs_10, vali_hrs_1, vali_hrs_5, vali_hrs_10, vali_mrrs)
             pkl.dump(dump_tuple, f)
         with open('logs_{}/{}.result'.format(data_set, model_name), 'w') as f:
-            index = np.argmax(test_mrrs)
-            f.write('Result Test NDCG@5: {}\n'.format(test_ndcgs_5[index]))
-            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs_10[index]))
-            f.write('Result Test HR@1: {}\n'.format(test_hrs_1[index]))
-            f.write('Result Test HR@5: {}\n'.format(test_hrs_5[index]))
-            f.write('Result Test HR@10: {}\n'.format(test_hrs_10[index]))
-            f.write('Result Test MRR: {}\n'.format(test_mrrs[index]))
-        return 
+            index = np.argmax(vali_mrrs)
+            f.write('Result Validation NDCG@5: {}\n'.format(vali_ndcgs_5[index]))
+            f.write('Result Validation NDCG@10: {}\n'.format(vali_ndcgs_10[index]))
+            f.write('Result Validation HR@1: {}\n'.format(vali_hrs_1[index]))
+            f.write('Result Validation HR@5: {}\n'.format(vali_hrs_5[index]))
+            f.write('Result Validation HR@10: {}\n'.format(vali_hrs_10[index]))
+            f.write('Result Validation MRR: {}\n'.format(vali_mrrs[index]))
+        return vali_mrrs[index]
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
@@ -324,11 +320,15 @@ if __name__ == '__main__':
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
                                 USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR, 'is']
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_38.txt'
+        target_file_validation = DATA_DIR_CCMR + 'target_39.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40.txt'
+        
         start_time = START_TIME_CCMR
-        pred_time_train = 39
+        pred_time_train = 38
+        pred_time_validation = 39
         pred_time_test = 40
+
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
@@ -339,52 +339,67 @@ if __name__ == '__main__':
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, START_TIME_Taobao, \
                                 USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao, 'is']
-        target_file_train = DATA_DIR_Taobao + 'target_7_hot.txt'
-        target_file_test = DATA_DIR_Taobao + 'target_8_hot_sample.txt'
+        target_file_train = DATA_DIR_Taobao + 'target_6.txt'
+        target_file_validation = DATA_DIR_Taobao + 'target_7.txt'
+        target_file_test = DATA_DIR_Taobao + 'target_8.txt'
+        
         start_time = START_TIME_Taobao
-        pred_time_train = 7
+        pred_time_train = 6
+        pred_time_validation = 7
         pred_time_test = 8
+
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
-        dataset_size = 937858#938046
+        dataset_size = 937858
     elif data_set == 'tmall':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
                                 USER_NUM_Tmall, ITEM_NUM_Tmall, START_TIME_Tmall, \
                                 USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall, 'is']
-        target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
-        target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
+        target_file_train = DATA_DIR_Tmall + 'target_9.txt'
+        target_file_validation = DATA_DIR_Tmall + 'target_10.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_11.txt'
+        
         start_time = START_TIME_Tmall
-        pred_time_train = 10
+        pred_time_train = 9
+        pred_time_validation = 10
         pred_time_test = 11
+        
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
-        dataset_size = 219912#228213
+        dataset_size = 219912
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambda = 1e-5
-    hyper_paras = [(100, 5e-4), (200, 1e-3)]
+    reg_lambdas = [1e-5, 1e-4]
+    hyper_paras = [(100, 5e-4), (200, 1e-3), (400, 2e-3)]
+    
+    vali_mrrs = []
+    hyper_list = []
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper
-        # train(data_set, target_file_train, target_file_test, graph_handler_params, start_time,
-        #         pred_time_train, pred_time_test, model_type, train_batch_size, feature_size, 
-        #         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size)
-        
-        # restore(data_set, target_file_test, graph_handler_params, start_time,
-        #         pred_time_test, model_type, train_batch_size, feature_size, 
-        #         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
-        #         lr, reg_lambda)
-        
-        visual_analysis(data_set, target_file_test, graph_handler_params, start_time,
-                pred_time_test, model_type, train_batch_size, feature_size, 
-                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
-                lr, reg_lambda)
-        break
+        for reg_lambda in reg_lambdas:
+            vali_mrr = train(data_set, target_file_train, target_file_validation, graph_handler_params, start_time,
+                    pred_time_train, pred_time_validation, model_type, train_batch_size, feature_size, 
+                    EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size)
+            vali_mrrs.append(vali_mrr)
+    
+    # TEST and VISUALIZE
+    index = np.argmax(vali_mrrs)
+    best_hyper = hyper_list[index]
+    restore(data_set, target_file_test, graph_handler_params, start_time,
+            pred_time_test, model_type, train_batch_size, feature_size, 
+            EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
+            lr, reg_lambda)
+
+    # visual_analysis(data_set, target_file_test, graph_handler_params, start_time,
+    #         pred_time_test, model_type, train_batch_size, feature_size, 
+    #         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
+    #         lr, reg_lambda)
