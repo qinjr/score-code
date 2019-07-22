@@ -21,18 +21,18 @@ TEST_NEG_SAMPLE_NUM = 99
 
 # for CCMR
 FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
-DATA_DIR_CCMR = '../../../score-data/CCMR/feateng/'
-MAX_LEN_CCMR = 50
+DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
+MAX_LEN_CCMR = 100
 
 # for Taobao
 FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
-DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
-MAX_LEN_Taobao = 50
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+MAX_LEN_Taobao = 100
 
 # for Tmall
 FEAT_SIZE_Tmall = 1529672
-DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
-MAX_LEN_Tmall = 50
+DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
+MAX_LEN_Tmall = 100
 
 def restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 
@@ -63,6 +63,14 @@ def restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
         # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
         # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
         print('RESTORE, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
+        with open('logs_{}/{}.test.result'.format(data_set, model_name), 'w') as f:
+            index = np.argmax(vali_mrrs)
+            f.write('Result Test NDCG@5: {}\n'.format(ndcg_5))
+            f.write('Result Test NDCG@10: {}\n'.format(ndcg_10))
+            f.write('Result Test HR@1: {}\n'.format(hr_1))
+            f.write('Result Test HR@5: {}\n'.format(hr_5))
+            f.write('Result Test HR@10: {}\n'.format(hr_10))
+            f.write('Result Test MRR: {}\n'.format(mrr))
 
 def get_ndcg(preds, target_iids):
     preds = np.array(preds).reshape(-1, TEST_NEG_SAMPLE_NUM + 1).tolist()
@@ -138,17 +146,12 @@ def eval(model_type, model, sess, target_file, max_time_len, reg_lambda, user_se
     logloss = log_loss(labels, preds)
     auc = roc_auc_score(labels, preds)
     loss = sum(losses) / len(losses)
-    # if mode == 'train':
-    #     ndcg = get_ndcg(preds, target_iids)
-    #     print("EVAL TIME: %.4fs" % (time.time() - t))
-    #     return logloss, auc, ndcg, loss
-    # elif mode == 'restore':
     ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr = get_ranking_quality(preds, target_iids)
     print("EVAL TIME: %.4fs" % (time.time() - t))
     return logloss, auc, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr, loss
 
-def train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
-        item_seq_file_train, item_seq_file_test, model_type, train_batch_size, feature_size, 
+def train(data_set, target_file_train, target_file_validation, user_seq_file_train, user_seq_file_validation,
+        item_seq_file_train, item_seq_file_validation, model_type, train_batch_size, feature_size, 
         eb_dim, hidden_size, max_time_len, lr, reg_lambda, dataset_size):
     if model_type == 'GRU4Rec':
         model = GRU4Rec(feature_size, eb_dim, hidden_size, max_time_len)
@@ -177,30 +180,27 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         train_losses_step = []
         train_losses = []
         
-        # test_loglosses = []
-        # test_aucs = []
-        test_ndcgs_5 = []
-        test_ndcgs_10 = []
-        test_hrs_1 = []
-        test_hrs_5 = []
-        test_hrs_10 = []
-        test_mrrs = []
-        test_losses = []
+        vali_ndcgs_5 = []
+        vali_ndcgs_10 = []
+        vali_hrs_1 = []
+        vali_hrs_5 = []
+        vali_hrs_10 = []
+        vali_mrrs = []
+        vali_losses = []
 
         # before training process
         step = 0
-        _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model_type, model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
-        # test_loglosses.append(test_logloss)
-        # test_aucs.append(test_auc)
-        test_ndcgs_5.append(test_ndcg_5)
-        test_ndcgs_10.append(test_ndcg_10)
-        test_hrs_1.append(test_hr_1)
-        test_hrs_5.append(test_hr_5)
-        test_hrs_10.append(test_hr_10)
-        test_mrrs.append(test_mrr)
-        test_losses.append(test_loss)
+        _, _, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr, vali_loss = eval(model_type, model, sess, target_file_validation, max_time_len, reg_lambda, user_seq_file_validation, item_seq_file_validation)
+        
+        vali_ndcgs_5.append(vali_ndcg_5)
+        vali_ndcgs_10.append(vali_ndcg_10)
+        vali_hrs_1.append(vali_hr_1)
+        vali_hrs_5.append(vali_hr_5)
+        vali_hrs_10.append(vali_hr_10)
+        vali_mrrs.append(vali_mrr)
+        vali_losses.append(vali_loss)
 
-        print("STEP %d  LOSS TRAIN: NULL  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
+        print("STEP %d  LOSS TRAIN: NULL  LOSS VALI: %.4f  NDCG@5 VALI: %.4f  NDCG@10 VALI: %.4f  HR@1 VALI: %.4f  HR@5 VALI: %.4f  HR@10 VALI: %.4f  MRR VALI: %.4f" % (step, vali_loss, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr))
         early_stop = False
         eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
@@ -224,19 +224,18 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                     train_losses.append(train_loss)
                     train_losses_step = []
                     
-                    _, _, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr, test_loss = eval(model_type, model, sess, target_file_test, max_time_len, reg_lambda, user_seq_file_test, item_seq_file_test)
-                    # test_loglosses.append(test_logloss)
-                    # test_aucs.append(test_auc)
-                    test_ndcgs_5.append(test_ndcg_5)
-                    test_ndcgs_10.append(test_ndcg_10)
-                    test_hrs_1.append(test_hr_1)
-                    test_hrs_5.append(test_hr_5)
-                    test_hrs_10.append(test_hr_10)
-                    test_mrrs.append(test_mrr)
-                    test_losses.append(test_loss)
-                    
-                    print("STEP %d  LOSS TRAIN: %.4f  LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f" % (step, train_loss, test_loss, test_ndcg_5, test_ndcg_10, test_hr_1, test_hr_5, test_hr_10, test_mrr))
-                    if test_mrrs[-1] > max(test_mrrs[:-1]):
+                    _, _, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr, vali_loss = eval(model_type, model, sess, target_file_validation, max_time_len, reg_lambda, user_seq_file_validation, item_seq_file_validation)
+
+                    vali_ndcgs_5.append(vali_ndcg_5)
+                    vali_ndcgs_10.append(vali_ndcg_10)
+                    vali_hrs_1.append(vali_hr_1)
+                    vali_hrs_5.append(vali_hr_5)
+                    vali_hrs_10.append(vali_hr_10)
+                    vali_mrrs.append(vali_mrr)
+                    vali_losses.append(vali_loss)
+
+                    print("STEP %d  LOSS TRAIN: %.4f  LOSS VALI: %.4f  NDCG@5 VALI: %.4f  NDCG@10 VALI: %.4f  HR@1 VALI: %.4f  HR@5 VALI: %.4f  HR@10 VALI: %.4f  MRR VALI: %.4f" % (step, train_loss, vali_loss, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr))
+                    if vali_mrrs[-1] > max(vali_mrrs[:-1]):
                         # save model
                         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
                         if not os.path.exists('save_model_{}/{}/'.format(data_set, model_name)):
@@ -244,10 +243,10 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
                         save_path = 'save_model_{}/{}/ckpt'.format(data_set, model_name)
                         model.save(sess, save_path)
 
-                    if len(test_mrrs) > 2 and epoch > 0:
-                        if (test_mrrs[-1] < test_mrrs[-2] and test_mrrs[-2] < test_mrrs[-3]):
+                    if len(vali_mrrs) > 2 and epoch > 0:
+                        if (vali_mrrs[-1] < vali_mrrs[-2] and vali_mrrs[-2] < vali_mrrs[-3]):
                             early_stop = True
-                        if (test_mrrs[-1] - test_mrrs[-2]) <= 0.001 and (test_mrrs[-2] - test_mrrs[-3]) <= 0.001:
+                        if (vali_mrrs[-1] - vali_mrrs[-2]) <= 0.001 and (vali_mrrs[-2] - vali_mrrs[-3]) <= 0.001:
                             early_stop = True
 
         # generate log
@@ -256,17 +255,17 @@ def train(data_set, target_file_train, target_file_test, user_seq_file_train, us
         model_name = '{}_{}_{}_{}'.format(model_type, train_batch_size, lr, reg_lambda)
 
         with open('logs_{}/{}.pkl'.format(data_set, model_name), 'wb') as f:
-            dump_tuple = (train_losses, test_losses, test_ndcgs_5, test_ndcgs_10, test_hrs_1, test_hrs_5, test_hrs_10, test_mrrs)
+            dump_tuple = (train_losses, vali_losses, vali_ndcgs_5, vali_ndcgs_10, vali_hrs_1, vali_hrs_5, vali_hrs_10, vali_mrrs)
             pkl.dump(dump_tuple, f)
         with open('logs_{}/{}.result'.format(data_set, model_name), 'w') as f:
-            index = np.argmax(test_mrrs)
-            f.write('Result Test NDCG@5: {}\n'.format(test_ndcgs_5[index]))
-            f.write('Result Test NDCG@10: {}\n'.format(test_ndcgs_10[index]))
-            f.write('Result Test HR@1: {}\n'.format(test_hrs_1[index]))
-            f.write('Result Test HR@5: {}\n'.format(test_hrs_5[index]))
-            f.write('Result Test HR@10: {}\n'.format(test_hrs_10[index]))
-            f.write('Result Test MRR: {}\n'.format(test_mrrs[index]))
-        return
+            index = np.argmax(vali_mrrs)
+            f.write('Result Validation NDCG@5: {}\n'.format(vali_ndcgs_5[index]))
+            f.write('Result Validation NDCG@10: {}\n'.format(vali_ndcgs_10[index]))
+            f.write('Result Validation HR@1: {}\n'.format(vali_hrs_1[index]))
+            f.write('Result Validation HR@5: {}\n'.format(vali_hrs_5[index]))
+            f.write('Result Validation HR@10: {}\n'.format(vali_hrs_10[index]))
+            f.write('Result Validation MRR: {}\n'.format(vali_mrrs[index]))
+        return vali_mrrs[index]
         
 if __name__ == '__main__':
     if len(sys.argv) < 4:
@@ -277,52 +276,80 @@ if __name__ == '__main__':
     data_set = sys.argv[3]
 
     if data_set == 'ccmr':
-        target_file_train = DATA_DIR_CCMR + 'target_39_hot.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_hot_sample.txt'
-        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_39.txt'
+        target_file_train = DATA_DIR_CCMR + 'target_38.txt'
+        target_file_validation = DATA_DIR_CCMR + 'target_39_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_sample.txt'
+        
+        user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_38.txt'
+        user_seq_file_validation = DATA_DIR_CCMR + 'validation_user_hist_seq_39_sample.txt'
         user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt'
-        item_seq_file_train = DATA_DIR_CCMR + 'train_item_hist_seq_39.txt'
+        
+        item_seq_file_train = DATA_DIR_CCMR + 'train_item_hist_seq_38.txt'
+        item_seq_file_validation = DATA_DIR_CCMR + 'validation_item_hist_seq_39_sample.txt'
         item_seq_file_test = DATA_DIR_CCMR + 'test_item_hist_seq_40_sample.txt'
+        
         # model parameter
         feature_size = FEAT_SIZE_CCMR
         max_time_len = MAX_LEN_CCMR
-        dataset_size = 524676
+        dataset_size = 505530
+
     elif data_set == 'taobao':
-        target_file_train = DATA_DIR_Taobao + 'target_7_hot.txt'
-        target_file_test = DATA_DIR_Taobao + 'target_8_hot_sample.txt'
-        user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq_7.txt'
+        target_file_train = DATA_DIR_Taobao + 'target_6.txt'
+        target_file_validation = DATA_DIR_Taobao + 'target_7_sample.txt'
+        target_file_test = DATA_DIR_Taobao + 'target_8_sample.txt'
+
+        user_seq_file_train = DATA_DIR_Taobao + 'train_user_hist_seq_6.txt'
+        user_seq_file_validation = DATA_DIR_Taobao + 'validation_user_hist_seq_7_sample.txt'
         user_seq_file_test = DATA_DIR_Taobao + 'test_user_hist_seq_8_sample.txt'
-        item_seq_file_train = DATA_DIR_Taobao + 'train_item_hist_seq_7.txt'
+        
+        item_seq_file_train = DATA_DIR_Taobao + 'train_item_hist_seq_6.txt'
+        item_seq_file_validation = DATA_DIR_Taobao + 'validation_item_hist_seq_7_sample.txt'
         item_seq_file_test = DATA_DIR_Taobao + 'test_item_hist_seq_8_sample.txt'
+
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = MAX_LEN_Taobao
-        dataset_size = 937858#938046
+        dataset_size = 937858
     elif data_set == 'tmall':
-        target_file_train = DATA_DIR_Tmall + 'target_10_hot.txt'
-        target_file_test = DATA_DIR_Tmall + 'target_11_hot_sample.txt'
-        user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_10.txt'
+        target_file_train = DATA_DIR_Tmall + 'target_9.txt'
+        target_file_validation = DATA_DIR_Tmall + 'target_10_sample.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_11_sample.txt'
+
+        user_seq_file_train = DATA_DIR_Tmall + 'train_user_hist_seq_9.txt'
+        user_seq_file_validation = DATA_DIR_Tmall + 'validation_user_hist_seq_10_sample.txt'
         user_seq_file_test = DATA_DIR_Tmall + 'test_user_hist_seq_11_sample.txt'
-        item_seq_file_train = DATA_DIR_Tmall + 'train_item_hist_seq_10.txt'
+        
+        item_seq_file_train = DATA_DIR_Tmall + 'train_item_hist_seq_9.txt'
+        item_seq_file_validation = DATA_DIR_Tmall + 'validation_item_hist_seq_10_sample.txt'
         item_seq_file_test = DATA_DIR_Tmall + 'test_item_hist_seq_11_sample.txt'
+
         # model parameter
         feature_size = FEAT_SIZE_Tmall
         max_time_len = MAX_LEN_Tmall
-        dataset_size = 219912#228213
+        dataset_size = 219912
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambda = 1e-4
-    hyper_paras = [(100, 5e-4), (200, 1e-3)]
+    reg_lambdas = [1e-5, 1e-4]
+    hyper_paras = [(100, 5e-5), (100, 1e-4), (100, 5e-4)]
+    
+    vali_mrrs = []
+    hyper_list = []
 
     for hyper in hyper_paras:
         train_batch_size, lr = hyper
-        train(data_set, target_file_train, target_file_test, user_seq_file_train, user_seq_file_test,
-                item_seq_file_train, item_seq_file_test, model_type, train_batch_size, feature_size, 
-                EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, lr, reg_lambda, dataset_size)
-        
-        restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
-            model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
-            lr, reg_lambda)
+        for reg_lambda in reg_lambdas:
+            vali_mrr = train(data_set, target_file_train, target_file_validation, user_seq_file_train, user_seq_file_validation,
+                    item_seq_file_train, item_seq_file_validation, model_type, train_batch_size, feature_size, 
+                    EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, lr, reg_lambda, dataset_size)
+            vali_mrrs.append(vali_mrr)
+            hyper_list.append((train_batch_size, lr, reg_lambda))
+
+    index = np.argmax(vali_mrrs)
+    best_hyper = hyper_list[index]
+    train_batch_size, lr, reg_lambda = best_hyper
+    restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
+        model_type, train_batch_size, feature_size, EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, 
+        lr, reg_lambda)

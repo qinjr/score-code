@@ -3,14 +3,14 @@ import time
 import numpy as np
 
 
-DATA_DIR_CCMR = '../../../score-data/CCMR/feateng/'
-MAX_LEN_CCMR = 50
+DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
+MAX_LEN_CCMR = 100
 
-DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
-MAX_LEN_Taobao = 50
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
+MAX_LEN_Taobao = 100
 
-DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
-MAX_LEN_Tmall = 50
+DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
+MAX_LEN_Tmall = 100
 
 class DataLoaderUserSeq(object):
     def __init__(self, batch_size, max_len, target_file, user_seq_file, neg_sample_num):

@@ -8,7 +8,7 @@ import multiprocessing
 WORKER_N = 5
 
 # CCMR dataset parameters
-DATA_DIR_CCMR = '../../../score-data/CCMR/feateng/'
+DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
 TIME_SLICE_NUM_CCMR = 41
 OBJ_PER_TIME_SLICE_CCMR = 10
 USER_NUM_CCMR = 4920695
@@ -19,7 +19,7 @@ START_TIME_CCMR = 0
 
 
 # Taobao dataset parameters
-DATA_DIR_Taobao = '../../../score-data/Taobao/feateng/'
+DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 TIME_SLICE_NUM_Taobao = 9
 OBJ_PER_TIME_SLICE_Taobao = 10
 USER_NUM_Taobao = 984105
@@ -29,7 +29,7 @@ ITEM_PER_COLLECTION_Taobao = 500
 START_TIME_Taobao = 7
 
 # Tmall dataset parameters
-DATA_DIR_Tmall = '../../../score-data/Tmall/feateng/'
+DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
 TIME_SLICE_NUM_Tmall = 12
 OBJ_PER_TIME_SLICE_Tmall = 10
 USER_NUM_Tmall = 424170

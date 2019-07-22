@@ -2,6 +2,9 @@ import tensorflow as tf
 from tensorflow.python.ops.rnn_cell import GRUCell
 import numpy as np
 
+TRAIN_NEG_SAMPLE_NUM = 1
+TEST_NEG_SAMPLE_NUM = 99
+
 '''
 SCOREBASE Models: SCORE
 '''
@@ -32,13 +35,16 @@ class SCOREBASE(object):
             self.reg_lambda = tf.placeholder(tf.float32, [], name='lambda')
             # keep prob
             self.keep_prob = tf.placeholder(tf.float32, [])
+            # neg sample num
+            self.neg_sample_num_reshape = tf.placeholder(tf.int32, [2,])
+
         
         # embedding
         with tf.name_scope('embedding'):
             self.emb_mtx = tf.get_variable('emb_mtx', [feature_size, eb_dim], initializer=tf.truncated_normal_initializer)
-            # self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
-            # self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
-            # self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
+            self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
+            self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
+            self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
             
             # user interaction set and co-interaction set
             self.user_1hop = tf.nn.embedding_lookup(self.emb_mtx, self.user_1hop_ph)
@@ -67,6 +73,14 @@ class SCOREBASE(object):
         self.log_loss = tf.losses.log_loss(self.label_ph, self.y_pred)
         self.loss = self.log_loss
     
+    def build_bprloss(self):
+        self.y_pred_reshape = tf.reshape(self.y_pred, self.neg_sample_num_reshape)
+        self.y_pred_pos = tf.tile(tf.expand_dims(self.y_pred_reshape[:, 0], 1), [1, self.neg_sample_num_reshape[1] - 1])
+        self.y_pred_neg = self.y_pred_reshape[:, 1:]
+        self.loss = tf.sigmoid(self.y_pred_pos - self.y_pred_neg)
+        self.loss = -tf.log(tf.clip_by_value(self.loss, 1e-10, 1))
+        self.loss = tf.reduce_mean(self.loss)
+
     def build_l2norm(self):
         for v in tf.trainable_variables():
             if 'bias' not in v.name and 'emb' not in v.name:
@@ -89,7 +103,8 @@ class SCOREBASE(object):
                 self.length_ph : batch_data[7],
                 self.lr : lr,
                 self.reg_lambda : reg_lambda,
-                self.keep_prob : 0.8
+                self.keep_prob : 0.8,
+                self.neg_sample_num_reshape : [-1, 1 + TRAIN_NEG_SAMPLE_NUM]
             })
         return loss
     
@@ -104,7 +119,8 @@ class SCOREBASE(object):
                 self.label_ph : batch_data[6],
                 self.length_ph : batch_data[7],
                 self.reg_lambda : reg_lambda,
-                self.keep_prob : 1.
+                self.keep_prob : 1.,
+                self.neg_sample_num_reshape : [-1, 1 + TEST_NEG_SAMPLE_NUM]
             })
         
         return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss
@@ -188,7 +204,8 @@ class SCORE(SCOREBASE):
         # fc layer
         # self.build_fc_net(inp)
         # build loss
-        self.build_logloss()
+        # self.build_logloss()
+        self.build_bprloss()
         self.build_l2norm()
         self.build_train_step()
     
@@ -239,7 +256,8 @@ class No_Att(SCOREBASE):
         # fc layer
         self.build_fc_net(inp)
         # build loss
-        self.build_logloss()
+        # self.build_logloss()
+        self.build_bprloss()
         self.build_l2norm()
         self.build_train_step()
 
@@ -279,7 +297,8 @@ class SCORE_1HOP(SCOREBASE):
         # fc layer
         self.build_fc_net(inp)
         # build loss
-        self.build_logloss()
+        # self.build_logloss()
+        self.build_bprloss()
         self.build_l2norm()
         self.build_train_step()
 
@@ -324,7 +343,8 @@ class GAT(SCOREBASE):
         # fc layer
         self.build_fc_net(inp)
         # build loss
-        self.build_logloss()
+        # self.build_logloss()
+        self.build_bprloss()
         self.build_l2norm()
         self.build_train_step()
 

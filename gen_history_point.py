@@ -37,6 +37,7 @@ def gen_user_hist_seq_file(in_file, out_file, user_hist_dict_file, max_len):
             newlines.append(','.join(user_hist_list) + '\n')
     with open(out_file, 'w') as f:
         f.writelines(newlines)
+    print('gen {} completed'.format(out_file))
 
 def gen_item_hist_seq_file(in_file, out_file, item_hist_dict_file, max_len):
     with open(item_hist_dict_file, 'rb') as f:
@@ -61,6 +62,7 @@ def gen_item_hist_seq_file(in_file, out_file, item_hist_dict_file, max_len):
     
     with open(out_file, 'w') as f:
         f.writelines(newlines)
+    print('gen {} completed'.format(out_file))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

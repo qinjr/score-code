@@ -2,6 +2,9 @@ import tensorflow as tf
 from tensorflow.python.ops.rnn_cell import GRUCell
 import numpy as np
 
+TRAIN_NEG_SAMPLE_NUM = 1
+TEST_NEG_SAMPLE_NUM = 99
+
 '''
 Slice Based Models: RRN, GCMC
 '''
@@ -31,13 +34,15 @@ class SliceBaseModel(object):
             self.reg_lambda = tf.placeholder(tf.float32, [])
             # keep prob
             self.keep_prob = tf.placeholder(tf.float32, [])
-        
+            # neg sample num
+            self.neg_sample_num_reshape = tf.placeholder(tf.int32, [2,])
+
         # embedding
         with tf.name_scope('embedding'):
             self.emb_mtx = tf.get_variable('emb_mtx', [feature_size, eb_dim], initializer=tf.truncated_normal_initializer)
-            # self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
-            # self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
-            # self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
+            self.emb_mtx_mask = tf.constant(value=1., shape=[feature_size - 1, eb_dim])
+            self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
+            self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
 
             self.user_1hop = tf.nn.embedding_lookup(self.emb_mtx, self.user_1hop_ph)
             self.user_2hop = tf.nn.embedding_lookup(self.emb_mtx, self.user_2hop_ph)
@@ -69,6 +74,20 @@ class SliceBaseModel(object):
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         self.train_step = self.optimizer.minimize(self.loss)
 
+    def build_bprloss(self):
+        self.y_pred_reshape = tf.reshape(self.y_pred, self.neg_sample_num_reshape)
+        self.y_pred_pos = tf.tile(tf.expand_dims(self.y_pred_reshape[:, 0], 1), [1, self.neg_sample_num_reshape[1] - 1])
+        self.y_pred_neg = self.y_pred_reshape[:, 1:]
+        self.loss = tf.sigmoid(self.y_pred_pos - self.y_pred_neg)
+        self.loss = -tf.log(tf.clip_by_value(self.loss, 1e-10, 1))
+        self.loss = tf.reduce_mean(self.loss)
+        for v in tf.trainable_variables():
+            if 'bias' not in v.name and 'emb' not in v.name:
+                self.loss += self.reg_lambda * tf.nn.l2_loss(v)
+        # optimizer and training step
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+        self.train_step = self.optimizer.minimize(self.loss)
+
     def build_mseloss(self):
         self.loss = tf.losses.mean_squared_error(self.label_ph, self.y_pred)
         # regularization term
@@ -91,7 +110,8 @@ class SliceBaseModel(object):
                 self.length_ph : batch_data[7],
                 self.lr : lr,
                 self.reg_lambda : reg_lambda,
-                self.keep_prob : 0.8
+                self.keep_prob : 0.8,
+                self.neg_sample_num_reshape : [-1, 1 + TRAIN_NEG_SAMPLE_NUM]
             })
         return loss
     
@@ -106,7 +126,8 @@ class SliceBaseModel(object):
                 self.label_ph : batch_data[6],
                 self.length_ph : batch_data[7],
                 self.reg_lambda : reg_lambda,
-                self.keep_prob : 1.
+                self.keep_prob : 1.,
+                self.neg_sample_num_reshape : [-1, 1 + TEST_NEG_SAMPLE_NUM]
             })
         
         return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss
@@ -138,7 +159,9 @@ class RRN(SliceBaseModel):
 
         # fc layer
         self.build_fc_net(inp)
-        self.build_logloss()
+        # self.build_logloss()
+        self.build_bprloss()
+
 
 class GCMC(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
@@ -166,6 +189,7 @@ class GCMC(SliceBaseModel):
         self.y_pred_neg = tf.exp(tf.reduce_sum(tf.layers.dense(item_side_final_state, hidden_size, use_bias=False) * user_side_final_state, axis=1))
         self.y_pred = self.y_pred_pos / (self.y_pred_pos + self.y_pred_neg)
 
-        self.build_logloss()
+        # self.build_logloss()
+        self.build_bprloss()
 
 

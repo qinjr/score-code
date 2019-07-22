@@ -18,7 +18,7 @@ EVAL_BATCH_SIZE = 100
 TRAIN_NEG_SAMPLE_NUM = 1
 TEST_NEG_SAMPLE_NUM = 99
 
-WORKER_N = 5
+WORKER_N = 15
 
 # for CCMR
 OBJ_PER_TIME_SLICE_CCMR = 10
@@ -119,6 +119,14 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
         # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
         # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
         print('RESTORE, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
+        with open('logs_{}/{}.test.result'.format(data_set, model_name), 'w') as f:
+            index = np.argmax(vali_mrrs)
+            f.write('Result Test NDCG@5: {}\n'.format(ndcg_5))
+            f.write('Result Test NDCG@10: {}\n'.format(ndcg_10))
+            f.write('Result Test HR@1: {}\n'.format(hr_1))
+            f.write('Result Test HR@5: {}\n'.format(hr_5))
+            f.write('Result Test HR@10: {}\n'.format(hr_10))
+            f.write('Result Test MRR: {}\n'.format(mrr))
 
 def get_ndcg(preds, target_iids):
     preds = np.array(preds).reshape(-1, TEST_NEG_SAMPLE_NUM + 1).tolist()
@@ -221,7 +229,6 @@ def train(data_set, target_file_train, target_file_validation, graph_handler_par
         train_losses_step = []
         train_losses = []
 
-
         vali_ndcgs_5 = []
         vali_ndcgs_10 = []
         vali_hrs_1 = []
@@ -255,8 +262,6 @@ def train(data_set, target_file_train, target_file_validation, graph_handler_par
                     break
 
                 loss = model.train(sess, batch_data, lr, reg_lambda)
-                # att = model.get_inter_att(sess, batch_data)
-                # print(att)
                 step += 1
                 train_losses_step.append(loss)
                 if step % eval_iter_num == 0:
@@ -321,8 +326,8 @@ if __name__ == '__main__':
                                 USER_PER_COLLECTION_CCMR, \
                                 ITEM_PER_COLLECTION_CCMR, 'is']
         target_file_train = DATA_DIR_CCMR + 'target_38.txt'
-        target_file_validation = DATA_DIR_CCMR + 'target_39.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40.txt'
+        target_file_validation = DATA_DIR_CCMR + 'target_39_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_sample.txt'
         
         start_time = START_TIME_CCMR
         pred_time_train = 38
@@ -333,15 +338,15 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_CCMR
         max_time_len = TIME_SLICE_NUM_CCMR - START_TIME_CCMR - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
-        dataset_size = 524676
+        dataset_size = 505530
     elif data_set == 'taobao':
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, START_TIME_Taobao, \
                                 USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao, 'is']
         target_file_train = DATA_DIR_Taobao + 'target_6.txt'
-        target_file_validation = DATA_DIR_Taobao + 'target_7.txt'
-        target_file_test = DATA_DIR_Taobao + 'target_8.txt'
+        target_file_validation = DATA_DIR_Taobao + 'target_7_sample.txt'
+        target_file_test = DATA_DIR_Taobao + 'target_8_sample.txt'
         
         start_time = START_TIME_Taobao
         pred_time_train = 6
@@ -359,8 +364,8 @@ if __name__ == '__main__':
                                 USER_NUM_Tmall, ITEM_NUM_Tmall, START_TIME_Tmall, \
                                 USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall, 'is']
         target_file_train = DATA_DIR_Tmall + 'target_9.txt'
-        target_file_validation = DATA_DIR_Tmall + 'target_10.txt'
-        target_file_test = DATA_DIR_Tmall + 'target_11.txt'
+        target_file_validation = DATA_DIR_Tmall + 'target_10_sample.txt'
+        target_file_test = DATA_DIR_Tmall + 'target_11_sample.txt'
         
         start_time = START_TIME_Tmall
         pred_time_train = 9
@@ -377,9 +382,9 @@ if __name__ == '__main__':
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambdas = [1e-5, 1e-4]
-    hyper_paras = [(100, 5e-4), (200, 1e-3), (400, 2e-3)]
-    
+    reg_lambdas = [0]
+    hyper_paras = [(100, 5e-5), (100, 1e-4), (100, 5e-4)]
+
     vali_mrrs = []
     hyper_list = []
 
@@ -390,10 +395,12 @@ if __name__ == '__main__':
                     pred_time_train, pred_time_validation, model_type, train_batch_size, feature_size, 
                     EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size)
             vali_mrrs.append(vali_mrr)
+            hyper_list.append((train_batch_size, lr, reg_lambda))
     
     # TEST and VISUALIZE
     index = np.argmax(vali_mrrs)
     best_hyper = hyper_list[index]
+    train_batch_size, lr, reg_lambda = best_hyper
     restore(data_set, target_file_test, graph_handler_params, start_time,
             pred_time_test, model_type, train_batch_size, feature_size, 
             EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 

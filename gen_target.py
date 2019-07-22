@@ -95,14 +95,14 @@ class TargetGen(object):
                     user_neg_list.append(pop_items[random.randint(0, pop_items_len-1)])
                 return user_neg_list
 
-    def gen_target_file(self, neg_sample_num, target_file, pred_time, user_hist_dict_file, pop_items_file = None):
+    def gen_target_file(self, neg_sample_num, target_file, user_hist_dict_file, pred_time, pop_items_file = None):
         if pop_items_file != None:
             with open(pop_items_file, 'rb') as f:
                 pop_items = pkl.load(f)
         else:
             pop_items = None
         
-        with open(user_hist_dict_file, 'rb') as f；
+        with open(user_hist_dict_file, 'rb') as f:
             user_hist_dict = pkl.load(f)
 
         target_lines = []
@@ -111,7 +111,7 @@ class TargetGen(object):
             for user_doc in cursor:
                 if user_doc['1hop'][pred_time] != []:
                     uid = user_doc['uid']
-                    if uid in user_hist_dict:                    
+                    if str(uid) in user_hist_dict:
                         pos_iids = user_doc['1hop'][pred_time]
                         pos_iid = pos_iids[0]
                         neg_iids = self.gen_user_neg_items(uid, neg_sample_num, self.user_num + 1, self.user_num + self.item_num, pop_items)
@@ -322,9 +322,9 @@ if __name__ == '__main__':
         tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', DATA_DIR_Taobao + 'item_hist_dict_7.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 7)
         tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', DATA_DIR_Taobao + 'item_hist_dict_8.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 8)
         
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_6.txt', 6, DATA_DIR_Taobao + 'pop_items.pkl')
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_7.txt', 7, DATA_DIR_Taobao + 'pop_items.pkl')
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', 8, DATA_DIR_Taobao + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_6.txt', DATA_DIR_Taobao + 'user_hist_dict_6.pkl', 6, DATA_DIR_Taobao + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_7.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', 7, DATA_DIR_Taobao + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', 8, DATA_DIR_Taobao + 'pop_items.pkl')
         
         
     elif dataset == 'tmall':
@@ -339,9 +339,9 @@ if __name__ == '__main__':
         tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_10.pkl', DATA_DIR_Tmall + 'item_hist_dict_10.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 10)
         tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_11.pkl', DATA_DIR_Tmall + 'item_hist_dict_11.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 11)
 
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_9.txt', 9, DATA_DIR_Tmall + 'pop_items.pkl')
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_10.txt', 10, DATA_DIR_Tmall + 'pop_items.pkl')
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_11.txt', 11, DATA_DIR_Tmall + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_9.txt', DATA_DIR_Tmall + 'user_hist_dict_9.pkl', 9, DATA_DIR_Tmall + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_10.txt', DATA_DIR_Tmall + 'user_hist_dict_10.pkl', 10, DATA_DIR_Tmall + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Tmall + 'target_11.txt', DATA_DIR_Tmall + 'user_hist_dict_11.pkl', 11, DATA_DIR_Tmall + 'pop_items.pkl')
         
     else:
         print('WRONG DATASET: {}'.format(dataset))
