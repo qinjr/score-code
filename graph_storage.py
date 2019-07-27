@@ -31,14 +31,14 @@ ITEM_PER_COLLECTION_Taobao = 500
 START_TIME_Taobao = 0
 MAX_1HOP_Taobao = 10
 MAX_2HOP_Taobao = 100
-USER_NUM_Taobao = 984105
-ITEM_NUM_Taobao = 4067842
+USER_NUM_Taobao = 984080
+ITEM_NUM_Taobao = 4049268
 TIME_SLICE_NUM_Taobao = 9
 
 # Tmall parameters
 DATA_DIR_Tmall = '../score-data/Tmall/feateng/'
 USER_PER_COLLECTION_Tmall = 200
-ITEM_PER_COLLECTION_Tmall = 250
+ITEM_PER_COLLECTION_Tmall = 500
 START_TIME_Tmall = 0
 MAX_1HOP_Tmall = 10
 MAX_2HOP_Tmall = 100

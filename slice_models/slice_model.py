@@ -3,14 +3,14 @@ from tensorflow.python.ops.rnn_cell import GRUCell
 import numpy as np
 
 TRAIN_NEG_SAMPLE_NUM = 1
-TEST_NEG_SAMPLE_NUM = 99
+TEST_NEG_SAMPLE_NUM = 9
 
 '''
 Slice Based Models: RRN, GCMC
 '''
 class SliceBaseModel(object):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice):
+                obj_per_time_slice, user_fnum, item_fnum):
         # reset graph
         tf.reset_default_graph()
 
@@ -18,13 +18,14 @@ class SliceBaseModel(object):
 
         # input placeholders
         with tf.name_scope('inputs'):
-            self.user_1hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice], name='user_1hop_ph')
-            self.user_2hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice], name='user_2hop_ph')
-            self.item_1hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice], name='item_1hop_ph')
-            self.item_2hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice], name='item_2hop_ph')
-
-            self.target_user_ph = tf.placeholder(tf.int32, [None,], name='target_user_ph')
-            self.target_item_ph = tf.placeholder(tf.int32, [None,], name='target_item_ph')
+            self.user_1hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice, item_fnum], name='user_1hop_ph')
+            self.user_2hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice, user_fnum], name='user_2hop_ph')
+            
+            self.item_1hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice, user_fnum], name='item_1hop_ph')
+            self.item_2hop_ph = tf.placeholder(tf.int32, [None, max_time_len, self.obj_per_time_slice, item_fnum], name='item_2hop_ph')
+            
+            self.target_user_ph = tf.placeholder(tf.int32, [None, user_fnum], name='target_user_ph')
+            self.target_item_ph = tf.placeholder(tf.int32, [None, item_fnum], name='target_item_ph')
             self.label_ph = tf.placeholder(tf.int32, [None,], name='label_ph')
             self.length_ph = tf.placeholder(tf.int32, [None,], name='length_ph')
 
@@ -44,14 +45,24 @@ class SliceBaseModel(object):
             self.emb_mtx_mask = tf.concat([tf.constant(value=0., shape=[1, eb_dim]), self.emb_mtx_mask], axis=0)
             self.emb_mtx = self.emb_mtx * self.emb_mtx_mask
 
+            B, T, K, _ = self.user_1hop_ph.get_shape().as_list()
+            # user interaction set and co-interaction set
             self.user_1hop = tf.nn.embedding_lookup(self.emb_mtx, self.user_1hop_ph)
+            self.user_1hop = tf.reshape(self.user_1hop, [-1, T, K, item_fnum * eb_dim])
             self.user_2hop = tf.nn.embedding_lookup(self.emb_mtx, self.user_2hop_ph)
-            
+            self.user_2hop = tf.reshape(self.user_2hop, [-1, T, K, user_fnum * eb_dim])
+
+            # item interaction set and co-interaction set
             self.item_1hop = tf.nn.embedding_lookup(self.emb_mtx, self.item_1hop_ph)
+            self.item_1hop = tf.reshape(self.item_1hop, [-1, T, K, user_fnum * eb_dim])
             self.item_2hop = tf.nn.embedding_lookup(self.emb_mtx, self.item_2hop_ph)
+            self.item_2hop = tf.reshape(self.item_2hop, [-1, T, K, item_fnum * eb_dim])
             
+            # target item and target user
             self.target_item = tf.nn.embedding_lookup(self.emb_mtx, self.target_item_ph)
+            self.target_item = tf.reshape(self.target_item, [-1, item_fnum * eb_dim])
             self.target_user = tf.nn.embedding_lookup(self.emb_mtx, self.target_user_ph)
+            self.target_user = tf.reshape(self.target_user, [-1, user_fnum * eb_dim])
             
     def build_fc_net(self, inp):
         bn1 = tf.layers.batch_normalization(inputs=inp, name='bn1')
@@ -143,8 +154,8 @@ class SliceBaseModel(object):
 
 class RRN(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice):
-        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+                obj_per_time_slice, user_fnum, item_fnum):
+        super(RRN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
         user_side = tf.reduce_sum(self.user_1hop, axis=2)
         item_side = tf.reduce_sum(self.item_1hop, axis=2)
 
@@ -159,14 +170,14 @@ class RRN(SliceBaseModel):
 
         # fc layer
         self.build_fc_net(inp)
-        # self.build_logloss()
-        self.build_bprloss()
+        self.build_logloss()
+        # self.build_bprloss()
 
 
 class GCMC(SliceBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, 
-                obj_per_time_slice):
-        super(GCMC, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+                obj_per_time_slice, user_fnum, item_fnum):
+        super(GCMC, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
 
         user_1hop_li = tf.layers.dense(self.user_1hop, self.user_1hop.get_shape().as_list()[-1], activation=None, use_bias=False)
         item_1hop_li = tf.layers.dense(self.item_1hop, self.item_1hop.get_shape().as_list()[-1], activation=None, use_bias=False)
@@ -189,7 +200,7 @@ class GCMC(SliceBaseModel):
         self.y_pred_neg = tf.exp(tf.reduce_sum(tf.layers.dense(item_side_final_state, hidden_size, use_bias=False) * user_side_final_state, axis=1))
         self.y_pred = self.y_pred_pos / (self.y_pred_pos + self.y_pred_neg)
 
-        # self.build_logloss()
-        self.build_bprloss()
+        self.build_logloss()
+        # self.build_bprloss()
 
 

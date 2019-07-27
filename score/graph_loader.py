@@ -22,8 +22,8 @@ START_TIME_CCMR = 0
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 TIME_SLICE_NUM_Taobao = 9
 OBJ_PER_TIME_SLICE_Taobao = 10
-USER_NUM_Taobao = 984105
-ITEM_NUM_Taobao = 4067842
+USER_NUM_Taobao = 984080
+ITEM_NUM_Taobao = 4049268
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 500
 START_TIME_Taobao = 0
@@ -35,13 +35,25 @@ OBJ_PER_TIME_SLICE_Tmall = 10
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
 USER_PER_COLLECTION_Tmall = 200
-ITEM_PER_COLLECTION_Tmall = 250
+ITEM_PER_COLLECTION_Tmall = 500
 START_TIME_Tmall = 0
 
 class GraphHandler(object):
-    def __init__(self, time_slice_num, db_name, obj_per_time_slice,
-                 user_num, item_num, start_time,
-                 user_per_collection, item_per_collection, mode):
+    def __init__(self, 
+                 time_slice_num, 
+                 db_name, 
+                 obj_per_time_slice,
+                 user_num, 
+                 item_num, 
+                 start_time,
+                 user_per_collection, 
+                 item_per_collection, 
+                 mode, 
+                 user_feat_dict_file, 
+                 item_feat_dict_file,
+                 user_fnum,
+                 item_fnum):
+
         self.mode = mode
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.db = self.client[db_name]
@@ -63,59 +75,167 @@ class GraphHandler(object):
         self.user_colls = [self.db['user_%d'%(i)] for i in range(user_coll_num)]
         self.item_colls = [self.db['item_%d'%(i)] for i in range(item_coll_num)]
         
-        self.dummy_node = np.zeros(self.obj_per_time_slice).tolist()
+        self.user_feat_dict = None
+        self.item_feat_dict = None
 
-    def gen_node_neighbor_is(self, start_node_doc, time_slice):
+        if user_feat_dict_file != None:
+            with open(user_feat_dict_file, 'rb') as f:
+                self.user_feat_dict = pkl.load(f)
+        if item_feat_dict_file != None:
+            with open(item_feat_dict_file, 'rb') as f:
+                self.item_feat_dict = pkl.load(f)
+        self.user_fnum = user_fnum
+        self.item_fnum = item_fnum
+
+        self.user_dummy_node = np.zeros([self.obj_per_time_slice, self.user_fnum]).tolist()
+        self.item_dummy_node = np.zeros([self.obj_per_time_slice, self.item_fnum]).tolist()
+
+
+    def gen_user_neighbor_is(self, start_node_doc, time_slice):
         node_1hop_list = start_node_doc['1hop'][time_slice]
         node_2hop_list = start_node_doc['2hop'][time_slice]
         degree_list = start_node_doc['degrees'][time_slice]
         
-        result = []
-        
+        result_1hop = []
+        result_2hop = []
+
         if node_1hop_list != []:
             if len(node_1hop_list) > self.obj_per_time_slice:
-                result.append(node_1hop_list[:self.obj_per_time_slice])
+                node_1hop_list = node_1hop_list[:self.obj_per_time_slice]
             else:
                 for i in range(self.obj_per_time_slice - len(node_1hop_list)):
                     node_1hop_list.append(node_1hop_list[i % len(node_1hop_list)])
-                result.append(node_1hop_list)
+            if self.item_fnum == 1:
+                for nid in node_1hop_list:
+                    result_1hop.append([nid])
+            else:
+                for nid in node_1hop_list:
+                    result_1hop.append([nid] + self.item_feat_dict[str(nid)])
         else:
-            result.append(self.dummy_node)
+            result_1hop = self.item_dummy_node
         
         if node_2hop_list != []:
             p_distri = (1 / (np.array(degree_list) - 1))
             p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
             node_2hop_list = np.random.choice(node_2hop_list, self.obj_per_time_slice, p=p_distri).tolist()
-            result.append(node_2hop_list)
+            if self.user_fnum == 1:
+                for nid in node_2hop_list:
+                    result_2hop.append([nid])
+            else:
+                for nid in node_2hop_list:
+                    result_2hop.append([nid] + self.user_feat_dict[str(nid)])
         else:
-            result.append(self.dummy_node)
-        return result
-    
-    def gen_node_neighbor_rs(self, start_node_doc, time_slice):
+            result_2hop = self.user_dummy_node
+
+        return result_1hop, result_2hop
+
+    def gen_item_neighbor_is(self, start_node_doc, time_slice):
         node_1hop_list = start_node_doc['1hop'][time_slice]
         node_2hop_list = start_node_doc['2hop'][time_slice]
         degree_list = start_node_doc['degrees'][time_slice]
         
-        result = []
-        
+        result_1hop = []
+        result_2hop = []
+
         if node_1hop_list != []:
             if len(node_1hop_list) > self.obj_per_time_slice:
-                result.append(node_1hop_list[:self.obj_per_time_slice])
+                node_1hop_list = node_1hop_list[:self.obj_per_time_slice]
             else:
                 for i in range(self.obj_per_time_slice - len(node_1hop_list)):
                     node_1hop_list.append(node_1hop_list[i % len(node_1hop_list)])
-                result.append(node_1hop_list)
+            if self.user_fnum == 1:
+                for nid in node_1hop_list:
+                    result_1hop.append([nid])
+            else:
+                for nid in node_1hop_list:
+                    result_1hop.append([nid] + self.user_feat_dict[str(nid)])
         else:
-            result.append(self.dummy_node)
-          
+            result_1hop = self.user_dummy_node
+        
+        if node_2hop_list != []:
+            p_distri = (1 / (np.array(degree_list) - 1))
+            p_distri = (np.exp(p_distri) / np.sum(np.exp(p_distri))).tolist()
+            node_2hop_list = np.random.choice(node_2hop_list, self.obj_per_time_slice, p=p_distri).tolist()
+            if self.item_fnum == 1:
+                for nid in node_2hop_list:
+                    result_2hop.append([nid])
+            else:
+                for nid in node_2hop_list:
+                    result_2hop.append([nid] + self.item_feat_dict[str(nid)])
+        else:
+            result_2hop = self.item_dummy_node
+        return result_1hop, result_2hop
+    
+    def gen_user_neighbor_rs(self, start_node_doc, time_slice):
+        node_1hop_list = start_node_doc['1hop'][time_slice]
+        node_2hop_list = start_node_doc['2hop'][time_slice]
+        degree_list = start_node_doc['degrees'][time_slice]
+        
+        result_1hop = []
+        result_2hop = []
+
+        if node_1hop_list != []:
+            if len(node_1hop_list) > self.obj_per_time_slice:
+                node_1hop_list = node_1hop_list[:self.obj_per_time_slice]
+            else:
+                for i in range(self.obj_per_time_slice - len(node_1hop_list)):
+                    node_1hop_list.append(node_1hop_list[i % len(node_1hop_list)])
+            if self.item_fnum == 1:
+                for nid in node_1hop_list:
+                    result_1hop.append([nid])
+            else:
+                for nid in node_1hop_list:
+                    result_1hop.append([nid] + self.item_feat_dict[str(nid)])
+        else:
+            result_1hop = self.item_dummy_node
         
         if node_2hop_list != []:
             node_2hop_list = np.random.choice(node_2hop_list, self.obj_per_time_slice).tolist()
-            result.append(node_2hop_list)
+            if self.user_fnum == 1:
+                for nid in node_2hop_list:
+                    result_2hop.append([nid])
+            else:
+                for nid in node_2hop_list:
+                    result_2hop.append([nid] + self.user_feat_dict[str(nid)])
         else:
-            result.append(self.dummy_node)
+            result_2hop = self.user_dummy_node
 
-        return result
+        return result_1hop, result_2hop
+
+    def gen_item_neighbor_rs(self, start_node_doc, time_slice):
+        node_1hop_list = start_node_doc['1hop'][time_slice]
+        node_2hop_list = start_node_doc['2hop'][time_slice]
+        degree_list = start_node_doc['degrees'][time_slice]
+        
+        result_1hop = []
+        result_2hop = []
+
+        if node_1hop_list != []:
+            if len(node_1hop_list) > self.obj_per_time_slice:
+                node_1hop_list = node_1hop_list[:self.obj_per_time_slice]
+            else:
+                for i in range(self.obj_per_time_slice - len(node_1hop_list)):
+                    node_1hop_list.append(node_1hop_list[i % len(node_1hop_list)])
+            if self.user_fnum == 1:
+                for nid in node_1hop_list:
+                    result_1hop.append([nid])
+            else:
+                for nid in node_1hop_list:
+                    result_1hop.append([nid] + self.user_feat_dict[str(nid)])
+        else:
+            result_1hop = self.user_dummy_node
+        
+        if node_2hop_list != []:
+            node_2hop_list = np.random.choice(node_2hop_list, self.obj_per_time_slice).tolist()
+            if self.item_fnum == 1:
+                for nid in node_2hop_list:
+                    result_2hop.append([nid])
+            else:
+                for nid in node_2hop_list:
+                    result_2hop.append([nid] + self.item_feat_dict[str(nid)])
+        else:
+            result_2hop = self.item_dummy_node
+        return result_1hop, result_2hop
 
     def gen_user_history(self, start_uid, pred_time):
         user_1hop, user_2hop = [], []
@@ -123,9 +243,9 @@ class GraphHandler(object):
         start_node_doc = self.user_colls[(start_uid - 1) // self.user_per_collection].find({'uid': start_uid})[0]
         for i in range(self.start_time, pred_time):
             if self.mode == 'is':
-                user_1hop_t, user_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
+                user_1hop_t, user_2hop_t = self.gen_user_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
-                user_1hop_t, user_2hop_t = self.gen_node_neighbor_rs(start_node_doc, i)
+                user_1hop_t, user_2hop_t = self.gen_user_neighbor_rs(start_node_doc, i)
             else:
                 print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
             user_1hop.append(user_1hop_t)
@@ -143,9 +263,9 @@ class GraphHandler(object):
         start_node_doc = self.item_colls[(start_iid - self.user_num - 1) // self.item_per_collection].find({'iid':start_iid})[0]
         for i in range(self.start_time, pred_time):
             if self.mode == 'is':
-                item_1hop_t, item_2hop_t = self.gen_node_neighbor_is(start_node_doc, i)
+                item_1hop_t, item_2hop_t = self.gen_item_neighbor_is(start_node_doc, i)
             elif self.mode == 'rs':
-                item_1hop_t, item_2hop_t = self.gen_node_neighbor_rs(start_node_doc, i)
+                item_1hop_t, item_2hop_t = self.gen_item_neighbor_rs(start_node_doc, i)
             else:
                 print('WRONG GRAPH_HANDLER MODE: {}'.format(self.mode))
             item_1hop.append(item_1hop_t)
@@ -218,7 +338,8 @@ class GraphLoader(object):
                     break
     
     def worker(self, params):
-        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8])
+        graph_handler = GraphHandler(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], 
+                                    params[9], params[10], params[11], params[12])
 
         while not (self.work.qsize() == 0 and self.producer_stop.value == 1):
             try:
@@ -245,8 +366,14 @@ class GraphLoader(object):
                     item_1hop_batch.append(item_1hop)
                     item_2hop_batch.append(item_2hop)
                     
-                    target_user_batch.append(uids[i])
-                    target_item_batch.append(iids[j])
+                    if graph_handler.user_feat_dict == None:
+                        target_user_batch.append([uids[i]])
+                    else:
+                        target_user_batch.append([uids[i]] + graph_handler.user_feat_dict[str(uids[i])])
+                    if graph_handler.item_feat_dict == None:
+                        target_item_batch.append([iids[j]])
+                    else:
+                        target_item_batch.append([iids[j]] + graph_handler.item_feat_dict[str(iids[j])])
                     
                     if j % (self.neg_sample_num + 1) == 0:
                         label_batch.append(1)
@@ -277,7 +404,8 @@ class GraphLoader(object):
 if __name__ == "__main__":
     graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
-                                USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR, 'is']
+                                USER_PER_COLLECTION_CCMR, ITEM_PER_COLLECTION_CCMR, 'is',
+                                None, DATA_DIR_CCMR + 'remap_movie_info_dict.pkl', 1, 5]
     # for i in range(1, 100):
     #     graph_handler.gen_user_history(i, 40)
     # for i in range(USER_NUM_CCMR + 1 + 10, USER_NUM_CCMR + 1 + 100):
@@ -291,4 +419,5 @@ if __name__ == "__main__":
         print('batch time of batch-{}: {}'.format(i, (time.time() - t)))
         i += 1
         t = time.time()
+
     print('total time:{}'.format(time.time() - st))

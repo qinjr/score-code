@@ -114,6 +114,8 @@ def preprocess_raw_data(raw_file, out_file, remap_dict_file, plt_file, user_feat
     # remap file generate
     item_feat_dict = {}
     user_feat_dict = {}
+    # for dummy user
+    user_feat_dict['0'] = [0, 0]
     newlines = []
     with open(raw_file, 'r') as f:
         lines = f.readlines()[1:]

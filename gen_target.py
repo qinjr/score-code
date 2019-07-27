@@ -25,8 +25,8 @@ TIME_DELTA_CCMR = 90
 # Taobao dataset parameters
 DATA_DIR_Taobao = '../score-data/Taobao/feateng/'
 OBJ_PER_TIME_SLICE_Taobao = 10
-USER_NUM_Taobao = 984105
-ITEM_NUM_Taobao = 4067842
+USER_NUM_Taobao = 984080
+ITEM_NUM_Taobao = 4049268
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 500
 START_TIME_Taobao = int(time.mktime(datetime.datetime.strptime('2017-11-25', "%Y-%m-%d").timetuple()))
@@ -39,7 +39,7 @@ OBJ_PER_TIME_SLICE_Tmall = 10
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
 USER_PER_COLLECTION_Tmall = 200
-ITEM_PER_COLLECTION_Tmall = 250
+ITEM_PER_COLLECTION_Tmall = 500
 START_TIME_Tmall = int(time.mktime(datetime.datetime.strptime('2015-5-1', "%Y-%m-%d").timetuple()))
 START_TIME_IDX_Tmall = 0
 TIME_DELTA_Tmall = 15
@@ -274,7 +274,7 @@ class TargetGen(object):
         with open(item_hist_dict_file, 'wb') as f:
             pkl.dump(item_hist_dict_sort, f)
     
-    def gen_pop_items(self, pop_items_file, pop_standard):
+    def gen_pop_items(self, pop_items_file, pop_standard, max_iid):
         pop_items = []
         for item_coll in self.item_colls:
             cursor = item_coll.find({})
@@ -283,7 +283,7 @@ class TargetGen(object):
                 for nei in item_doc['1hop']:
                     if nei != []:
                         num_not_null_slice += 1
-                if num_not_null_slice >= pop_standard:
+                if num_not_null_slice >= pop_standard and item_doc['iid'] <= max_iid:
                     pop_items.append(str(item_doc['iid']))
         print('num of pop_items: {}'.format(len(pop_items)))
         with open(pop_items_file, 'wb') as f:
@@ -316,15 +316,15 @@ if __name__ == '__main__':
                     item_num = ITEM_NUM_Taobao, user_per_collection = USER_PER_COLLECTION_Taobao,
                     item_per_collection = ITEM_PER_COLLECTION_Taobao, start_time = START_TIME_Taobao, 
                     start_time_idx = START_TIME_IDX_Taobao, time_delta = TIME_DELTA_Taobao)
-        tg.gen_pop_items(DATA_DIR_Taobao + 'pop_items.pkl', 4)
+        tg.gen_pop_items(DATA_DIR_Taobao + 'pop_items.pkl', 4, 1 + USER_NUM_Taobao + ITEM_NUM_Taobao)
 
-        tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_6.pkl', DATA_DIR_Taobao + 'item_hist_dict_6.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 6)
-        tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', DATA_DIR_Taobao + 'item_hist_dict_7.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 7)
-        tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', DATA_DIR_Taobao + 'item_hist_dict_8.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 8)
+        # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_6.pkl', DATA_DIR_Taobao + 'item_hist_dict_6.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 6)
+        # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', DATA_DIR_Taobao + 'item_hist_dict_7.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 7)
+        # tg.gen_user_item_hist_dict_taobao(DATA_DIR_Taobao + 'filtered_user_behavior.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', DATA_DIR_Taobao + 'item_hist_dict_8.pkl', DATA_DIR_Taobao + 'remap_dict.pkl', 8)
         
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_6.txt', DATA_DIR_Taobao + 'user_hist_dict_6.pkl', 6, DATA_DIR_Taobao + 'pop_items.pkl')
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_7.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', 7, DATA_DIR_Taobao + 'pop_items.pkl')
-        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', 8, DATA_DIR_Taobao + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_6.txt', DATA_DIR_Taobao + 'user_hist_dict_6.pkl', 6, None)#DATA_DIR_Taobao + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_7.txt', DATA_DIR_Taobao + 'user_hist_dict_7.pkl', 7, None)#DATA_DIR_Taobao + 'pop_items.pkl')
+        tg.gen_target_file(NEG_SAMPLE_NUM, DATA_DIR_Taobao + 'target_8.txt', DATA_DIR_Taobao + 'user_hist_dict_8.pkl', 8, None)#DATA_DIR_Taobao + 'pop_items.pkl')
         
         
     elif dataset == 'tmall':
@@ -333,7 +333,7 @@ if __name__ == '__main__':
                     item_num = ITEM_NUM_Tmall, user_per_collection = USER_PER_COLLECTION_Tmall,
                     item_per_collection = ITEM_PER_COLLECTION_Tmall, start_time = START_TIME_Tmall, 
                     start_time_idx = START_TIME_IDX_Tmall, time_delta = TIME_DELTA_Tmall)
-        tg.gen_pop_items(DATA_DIR_Tmall + 'pop_items.pkl', 5)
+        tg.gen_pop_items(DATA_DIR_Tmall + 'pop_items.pkl', 5, 1 + USER_NUM_Tmall + ITEM_NUM_Tmall)
 
         tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_9.pkl', DATA_DIR_Tmall + 'item_hist_dict_9.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 9)
         tg.gen_user_item_hist_dict_tmall(DATA_DIR_Tmall + 'joined_user_behavior.csv', DATA_DIR_Tmall + 'user_hist_dict_10.pkl', DATA_DIR_Tmall + 'item_hist_dict_10.pkl', DATA_DIR_Tmall + 'remap_dict.pkl', 10)

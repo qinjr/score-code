@@ -16,7 +16,7 @@ EMBEDDING_SIZE = 16
 HIDDEN_SIZE = 16 * 2
 EVAL_BATCH_SIZE = 100
 TRAIN_NEG_SAMPLE_NUM = 1
-TEST_NEG_SAMPLE_NUM = 99
+TEST_NEG_SAMPLE_NUM = 19
 
 WORKER_N = 15
 
@@ -35,12 +35,12 @@ ITEM_NUM_CCMR = 190129
 OBJ_PER_TIME_SLICE_Taobao = 10
 TIME_SLICE_NUM_Taobao = 9
 START_TIME_Taobao = 0
-FEAT_SIZE_Taobao = 1 + 984105 + 4067842 + 9405
+FEAT_SIZE_Taobao = 1 + 984080 + 4049268 + 9405
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
 USER_PER_COLLECTION_Taobao = 500
 ITEM_PER_COLLECTION_Taobao = 500
-USER_NUM_Taobao = 984105
-ITEM_NUM_Taobao = 4067842
+USER_NUM_Taobao = 984080
+ITEM_NUM_Taobao = 4049268
 
 # for Tmall
 OBJ_PER_TIME_SLICE_Tmall = 10
@@ -49,15 +49,22 @@ START_TIME_Tmall = 0
 FEAT_SIZE_Tmall = 1529672
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
 USER_PER_COLLECTION_Tmall = 200
-ITEM_PER_COLLECTION_Tmall = 250
+ITEM_PER_COLLECTION_Tmall = 500
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
 
 def visual_analysis(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, model_type, train_batch_size, feature_size, eb_dim, 
-        hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda):
-    if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
+        hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda,
+        user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum):
+    if model_type == 'RIA_v1':
+        model = RIA_v1(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_v1':
+        model = SCORE_v1(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'RIA_v2':
+        model = RIA_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_v2':
+        model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE, has to be SCORE')
         exit(1)
@@ -92,20 +99,18 @@ def visual_analysis(data_set, target_file_test, graph_handler_params, start_time
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, model_type, train_batch_size, feature_size, eb_dim, 
-        hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda):
+        hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda,
+        user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum):
     print('restore begin')
     graph_handler_params = graph_handler_params
-    if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'No_Att':
-        model = No_Att(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'GAT':
-        model = GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_1HOP':
-        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_RS':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-        graph_handler_params[-1] = 'rs'
+    if model_type == 'RIA_v1':
+        model = RIA_v1(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_v1':
+        model = SCORE_v1(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'RIA_v2':
+        model = RIA_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_v2':
+        model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -120,7 +125,6 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
         # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
         print('RESTORE, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
         with open('logs_{}/{}.test.result'.format(data_set, model_name), 'w') as f:
-            index = np.argmax(vali_mrrs)
             f.write('Result Test NDCG@5: {}\n'.format(ndcg_5))
             f.write('Result Test NDCG@10: {}\n'.format(ndcg_10))
             f.write('Result Test HR@1: {}\n'.format(hr_1))
@@ -201,19 +205,17 @@ def eval(model, sess, graph_handler_params, target_file, start_time, pred_time,
     
 def train(data_set, target_file_train, target_file_validation, graph_handler_params, start_time,
         pred_time_train, pred_time_validation, model_type, train_batch_size, feature_size, 
-        eb_dim, hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size):
+        eb_dim, hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size,
+        user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum):
     graph_handler_params = graph_handler_params
-    if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'No_Att':
-        model = No_Att(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'GAT':
-        model = GAT(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_1HOP':
-        model = SCORE_1HOP(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-    elif model_type == 'SCORE_RS':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice)
-        graph_handler_params[-1] = 'rs'
+    if model_type == 'RIA_v1':
+        model = RIA_v1(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_v1':
+        model = SCORE_v1(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'RIA_v2':
+        model = RIA_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_v2':
+        model = SCORE_v2(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -251,9 +253,9 @@ def train(data_set, target_file_train, target_file_validation, graph_handler_par
 
         print("STEP %d  LOSS TRAIN: NULL  LOSS VALI: %.4f  NDCG@5 VALI: %.4f  NDCG@10 VALI: %.4f  HR@1 VALI: %.4f  HR@5 VALI: %.4f  HR@10 VALI: %.4f  MRR VALI: %.4f" % (step, vali_loss, vali_ndcg_5, vali_ndcg_10, vali_hr_1, vali_hr_5, vali_hr_10, vali_mrr))
         early_stop = False
-        eval_iter_num = (dataset_size // 5) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
+        eval_iter_num = (dataset_size // 3) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
-        for epoch in range(10):
+        for epoch in range(3):
             if early_stop:
                 break
             graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, WORKER_N, TRAIN_NEG_SAMPLE_NUM)
@@ -320,15 +322,22 @@ if __name__ == '__main__':
     data_set = sys.argv[3]
 
     if data_set == 'ccmr':
+        user_feat_dict_file = None
+        item_feat_dict_file = DATA_DIR_CCMR + 'remap_movie_info_dict.pkl'
+        user_fnum = 1 
+        item_fnum = 5
+
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_CCMR, 'ccmr_2hop', OBJ_PER_TIME_SLICE_CCMR, \
                                 USER_NUM_CCMR, ITEM_NUM_CCMR, START_TIME_CCMR, \
                                 USER_PER_COLLECTION_CCMR, \
-                                ITEM_PER_COLLECTION_CCMR, 'is']
+                                ITEM_PER_COLLECTION_CCMR, 'is', \
+                                user_feat_dict_file, item_feat_dict_file, \
+                                user_fnum, item_fnum]
         target_file_train = DATA_DIR_CCMR + 'target_38.txt'
-        target_file_validation = DATA_DIR_CCMR + 'target_39_sample.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_sample.txt'
-        
+        target_file_validation = DATA_DIR_CCMR + 'target_39_sample_2.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_sample_2.txt'
+
         start_time = START_TIME_CCMR
         pred_time_train = 38
         pred_time_validation = 39
@@ -340,10 +349,18 @@ if __name__ == '__main__':
         obj_per_time_slice = OBJ_PER_TIME_SLICE_CCMR
         dataset_size = 505530
     elif data_set == 'taobao':
+        user_feat_dict_file = None
+        item_feat_dict_file = DATA_DIR_Taobao + 'item_feat_dict.pkl'
+        user_fnum = 1 
+        item_fnum = 2
+
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Taobao, 'taobao_2hop', OBJ_PER_TIME_SLICE_Taobao, \
                                 USER_NUM_Taobao, ITEM_NUM_Taobao, START_TIME_Taobao, \
-                                USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao, 'is']
+                                USER_PER_COLLECTION_Taobao, ITEM_PER_COLLECTION_Taobao, 'is', \
+                                user_feat_dict_file, item_feat_dict_file, \
+                                user_fnum, item_fnum]
+
         target_file_train = DATA_DIR_Taobao + 'target_6.txt'
         target_file_validation = DATA_DIR_Taobao + 'target_7_sample.txt'
         target_file_test = DATA_DIR_Taobao + 'target_8_sample.txt'
@@ -352,21 +369,28 @@ if __name__ == '__main__':
         pred_time_train = 6
         pred_time_validation = 7
         pred_time_test = 8
-
+    
         # model parameter
         feature_size = FEAT_SIZE_Taobao
         max_time_len = TIME_SLICE_NUM_Taobao - START_TIME_Taobao - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Taobao
-        dataset_size = 937858
+        dataset_size = 728919
     elif data_set == 'tmall':
+        user_feat_dict_file = DATA_DIR_Tmall + 'user_feat_dict.pkl'
+        item_feat_dict_file = DATA_DIR_Tmall + 'item_feat_dict.pkl'
+        user_fnum = 3 
+        item_fnum = 4
+
         # graph loader
         graph_handler_params = [TIME_SLICE_NUM_Tmall, 'tmall_2hop', OBJ_PER_TIME_SLICE_Tmall, \
                                 USER_NUM_Tmall, ITEM_NUM_Tmall, START_TIME_Tmall, \
-                                USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall, 'is']
+                                USER_PER_COLLECTION_Tmall, ITEM_PER_COLLECTION_Tmall, 'is', \
+                                user_feat_dict_file, item_feat_dict_file, \
+                                user_fnum, item_fnum]
         target_file_train = DATA_DIR_Tmall + 'target_9.txt'
         target_file_validation = DATA_DIR_Tmall + 'target_10_sample.txt'
         target_file_test = DATA_DIR_Tmall + 'target_11_sample.txt'
-        
+
         start_time = START_TIME_Tmall
         pred_time_train = 9
         pred_time_validation = 10
@@ -376,14 +400,14 @@ if __name__ == '__main__':
         feature_size = FEAT_SIZE_Tmall
         max_time_len = TIME_SLICE_NUM_Tmall - START_TIME_Tmall - 1
         obj_per_time_slice = OBJ_PER_TIME_SLICE_Tmall
-        dataset_size = 219912
+        dataset_size = 222795
     else:
         print('WRONG DATASET NAME: {}'.format(data_set))
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambdas = [0]
-    hyper_paras = [(100, 5e-5), (100, 1e-4), (100, 5e-4)]
+    reg_lambdas = [1e-4, 1e-5]
+    hyper_paras = [(100, 5e-4)]
 
     vali_mrrs = []
     hyper_list = []
@@ -393,7 +417,8 @@ if __name__ == '__main__':
         for reg_lambda in reg_lambdas:
             vali_mrr = train(data_set, target_file_train, target_file_validation, graph_handler_params, start_time,
                     pred_time_train, pred_time_validation, model_type, train_batch_size, feature_size, 
-                    EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size)
+                    EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, lr, reg_lambda, dataset_size,
+                    user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum)
             vali_mrrs.append(vali_mrr)
             hyper_list.append((train_batch_size, lr, reg_lambda))
     
@@ -404,7 +429,7 @@ if __name__ == '__main__':
     restore(data_set, target_file_test, graph_handler_params, start_time,
             pred_time_test, model_type, train_batch_size, feature_size, 
             EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
-            lr, reg_lambda)
+            lr, reg_lambda, user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum)
 
     # visual_analysis(data_set, target_file_test, graph_handler_params, start_time,
     #         pred_time_test, model_type, train_batch_size, feature_size, 
