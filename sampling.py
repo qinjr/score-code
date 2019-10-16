@@ -57,14 +57,14 @@ if __name__ == "__main__":
                     DATA_DIR_CCMR + 'target_39_sample.txt', 
                     DATA_DIR_CCMR + 'validation_user_hist_seq_39_sample.txt', 
                     DATA_DIR_CCMR + 'validation_item_hist_seq_39_sample.txt', 
-                    10)
+                    100)
         sample_files(DATA_DIR_CCMR + 'target_40.txt', 
                     DATA_DIR_CCMR + 'test_user_hist_seq_40.txt', 
                     DATA_DIR_CCMR + 'test_item_hist_seq_40.txt', 
                     DATA_DIR_CCMR + 'target_40_sample.txt', 
                     DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt', 
                     DATA_DIR_CCMR + 'test_item_hist_seq_40_sample.txt', 
-                    10)
+                    20)
     elif dataset == 'taobao':
         # Taobao
         sample_files(DATA_DIR_Taobao + 'target_7.txt', 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
                     DATA_DIR_Taobao + 'target_7_sample.txt', 
                     DATA_DIR_Taobao + 'validation_user_hist_seq_7_sample.txt', 
                     DATA_DIR_Taobao + 'validation_item_hist_seq_7_sample.txt', 
-                    20)
+                    40)
         sample_files(DATA_DIR_Taobao + 'target_8.txt', 
                     DATA_DIR_Taobao + 'test_user_hist_seq_8.txt', 
                     DATA_DIR_Taobao + 'test_item_hist_seq_8.txt', 
@@ -89,14 +89,14 @@ if __name__ == "__main__":
                     DATA_DIR_Tmall + 'target_10_sample.txt', 
                     DATA_DIR_Tmall + 'validation_user_hist_seq_10_sample.txt',
                     DATA_DIR_Tmall + 'validation_item_hist_seq_10_sample.txt', 
-                    6)
+                    12)
         sample_files(DATA_DIR_Tmall + 'target_11.txt', 
                     DATA_DIR_Tmall + 'test_user_hist_seq_11.txt', 
                     DATA_DIR_Tmall + 'test_item_hist_seq_11.txt', 
                     DATA_DIR_Tmall + 'target_11_sample.txt', 
                     DATA_DIR_Tmall + 'test_user_hist_seq_11_sample.txt',
                     DATA_DIR_Tmall + 'test_item_hist_seq_11_sample.txt', 
-                    6)
+                    4)
     else:
         print('WRONG DATASET: {}'.format(dataset))
 

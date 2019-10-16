@@ -317,6 +317,38 @@ class DELF(PointBaseModel):
         
         return pred.reshape([-1,]).tolist(), label.reshape([-1,]).tolist(), loss
 
+class DEEMS(DELF):
+    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum):
+        super(DEEMS, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
+
+        # GRU
+        with tf.name_scope('rnn'):
+            _, user_seq_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=self.user_seq, 
+                                                        sequence_length=self.user_seq_length_ph, dtype=tf.float32, scope='gru1')
+            _, item_seq_final_state = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=self.item_seq, 
+                                                        sequence_length=self.item_seq_length_ph, dtype=tf.float32, scope='gru2')
+        
+        inp_user = tf.concat([user_seq_final_state, self.target_user], axis=1)
+        inp_item = tf.concat([item_seq_final_state, self.target_item], axis=1)
+        
+        self.y_pred_user = self.build_fc_net(inp_user)
+        self.y_pred_item = self.build_fc_net(inp_item)
+        self.y_pred = 0.5 * (self.y_pred_user + self.y_pred_item)
+
+        self.build_logloss()
+        self.loss += 0.05 * tf.reduce_sum((self.y_pred_item - self.y_pred_user) ** 2)
+    
+    def build_fc_net(self, inp):
+        bn1 = tf.layers.batch_normalization(inputs=inp)
+        fc1 = tf.layers.dense(bn1, 200, activation=tf.nn.relu)
+        dp1 = tf.nn.dropout(fc1, self.keep_prob)
+        fc2 = tf.layers.dense(dp1, 80, activation=tf.nn.relu)
+        dp2 = tf.nn.dropout(fc2, self.keep_prob)
+        fc3 = tf.layers.dense(dp2, 1, activation=None)
+        # output
+        y_pred = tf.reshape(tf.nn.sigmoid(fc3), [-1,])
+        return y_pred
+    
 class SASRec(PointBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum):
         super(SASRec, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)

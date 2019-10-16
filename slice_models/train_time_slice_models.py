@@ -16,7 +16,7 @@ EMBEDDING_SIZE = 16
 HIDDEN_SIZE = 16 * 2
 EVAL_BATCH_SIZE = 100
 TRAIN_NEG_SAMPLE_NUM = 1
-TEST_NEG_SAMPLE_NUM = 19
+TEST_NEG_SAMPLE_NUM = 49
 
 WORKER_N = 8
 
@@ -76,7 +76,7 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
         # p = 1. / (1 + TEST_NEG_SAMPLE_NUM)
         # rig = 1 -(logloss / -(p * math.log(p) + (1 - p) * math.log(1 - p)))
         print('RESTORE, LOSS TEST: %.4f  NDCG@5 TEST: %.4f  NDCG@10 TEST: %.4f  HR@1 TEST: %.4f  HR@5 TEST: %.4f  HR@10 TEST: %.4f  MRR TEST: %.4f' % (loss, ndcg_5, ndcg_10, hr_1, hr_5, hr_10, mrr))
-        with open('logs_{}/{}.test.result'.format(data_set, model_name), 'w') as f:
+        with open('logs_{}/{}_{}.test.result'.format(data_set, model_name, obj_per_time_slice), 'w') as f:
             f.write('Result Test NDCG@5: {}\n'.format(ndcg_5))
             f.write('Result Test NDCG@10: {}\n'.format(ndcg_10))
             f.write('Result Test HR@1: {}\n'.format(hr_1))
@@ -204,7 +204,7 @@ def train(data_set, target_file_train, target_file_validation, graph_handler_par
         early_stop = False
         eval_iter_num = (dataset_size // 3) // (train_batch_size / (1 + TRAIN_NEG_SAMPLE_NUM))
         # begin training process
-        for epoch in range(3):
+        for epoch in range(6):
             if early_stop:
                 break
             graph_loader = GraphLoader(graph_handler_params, train_batch_size, target_file_train, start_time, pred_time_train, WORKER_N, TRAIN_NEG_SAMPLE_NUM)
@@ -283,8 +283,8 @@ if __name__ == '__main__':
                                 ITEM_PER_COLLECTION_CCMR, user_feat_dict_file, item_feat_dict_file, \
                                 user_fnum, item_fnum]
         target_file_train = DATA_DIR_CCMR + 'target_38.txt'
-        target_file_validation = DATA_DIR_CCMR + 'target_39_sample_2.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_sample_2.txt'
+        target_file_validation = DATA_DIR_CCMR + 'target_39_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_sample.txt'
         
         start_time = START_TIME_Taobao
         pred_time_train = 38
@@ -353,7 +353,8 @@ if __name__ == '__main__':
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambdas = [1e-4, 1e-5]
+    # TRAINING PROCESS
+    reg_lambdas = [1e-4]
     hyper_paras = [(100, 5e-4)]
 
     vali_mrrs = []
@@ -377,3 +378,17 @@ if __name__ == '__main__':
             pred_time_test, model_type, train_batch_size, feature_size, 
             EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
             lr, reg_lambda, user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum)
+
+
+    # TESTING PROCESS
+    # obj_per_time_slice_ops = [5, 10, 15]
+    # reg_lambdas = [1e-4, 1e-5]
+    # train_batch_size, lr = 100, 5e-4
+    # for reg_lambda in reg_lambdas:
+    #     for obj_per_time_slice in obj_per_time_slice_ops:
+    #         graph_handler_params[2] = obj_per_time_slice
+    #         print('REG_LAMBDA is:{}, OBJ_PER_TIME_SLICE is {}:'.format(reg_lambda, obj_per_time_slice))
+    #         restore(data_set, target_file_test, graph_handler_params, start_time,
+    #                 pred_time_test, model_type, train_batch_size, feature_size, 
+    #                 EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
+    #                 lr, reg_lambda, user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum)

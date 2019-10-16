@@ -16,7 +16,7 @@ EMBEDDING_SIZE = 16
 HIDDEN_SIZE = 16 * 2
 EVAL_BATCH_SIZE = 1000
 TRAIN_NEG_SAMPLE_NUM = 1
-TEST_NEG_SAMPLE_NUM = 19
+TEST_NEG_SAMPLE_NUM = 49
 
 
 # for CCMR
@@ -50,6 +50,8 @@ def restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
         model = SASRec(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     elif model_type == 'DELF': 
         model = DELF(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
+    elif model_type == 'DEEMS': 
+        model = DEEMS(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -127,7 +129,7 @@ def eval(model_type, model, sess, target_file, max_time_len, reg_lambda, user_se
     labels = []
     target_iids = []
     losses = []
-    if model_type == 'DELF':
+    if model_type == 'DELF' or model_type == 'DEEMS':
         data_loader = DataLoaderDualSeq(EVAL_BATCH_SIZE, max_time_len, target_file, user_seq_file, item_seq_file, TEST_NEG_SAMPLE_NUM, user_feat_dict_file, item_feat_dict_file)
     else:    
         data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, target_file, user_seq_file, TEST_NEG_SAMPLE_NUM, user_feat_dict_file, item_feat_dict_file)
@@ -138,7 +140,7 @@ def eval(model_type, model, sess, target_file, max_time_len, reg_lambda, user_se
         preds += pred
         labels += label
         losses.append(loss)
-        if model_type == 'DELF':
+        if model_type == 'DELF' or model_type == 'DEEMS':
             target_iids += np.array(batch_data[5]).tolist()
         else:
             target_iids += np.array(batch_data[3]).tolist()
@@ -164,6 +166,8 @@ def train(data_set, target_file_train, target_file_validation, user_seq_file_tra
         model = SASRec(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     elif model_type == 'DELF': 
         model = DELF(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
+    elif model_type == 'DEEMS': 
+        model = DEEMS(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -206,7 +210,7 @@ def train(data_set, target_file_train, target_file_validation, user_seq_file_tra
         for epoch in range(10):
             if early_stop:
                 break
-            if model_type == 'DELF':
+            if model_type == 'DELF' or model_type == 'DEEMS':
                 data_loader = DataLoaderDualSeq(EVAL_BATCH_SIZE, max_time_len, target_file_train, user_seq_file_train, item_seq_file_train, TEST_NEG_SAMPLE_NUM, user_feat_dict_file, item_feat_dict_file)
             else:    
                 data_loader = DataLoaderUserSeq(EVAL_BATCH_SIZE, max_time_len, target_file_train, user_seq_file_train, TEST_NEG_SAMPLE_NUM, user_feat_dict_file, item_feat_dict_file)
@@ -281,16 +285,16 @@ if __name__ == '__main__':
         item_fnum = 5
 
         target_file_train = DATA_DIR_CCMR + 'target_38.txt'
-        target_file_validation = DATA_DIR_CCMR + 'target_39_sample_2.txt'
-        target_file_test = DATA_DIR_CCMR + 'target_40_sample_2.txt'
+        target_file_validation = DATA_DIR_CCMR + 'target_39_sample.txt'
+        target_file_test = DATA_DIR_CCMR + 'target_40_sample.txt'
         
         user_seq_file_train = DATA_DIR_CCMR + 'train_user_hist_seq_38.txt'
-        user_seq_file_validation = DATA_DIR_CCMR + 'validation_user_hist_seq_39_sample_2.txt'
-        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40_sample_2.txt'
+        user_seq_file_validation = DATA_DIR_CCMR + 'validation_user_hist_seq_39_sample.txt'
+        user_seq_file_test = DATA_DIR_CCMR + 'test_user_hist_seq_40_sample.txt'
         
         item_seq_file_train = DATA_DIR_CCMR + 'train_item_hist_seq_38.txt'
-        item_seq_file_validation = DATA_DIR_CCMR + 'validation_item_hist_seq_39_sample_2.txt'
-        item_seq_file_test = DATA_DIR_CCMR + 'test_item_hist_seq_40_sample_2.txt'
+        item_seq_file_validation = DATA_DIR_CCMR + 'validation_item_hist_seq_39_sample.txt'
+        item_seq_file_test = DATA_DIR_CCMR + 'test_item_hist_seq_40_sample.txt'
         
         # model parameter
         feature_size = FEAT_SIZE_CCMR
@@ -346,7 +350,7 @@ if __name__ == '__main__':
         exit()
 
     ################################## training hyper params ##################################
-    reg_lambdas = [1e-5, 1e-4]
+    reg_lambdas = [1e-4]
     hyper_paras = [(100, 5e-4)]
     
     vali_mrrs = []
