@@ -22,17 +22,17 @@ TEST_NEG_SAMPLE_NUM = 49
 # for CCMR
 FEAT_SIZE_CCMR = 1 + 4920695 + 190129 + (80171 + 1) + (213481 + 1) + (62 + 1) + (1043 + 1)
 DATA_DIR_CCMR = '../../score-data/CCMR/feateng/'
-MAX_LEN_CCMR = 100
+MAX_LEN_CCMR = 50
 
 # for Taobao
 FEAT_SIZE_Taobao = 1 + 984080 + 4049268 + 9405
 DATA_DIR_Taobao = '../../score-data/Taobao/feateng/'
-MAX_LEN_Taobao = 100
+MAX_LEN_Taobao = 50
 
 # for Tmall
 FEAT_SIZE_Tmall = 1529672
 DATA_DIR_Tmall = '../../score-data/Tmall/feateng/'
-MAX_LEN_Tmall = 100
+MAX_LEN_Tmall = 50
 
 def restore(data_set, target_file_test, user_seq_file_test, item_seq_file_test,
         model_type, train_batch_size, feature_size, eb_dim, hidden_size, max_time_len, 

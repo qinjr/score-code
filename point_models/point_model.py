@@ -74,7 +74,7 @@ class PointBaseModel(object):
     
     def build_bprloss(self):
         self.pred_reshape = tf.reshape(self.y_pred, [-1, 1 + 1])
-        self.pred_pos = self.pred_reshape[:, 0]#tf.tile(tf.expand_dims(self.pred_reshape[:, 0], 1), [1, 1 + 1])
+        self.pred_pos = self.pred_reshape[:, 0]
         self.pred_neg = self.pred_reshape[:, 1]
         self.loss = tf.reduce_mean(tf.log(tf.nn.sigmoid(self.pred_pos - self.pred_neg)))
         # regularization term
@@ -141,8 +141,8 @@ class Caser(PointBaseModel):
         
         with tf.name_scope('user_seq_cnn'):
             # horizontal filters
-            filters_user = 32
-            h_kernel_size_user = [8, eb_dim * item_fnum]
+            filters_user = 4
+            h_kernel_size_user = [10, eb_dim * item_fnum]
             v_kernel_size_user = [self.user_seq.get_shape().as_list()[1], 1]
 
             self.user_seq = tf.expand_dims(self.user_seq, 3)
@@ -161,40 +161,6 @@ class Caser(PointBaseModel):
         self.build_fc_net(inp)
         self.build_logloss()
 
-class ARNN(PointBaseModel):
-    def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum):
-        super(ARNN, self).__init__(feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum)
-        self.user_seq_mask = tf.sequence_mask(self.user_seq_length_ph, tf.shape(self.user_seq)[1], dtype=tf.float32) # [B, T]
-        self.user_seq_mask = tf.expand_dims(self.user_seq_mask, -1) # [B, T, 1]
-        with tf.name_scope('user_seq_gru'):
-            user_seq_hidden_out, _ = tf.nn.dynamic_rnn(GRUCell(hidden_size), inputs=self.user_seq, 
-                                                        sequence_length=self.user_seq_length_ph, dtype=tf.float32, scope='gru1')
-        with tf.name_scope('user_seq_atten'):
-            user_seq_final_state, _, __ = self.attention(user_seq_hidden_out, user_seq_hidden_out, self.target_item, self.user_seq_mask)
-
-        inp = tf.concat([user_seq_final_state, self.target_item, self.target_user], axis=1)
-        # fully connected layer
-        self.build_fc_net(inp)
-        self.build_logloss()
-    
-    def attention(self, key, value, query, mask):
-        # key, value: [B, T, Dk], query: [B, Dq], mask: [B, T, 1]
-        _, max_len, k_dim = key.get_shape().as_list()
-        query = tf.layers.dense(query, k_dim, activation=None)
-        queries = tf.tile(tf.expand_dims(query, 1), [1, max_len, 1]) # [B, T, Dk]
-        inp = tf.concat([queries, key, queries - key, queries * key], axis = -1)
-        fc1 = tf.layers.dense(inp, 80, activation=tf.nn.relu)
-        fc2 = tf.layers.dense(fc1, 40, activation=tf.nn.relu)
-        fc3 = tf.layers.dense(fc2, 1, activation=None) #[B, T, 1]
-
-        mask = tf.equal(mask, tf.ones_like(mask)) #[B, T, 1]
-        paddings = tf.ones_like(fc3) * (-2 ** 32 + 1)
-        score = tf.nn.softmax(tf.reshape(tf.where(mask, fc3, paddings), [-1, max_len])) #[B, T]
-        
-        atten_output = tf.multiply(value, tf.expand_dims(score, 2))
-        atten_output_sum = tf.reduce_sum(atten_output, axis=1)
-
-        return atten_output_sum, atten_output, score
 
 class SVDpp(PointBaseModel):
     def __init__(self, feature_size, eb_dim, hidden_size, max_time_len, user_fnum, item_fnum):
@@ -218,9 +184,6 @@ class SVDpp(PointBaseModel):
                 self.target_item_rep += self.target_item[:,i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
                 self.user_seq_rep += self.user_seq[:, :, i*eb_dim:(i+1)*eb_dim] * self.item_feat_w_list[i]
         
-        # user and item bias
-        # with tf.name_scope('b'):
-        #     self.item_user_bias = tf.get_variable('item_b', [feature_size, 1])
         # prediction
         self.user_seq_mask = tf.expand_dims(tf.sequence_mask(self.user_seq_length_ph, max_time_len, dtype=tf.float32), 2)
         self.user_seq_rep = self.user_seq_rep * self.user_seq_mask
@@ -228,10 +191,6 @@ class SVDpp(PointBaseModel):
         self.norm_neighbor = self.neighbor / tf.sqrt(tf.expand_dims(tf.norm(self.user_seq_rep, 1, (1, 2)), 1))
 
         self.latent_score = tf.reduce_sum(self.target_item_rep * (self.target_user_rep + self.norm_neighbor), 1)
-        # self.user_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_user_ph), [-1,])
-        # self.item_bias = tf.reshape(tf.nn.embedding_lookup(self.item_user_bias, self.target_item_ph), [-1,])
-
-        # self.user_bias + self.item_bias + 
         self.y_pred = tf.nn.sigmoid(self.latent_score)
         
         self.build_logloss()
@@ -256,10 +215,10 @@ class DELF(PointBaseModel):
         self.item_rep_user_base = self.attention(self.item_seq, self.item_seq, self.target_user, self.item_seq_mask)
     
         # pairwise interaction layer
-        self.inter1 = tf.concat([self.target_user, self.target_item], axis=1) # self.target_user + self.target_item
-        self.inter2 = tf.concat([self.user_rep_item_base, self.item_rep_user_base], axis=1) # self.user_rep_item_base + self.item_rep_user_base
-        self.inter3 = tf.concat([self.target_user, self.item_rep_user_base], axis=1) # self.target_user + self.item_rep_user_base
-        self.inter4 = tf.concat([self.target_item, self.user_rep_item_base], axis=1) # self.target_item + self.user_rep_item_base
+        self.inter1 = tf.concat([self.target_user, self.target_item], axis=1)
+        self.inter2 = tf.concat([self.user_rep_item_base, self.item_rep_user_base], axis=1)
+        self.inter3 = tf.concat([self.target_user, self.item_rep_user_base], axis=1)
+        self.inter4 = tf.concat([self.target_item, self.user_rep_item_base], axis=1)
 
         # fusion layer
         f1 = self.fusion_mlp(self.inter1)

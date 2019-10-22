@@ -53,45 +53,6 @@ ITEM_PER_COLLECTION_Tmall = 500
 USER_NUM_Tmall = 424170
 ITEM_NUM_Tmall = 1090390
 
-def visual_analysis(data_set, target_file_test, graph_handler_params, start_time,
-        pred_time_test, model_type, train_batch_size, feature_size, eb_dim, 
-        hidden_size, max_time_len, obj_per_time_slice, lr, reg_lambda,
-        user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum):
-    if model_type == 'SCORE':
-        model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-    elif model_type == 'RIA':
-        model = RIA(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
-    else:
-        print('WRONG MODEL TYPE, has to be SCORE')
-        exit(1)
-    
-    model_name = '{}_{}_{}_{}'.format(model_type, EVAL_BATCH_SIZE, lr, reg_lambda)
-    gpu_options = tf.GPUOptions(allow_growth=True)
-    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        model.restore(sess, 'save_model_{}/{}/ckpt'.format(data_set, model_name))
-        graph_loader = GraphLoader(graph_handler_params, EVAL_BATCH_SIZE, target_file_test, start_time, pred_time_test, WORKER_N, TRAIN_NEG_SAMPLE_NUM)
-        i = 0
-        max_num = 5
-        for batch_data in graph_loader:
-            # if i != max_num:
-            #     continue
-            att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = model.get_att(sess, batch_data)
-            att, atten_user_1, atten_user_2, atten_item_1, atten_item_2 = att[0, -5:], atten_user_1[0,-5:,:], atten_user_2[0,-5:,:], atten_item_1[0,-5:,:], atten_item_2[0,-5:,:]
-            print(att)
-            print(atten_user_1)
-            print(atten_user_2)
-            print(atten_item_1)
-            print(atten_item_2)
-            print(batch_data[0][0][-5:])
-            print(batch_data[1][0][-5:])
-            print(batch_data[2][0][-5:])
-            print(batch_data[3][0][-5:])
-            print(batch_data[4][0])
-            print(batch_data[5][0])
-            i += 1
-            if i == max_num:
-                break
-
 
 def restore(data_set, target_file_test, graph_handler_params, start_time,
         pred_time_test, model_type, train_batch_size, feature_size, eb_dim, 
@@ -103,6 +64,12 @@ def restore(data_set, target_file_test, graph_handler_params, start_time,
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     elif model_type == 'RIA':
         model = RIA(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'RCA':
+        model = RCA(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_USER':
+        model = SCORE_USER(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_ITEM':
+        model = SCORE_ITEM(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -204,6 +171,12 @@ def train(data_set, target_file_train, target_file_validation, graph_handler_par
         model = SCORE(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     elif model_type == 'RIA':
         model = RIA(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'RCA':
+        model = RCA(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_USER':
+        model = SCORE_USER(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
+    elif model_type == 'SCORE_ITEM':
+        model = SCORE_ITEM(feature_size, eb_dim, hidden_size, max_time_len, obj_per_time_slice, user_fnum, item_fnum)
     else:
         print('WRONG MODEL TYPE')
         exit(1)
@@ -411,7 +384,7 @@ if __name__ == '__main__':
             vali_mrrs.append(vali_mrr)
             hyper_list.append((train_batch_size, lr, reg_lambda))
     
-    # TEST and VISUALIZE
+    # TEST
     index = np.argmax(vali_mrrs)
     best_hyper = hyper_list[index]
     train_batch_size, lr, reg_lambda = best_hyper
@@ -421,7 +394,7 @@ if __name__ == '__main__':
             lr, reg_lambda, user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum)
 
     # TESTING PROCESS
-    # obj_per_time_slice_ops = [5, 10, 15]
+    # obj_per_time_slice_ops = [5, 10, 15, 20]
     # reg_lambdas = [1e-4, 1e-5]
     # train_batch_size, lr = 100, 5e-4
     # for reg_lambda in reg_lambdas:
@@ -433,7 +406,3 @@ if __name__ == '__main__':
     #                 EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
     #                 lr, reg_lambda, user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum)
 
-    # visual_analysis(data_set, target_file_test, graph_handler_params, start_time,
-    #         pred_time_test, model_type, train_batch_size, feature_size, 
-    #         EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
-    #         lr, reg_lambda)

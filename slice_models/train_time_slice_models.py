@@ -370,7 +370,7 @@ if __name__ == '__main__':
             vali_mrrs.append(vali_mrr)
             hyper_list.append((train_batch_size, lr, reg_lambda))
 
-    # TEST and VISUALIZE
+    # TEST
     index = np.argmax(vali_mrrs)
     best_hyper = hyper_list[index]
     train_batch_size, lr, reg_lambda = best_hyper
@@ -378,17 +378,3 @@ if __name__ == '__main__':
             pred_time_test, model_type, train_batch_size, feature_size, 
             EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
             lr, reg_lambda, user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum)
-
-
-    # TESTING PROCESS
-    # obj_per_time_slice_ops = [5, 10, 15]
-    # reg_lambdas = [1e-4, 1e-5]
-    # train_batch_size, lr = 100, 5e-4
-    # for reg_lambda in reg_lambdas:
-    #     for obj_per_time_slice in obj_per_time_slice_ops:
-    #         graph_handler_params[2] = obj_per_time_slice
-    #         print('REG_LAMBDA is:{}, OBJ_PER_TIME_SLICE is {}:'.format(reg_lambda, obj_per_time_slice))
-    #         restore(data_set, target_file_test, graph_handler_params, start_time,
-    #                 pred_time_test, model_type, train_batch_size, feature_size, 
-    #                 EMBEDDING_SIZE, HIDDEN_SIZE, max_time_len, obj_per_time_slice, 
-    #                 lr, reg_lambda, user_feat_dict_file, item_feat_dict_file, user_fnum, item_fnum)
